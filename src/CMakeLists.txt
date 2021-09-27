@@ -9,34 +9,32 @@ find_package(OpenSSL REQUIRED)
 
 # library
 
-add_library(absinthe
-    architecture.c
-    backup_file.c
-    backup.c
-    bpatch.c
-    common.c
-    device.c
-    dictionary.c
-    file.c
-    fsgen.c
-    idevicebackup2.c
-    jailbreak.c
-    lockdown.c
-    mb1.c
-    mbdb_record.c
-    mbdb.c
-    plist_extras.c
-)
+# add_library(absinthe
+#     backup_file.c
+#     backup.c
+#     bpatch.c
+#     common.c
+#     device.c
+#     dictionary.c
+#     file.c
+#     fsgen.c
+#     idevicebackup2.c
+#     jailbreak.c
+#     mb1.c
+#     mbdb_record.c
+#     mbdb.c
+#     plist_extras.c
+# )
 
-target_link_libraries(absinthe
-    libimobiledevice
-    OpenSSL::SSL
-)
+# target_link_libraries(absinthe
+#     absinthe_util
+#     OpenSSL::SSL
+# )
 
-target_include_directories(absinthe
-PUBLIC
-    ${IMobileDevice_INCLUDE_DIRS}
-)
+# target_include_directories(absinthe
+# PUBLIC
+#     ${IMobileDevice_INCLUDE_DIRS}
+# )
 
 add_subdirectory(cli)
 add_subdirectory(crashreport)

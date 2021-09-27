@@ -35,7 +35,7 @@
 #include <libimobiledevice/notification_proxy.h>
 #include <libimobiledevice/afc.h>
 
-#include <machine/endian.h>
+#include "endianness.h"
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>

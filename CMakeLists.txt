@@ -1,6 +1,7 @@
-project(absinthe)
 
 cmake_minimum_required(VERSION 3.21)
+project(absinthe)
+
 set(CMAKE_CXX_STANDARD 17)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")

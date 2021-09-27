@@ -37,6 +37,7 @@ enum {
 #endif
 
 #ifdef __APPLE__
+#import <Foundation/Foundation.h>
 #define WIDGET_TYPE id
 #endif
 

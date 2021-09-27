@@ -39,7 +39,6 @@
 #include "dictionary.h"
 #include "crashreporter.h"
 #include "idevicebackup2.h"
-#include "idevicepair.h"
 
 #include "dyldcache.h"
 

@@ -13,4 +13,5 @@ target_include_directories(absinthe_crashreport
 PRIVATE
     ${PList_INCLUDE_DIRS}
     ${IMobileDevice_INCLUDE_DIRS}
+    absinthe_util
 )
