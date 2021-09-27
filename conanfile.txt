@@ -1,0 +1,9 @@
+[requires]
+openssl/3.0.0
+bzip2/1.0.8
+libusb/1.0.24
+libxml2/2.9.12
+
+[generators]
+cmake_find_package
+cmake_paths
