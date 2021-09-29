@@ -11,3 +11,13 @@ FIND_LIBRARY(libplist_LIBRARY
     HINTS
         ${PC_libplist_LIBDIR}
         ${PC_libplist_LIBRARY_DIRS})
+
+MARK_AS_ADVANCED(libplist_INCLUDE_DIR libplist_LIBRARY)
+
+# handle the QUIETLY and REQUIRED arguments and set libimobiledevice_FOUND to TRUE if 
+# all listed variables are TRUE
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(libplist DEFAULT_MSG libplist_LIBRARY libplist_INCLUDE_DIR)
+
+SET(libplist_LIBRARIES    ${libplist_LIBRARY})
+SET(libplist_INCLUDE_DIRS ${libplist_INCLUDE_DIR})
