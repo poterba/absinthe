@@ -13,7 +13,9 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-      - run: sudo apt-get install ninja-build libimobiledevice
+      - run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build libimobiledevice
   windows:
     runs-on: windows-latest
     steps:
@@ -21,7 +23,9 @@ jobs:
   mac:
     runs-on: macos-latest
     steps:
-      - run: brew install ninja libimobiledevice
+      - run: |
+        brew update
+        brew install ninja libimobiledevice
 
   build:
     env:
