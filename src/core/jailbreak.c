@@ -525,65 +525,65 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 	plist_t conn = plist_new_dict();
 
 	// DNS
-	plist_dict_insert_item(conn, "DNS", plist_new_dict());
+	plist_dict_set_item(conn, "DNS", plist_new_dict());
 
 	// UserDefinedName
-	plist_dict_insert_item(conn, "UserDefinedName",
+	plist_dict_set_item(conn, "UserDefinedName",
 			plist_new_string(CONNECTION_NAME));
 
 	// IPv4
 	dict = plist_new_dict();
-	plist_dict_insert_item(dict, "ConfigMethod", plist_new_string("Automatic"));
-	plist_dict_insert_item(dict, "OverridePrimary", plist_new_uint(1));
-	plist_dict_insert_item(conn, "IPv4", dict);
+	plist_dict_set_item(dict, "ConfigMethod", plist_new_string("Automatic"));
+	plist_dict_set_item(dict, "OverridePrimary", plist_new_uint(1));
+	plist_dict_set_item(conn, "IPv4", dict);
 
 	// payload
-	plist_dict_insert_item(conn, "com.apple.payload", plist_new_dict());
+	plist_dict_set_item(conn, "com.apple.payload", plist_new_dict());
 
 	// Interface
 	dict = plist_new_dict();
-	plist_dict_insert_item(dict, "Type", plist_new_string("IPSec"));
-	plist_dict_insert_item(conn, "Interface", dict);
+	plist_dict_set_item(dict, "Type", plist_new_string("IPSec"));
+	plist_dict_set_item(conn, "Interface", dict);
 
 	// Proxies
 	dict = plist_new_dict();
-	plist_dict_insert_item(dict, "FTPPassive", plist_new_uint(1));
+	plist_dict_set_item(dict, "FTPPassive", plist_new_uint(1));
 	arr = plist_new_array();
 	plist_array_append_item(arr, plist_new_string("*.local"));
 	plist_array_append_item(arr, plist_new_string("169.254/16"));
-	plist_dict_insert_item(dict, "ExceptionList", arr);
-	plist_dict_insert_item(conn, "Proxies", dict);
+	plist_dict_set_item(dict, "ExceptionList", arr);
+	plist_dict_set_item(conn, "Proxies", dict);
 
 	// IPSec
 	dict = plist_new_dict();
-	plist_dict_insert_item(dict, "PromptForVPNPIN", plist_new_bool(0));
-	plist_dict_insert_item(dict, "AuthenticationMethod",
+	plist_dict_set_item(dict, "PromptForVPNPIN", plist_new_bool(0));
+	plist_dict_set_item(dict, "AuthenticationMethod",
 			plist_new_string("SharedSecret"));
-	plist_dict_insert_item(dict, "OnDemandSupported", plist_new_bool(1));
-	plist_dict_insert_item(dict, "OnDemandEnabled", plist_new_uint(1));
+	plist_dict_set_item(dict, "OnDemandSupported", plist_new_bool(1));
+	plist_dict_set_item(dict, "OnDemandEnabled", plist_new_uint(1));
 	arr = plist_new_array();
 	plist_array_append_item(arr, plist_new_string(VPN_TRIGGER_ADDRESS));
-	plist_dict_insert_item(dict, "OnDemandMatchDomainsAlways", arr);
+	plist_dict_set_item(dict, "OnDemandMatchDomainsAlways", arr);
 	arr = plist_new_array();
-	plist_dict_insert_item(dict, "OnDemandMatchDomainsNever", arr);
+	plist_dict_set_item(dict, "OnDemandMatchDomainsNever", arr);
 	arr = plist_new_array();
-	plist_dict_insert_item(dict, "OnDemandMatchDomainsOnRetry", arr);
-	plist_dict_insert_item(dict, "RemoteAddress",
+	plist_dict_set_item(dict, "OnDemandMatchDomainsOnRetry", arr);
+	plist_dict_set_item(dict, "RemoteAddress",
 			plist_new_string("127.0.0.1"));
-	plist_dict_insert_item(dict, "LocalIdentifier", plist_new_string("2"));
-	plist_dict_insert_item(dict, "XAuthName",
+	plist_dict_set_item(dict, "LocalIdentifier", plist_new_string("2"));
+	plist_dict_set_item(dict, "XAuthName",
 			plist_new_string(
 					"pod2g\"; proposal {authentication_method xauth_psk_client; hash_algorithm sha1; encryption_algorithm aes 256; lifetime time 3600 sec; dh_group 2;} } include \"/private/var/preferences/SystemConfiguration/com.apple.ipsec.plist"));
-	plist_dict_insert_item(dict, "LocalIdentifierType",
+	plist_dict_set_item(dict, "LocalIdentifierType",
 			plist_new_string("KeyID"));
-	plist_dict_insert_item(dict, "XAuthEnabled", plist_new_uint(1));
-	plist_dict_insert_item(dict, "SharedSecretEncryption",
+	plist_dict_set_item(dict, "XAuthEnabled", plist_new_uint(1));
+	plist_dict_set_item(dict, "SharedSecretEncryption",
 			plist_new_string("Key"));
-	plist_dict_insert_item(dict, "SharedSecret", plist_new_string("pod2g"));
-	plist_dict_insert_item(conn, "IPSec", dict);
+	plist_dict_set_item(dict, "SharedSecret", plist_new_string("pod2g"));
+	plist_dict_set_item(conn, "IPSec", dict);
 
 	// IPv6
-	plist_dict_insert_item(conn, "IPv6", plist_new_dict());
+	plist_dict_set_item(conn, "IPv6", plist_new_dict());
 
 	// get NetworkServices node
 	plist_t ns = plist_dict_get_item(*pl, "NetworkServices");
@@ -641,7 +641,7 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 	}
 
 	// add connection to /NetworkServices/{GUID}
-	plist_dict_insert_item(ns, guid, conn);
+	plist_dict_set_item(ns, guid, conn);
 
 	// add {GUID} to /Sets/{SetGUID}/Network/Global/IPv4/ServiceOrder/
 	plist_array_append_item(order, plist_new_string(guid));
@@ -651,9 +651,9 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 	strcpy(linkstr, "/NetworkServices/");
 	strcat(linkstr, guid);
 	dict = plist_new_dict();
-	plist_dict_insert_item(dict, "__LINK__", plist_new_string(linkstr));
+	plist_dict_set_item(dict, "__LINK__", plist_new_string(linkstr));
 	free(linkstr);
-	plist_dict_insert_item(netsvc, guid, dict);
+	plist_dict_set_item(netsvc, guid, dict);
 
 	// done
 	free(guid);
@@ -1851,8 +1851,8 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb,
 	}
 
 	plist_t crashme = plist_new_dict();
-	plist_dict_insert_item(crashme, "Request", plist_new_string("Pair"));
-	plist_dict_insert_item(crashme, "PairRecord", plist_new_bool(0));
+	plist_dict_set_item(crashme, "Request", plist_new_string("Pair"));
+	plist_dict_set_item(crashme, "PairRecord", plist_new_bool(0));
 
 	char* cxml = NULL;
 	uint32_t clen = 0;
@@ -2204,7 +2204,7 @@ static void plist_replace_item(plist_t plist, char *name, plist_t item)
 {
     if (plist_dict_get_item(plist, name))
         plist_dict_remove_item(plist, name);
-    plist_dict_insert_item(plist, name, item);
+    plist_dict_set_item(plist, name, item);
 }
 
 void stroke_lockdownd(device_t * device)
@@ -2215,8 +2215,8 @@ void stroke_lockdownd(device_t * device)
     idevice_connection_t connection;
     uint32_t magic;
     uint32_t sent = 0;
-    plist_dict_insert_item(crashy, "Request", plist_new_string("Pair"));
-    plist_dict_insert_item(crashy, "PairRecord", plist_new_bool(0));
+    plist_dict_set_item(crashy, "Request", plist_new_string("Pair"));
+    plist_dict_set_item(crashy, "PairRecord", plist_new_bool(0));
     plist_to_xml(crashy, &request, &size);
 
     magic = __builtin_bswap32(size);
@@ -2470,7 +2470,7 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb,
 					plist_new_string("/var/mobile/DemoApp.app"));
 
 			plist_t environment_dict = plist_new_dict();
-			plist_dict_insert_item(environment_dict, "LAUNCHD_SOCKET",
+			plist_dict_set_item(environment_dict, "LAUNCHD_SOCKET",
 					plist_new_string("/private/var/tmp/launchd/sock"));
 			plist_replace_item(system_plist, "EnvironmentVariables",
 					environment_dict);
