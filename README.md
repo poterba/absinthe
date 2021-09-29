@@ -42,7 +42,7 @@ SUPPORTED FIRMWARE: 5.1.1
 5. Once jailbroken return to iTunes and restore your backup from earlier. To do so, right click on your device name under the 'Devices' menu in the left panel of iTunes and click 'Restore From Backup...' then select the latest backup you created before. (restoring this backup will return all the content previously on your device, i.e. apps, photos, etc.) 
 6. Thanks for using Absinthe, enjoy your jailbroken iDevice!
 
-# Development setup
+# Development environment setup
 
 - libimobiledevice
 - conan
@@ -50,6 +50,12 @@ SUPPORTED FIRMWARE: 5.1.1
 macOS:
 ```bash
 brew install libimobiledevice conan
+```
+
+Debian:
+```bash
+sudo apt-get install libgtk-3-dev libimobiledevice
+pip3 install conan
 ```
 
 # NOTES
