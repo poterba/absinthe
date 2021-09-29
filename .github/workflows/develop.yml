@@ -9,21 +9,8 @@ on: [push]
 #     branches: [ main ]
 
 jobs: 
-
-  linux:
-    runs-on: ubuntu-latest
-    steps:
-      - run: sudo apt-get update && sudo apt-get install -y ninja-build libimobiledevice
-  windows:
-    runs-on: windows-latest
-    steps:
-      - run: choco install ninja libimobiledevice
-  mac:
-    runs-on: macos-latest
-    steps:
-      - run: brew install ninja libimobiledevice
-
   build:
+
     env:
       buildDir: '${{ github.workspace }}/build'
     runs-on: ${{ matrix.os }}
@@ -34,14 +21,22 @@ jobs:
           - macos-latest
           - ubuntu-latest
           - windows-latest
+
     steps:
       - uses: actions/checkout@v2
       - run: pip3 install conan
+
+      - run: brew install ninja libimobiledevice
+        if: ${{ matrix.os == 'macos-latest'}}
+
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build libimobiledevice
+        if: ${{ matrix.os == 'ubuntu-latest'}}
+
+      # - run: choco install ninja libimobiledevice
+      #   if: ${{ matrix.os == 'windows-latest'}}
+
       - uses: lukka/run-cmake@v3
         with:
           cmakeAppendedArgs: '-GNinja'
           buildDirectory: ${{ env.buildDir }}
-          # Or build multiple configurations out of a CMakeSettings.json file created with Visual Studio.
-          # cmakeListsOrSettingsJson: CMakeSettingsJson
-          # cmakeSettingsJsonPath: '${{ github.workspace }}/cmakesettings.json/CMakeSettings.json'
           configurationRegexFilter: '${{ matrix.configuration }}'
