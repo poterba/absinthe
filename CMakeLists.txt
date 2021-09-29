@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+# Install Dependencies
+
 include(conan)
 conan_cmake_autodetect(settings)
 conan_cmake_run(
@@ -13,10 +15,16 @@ conan_cmake_run(
     INSTALL_FOLDER ${CMAKE_BINARY_DIR}/conan
     BASIC_SETUP
     CMAKE_TARGETS
+    QUIET
     BUILD missing
     SETTINGS ${settings}
 )
 include(${CMAKE_BINARY_DIR}/conan/conan_paths.cmake)
+
+# Check and Find Dependencies
+
+find_package(OpenSSL REQUIRED)
+find_package(libimobiledevice REQUIRED)
 
 include_directories(include)
 

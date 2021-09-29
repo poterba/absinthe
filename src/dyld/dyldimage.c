@@ -26,6 +26,8 @@
 #include "dyldmap.h"
 #include "dyldimage.h"
 
+#include "file.h"
+
 /*
  * Dyld Image Functions
  */
