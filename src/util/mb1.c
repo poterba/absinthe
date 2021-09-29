@@ -31,6 +31,7 @@
 #include <sys/types.h>
 
 #include <plist/plist.h>
+#include <libimobiledevice/libimobiledevice.h>
 
 #include "mb1.h"
 #include "debug.h"
@@ -116,8 +117,8 @@ typedef int16_t device_link_service_error_t;
 typedef void* device_link_service_client_t;
 #define DEVICE_LINK_SERVICE_E_MUX_ERROR -3
 
-extern device_link_service_error_t device_link_service_send(device_link_service_client_t client, plist_t plist);
-extern device_link_service_error_t device_link_service_receive(device_link_service_client_t client, plist_t *plist);
+// extern device_link_service_error_t device_link_service_send(device_link_service_client_t client, plist_t plist);
+// extern device_link_service_error_t device_link_service_receive(device_link_service_client_t client, plist_t *plist);
 
 int mb1_crash(mb1_t* mb1) {
 
@@ -133,12 +134,15 @@ int mb1_crash(mb1_t* mb1) {
 	plist_array_append_item(arr, dict);
 
 	// send the array plist. this will crash BackupAgent
-	(void)device_link_service_send((struct mobilebackup_client_private*)(mb1->client)->parent, arr);
+	// TODO: fix this
+	// (void)device_link_service_send((struct mobilebackup_client_private*)(mb1->client)->parent, arr);
 	plist_free(arr);
 
 	// receive to check if it crashed
 	plist_t pl = NULL;
-	device_link_service_error_t res = device_link_service_receive((struct mobilebackup_client_private*)(mb1->client)->parent, &pl);
+	device_link_service_error_t res;
+	// TODO: fix this
+	// device_link_service_error_t res = device_link_service_receive((struct mobilebackup_client_private*)(mb1->client)->parent, &pl);
 	if (pl) {
 		plist_free(pl);
 	}

@@ -19,7 +19,7 @@
 
 #include <dirent.h>
 
-#include "fswrapper.h"
+// #include "fswrapper.h"
 
 #include "debug.h"
 #include "common.h"
@@ -178,6 +178,7 @@ void hexdump(unsigned char* buf, unsigned int len) {
 /* recursively remove path, including path */
 void rmdir_recursive(const char *path) /*{{{*/
 {
-	std::error_code ec;
-	ghc::filesystem::remove_all(path, ec);
+	// TODO
+	// std::error_code ec;
+	// ghc::filesystem::remove_all(path, ec);
 } /*}}}*/

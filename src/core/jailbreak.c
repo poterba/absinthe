@@ -1628,8 +1628,8 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 
 }
 
-extern int userpref_get_device_public_key(const char* udid,
-		unsigned char** pubkey, unsigned int* pubkey_len);
+// extern int userpref_get_device_public_key(const char* udid,
+// 		unsigned char** pubkey, unsigned int* pubkey_len);
 
 static int jailbreak_51(const char* udid, status_cb_t status_cb,
 		device_t* device, lockdown_t* lockdown, const char* product,
@@ -1683,11 +1683,12 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb,
 		plist_free(device_public_key);
 		unsigned char* pkey = NULL;
 		unsigned int pkeylen = 0;
-		if (userpref_get_device_public_key(udid, &pkey, &pkeylen) != 0) {
-			status_cb("ERROR: Unrecoverable error occured...", 0);
-			device_free(device);
-			return -1;
-		}
+		// TODO: fix this
+		// if (userpref_get_device_public_key(udid, &pkey, &pkeylen) != 0) {
+		// 	status_cb("ERROR: Unrecoverable error occured...", 0);
+		// 	device_free(device);
+		// 	return -1;
+		// }
 		uint64_t pklen = pkeylen;
 		device_public_key = plist_new_data(pkey, pklen);
 	}
