@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <dirent.h>
+#include <time.h>
 
 #include <plist/plist.h>
 

@@ -1,7 +1,7 @@
 /**
  * mbdb_record.c
  * Copyright (C) 2010 Joshua Hill
- * Copyright (C) 2012 HanŽne Samara
+ * Copyright (C) 2012 Hanï¿½ne Samara
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "debug.h"
 #include "common.h"
 #include "backup.h"
+#include "file.h"
+
+#include <openssl/sha.h>
 
 backup_t *backup_open(const char *backupdir, const char *uuid) {
 	if (!backupdir || !uuid) {

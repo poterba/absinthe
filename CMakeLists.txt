@@ -36,4 +36,4 @@ find_path(PList_INCLUDE_DIRS NAMES plist/plist.h HINTS ${PC_libplist_INCLUDE_DIR
 include_directories(include)
 
 add_subdirectory(src)
-add_subdirectory(tools)
+# add_subdirectory(tools)

@@ -6,3 +6,8 @@ PRIVATE
     ${PList_INCLUDE_DIRS}
     ${libimobiledevice_INCLUDE_DIR}
 )
+
+target_link_libraries(absinthe_core
+    absinthe_util
+    ${libimobiledevice_LIBRARIES}
+)

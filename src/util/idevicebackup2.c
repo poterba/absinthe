@@ -28,6 +28,8 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <libgen.h>
+#include <time.h>
+#include <ctype.h>
 
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>

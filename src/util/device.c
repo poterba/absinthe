@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <libimobiledevice/libimobiledevice.h>
 
 #include "device.h"
@@ -27,6 +28,9 @@
 #ifdef WIN32
 #include <windows.h>
 #define sleep(x) Sleep(x*1000)
+#else
+#include <unistd.h>
+#define sleep(x) usleep(x*1000*1000);
 #endif
 
 device_t* device_create(const char* udid) {
