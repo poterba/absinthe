@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-        sudo apt-get update
+        sudo apt-get update \
         sudo apt-get install -y ninja-build libimobiledevice
   windows:
     runs-on: windows-latest
