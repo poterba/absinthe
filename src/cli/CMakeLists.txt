@@ -7,7 +7,7 @@ PRIVATE
     ${libimobiledevice_INCLUDE_DIR}
 )
 
-target_link_directories(absinthe_cli
+target_link_libraries(absinthe_cli
 PRIVATE
     absinthe_core
     absinthe_dyld

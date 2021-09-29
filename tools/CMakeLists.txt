@@ -1,9 +1,3 @@
-# add_executable(gizmo gizmo.c)
-
-# target_link_libraries(gizmo
-#     absinthe_dyld
-#     absinthe_macho
-# )
 
 add_subdirectory(binpatch)
 add_subdirectory(decache)
