@@ -29,9 +29,19 @@ find_package(BZip2 REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(libimobiledevice REQUIRED)
 
-find_package(PkgConfig QUIET)
-pkg_search_module(PC_libplist QUIET libplist-2.0 libplist)
-find_path(PList_INCLUDE_DIRS NAMES plist/plist.h HINTS ${PC_libplist_INCLUDE_DIRS})
+FIND_PACKAGE(PkgConfig)
+PKG_CHECK_MODULES(PC_libplist QUIET libplist-3.0)
+find_path(libplist_INCLUDE_DIR NAMES plist/plist.h HINTS ${PC_libplist_INCLUDE_DIRS})
+FIND_LIBRARY(libplist_LIBRARY 
+NAMES
+    plist
+    libplist
+    plist-3.0
+    libplist-3.0
+HINTS
+    ${PC_libplist_LIBDIR}
+    ${PC_libplist_LIBRARY_DIRS}
+)
 
 include_directories(include)
 

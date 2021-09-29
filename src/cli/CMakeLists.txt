@@ -4,12 +4,13 @@ add_executable(absinthe_cli ${SRC_FILES})
 
 target_include_directories(absinthe_cli
 PRIVATE
-    absinthe_dyld
-    absinthe_util
     ${libimobiledevice_INCLUDE_DIR}
 )
 
 target_link_directories(absinthe_cli
 PRIVATE
+    absinthe_core
+    absinthe_dyld
+    absinthe_util
     ${libimobiledevice_LIBRARIES}
 )
