@@ -23,9 +23,7 @@ jobs:
   mac:
     runs-on: macos-latest
     steps:
-      - run: |
-        brew update
-        brew install ninja libimobiledevice
+      - run: brew install ninja libimobiledevice
 
   build:
     env:
