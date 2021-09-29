@@ -1,23 +1,14 @@
 
 cmake_minimum_required(VERSION 3.16)
-project(absinthe)
+project(absinthe C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Flags
-if (APPLE)
-    if(NOT DEFINED CMAKE_OSX_SYSROOT)
-        message(FATAL_ERROR "Cannot check SDK version if CMAKE_OSX_SYSROOT is not defined.")
-    endif()
-
-    execute_process(
-        COMMAND xcrun --sdk "${CMAKE_OSX_SYSROOT}" --show-sdk-version
-        OUTPUT_VARIABLE sdk_version
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+set(absinthe_GENERATE_DIR ${CMAKE_BINARY_DIR}/gen/)
 
 # Install Dependencies
 
@@ -39,11 +30,14 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(Filesystem REQUIRED)
 
 find_package(libimobiledevice REQUIRED)
 find_package(libplist REQUIRED)
 
 include_directories(include)
+configure_file(include/fswrapper.h.in ${absinthe_GENERATE_DIR}/include/fswrapper.h)
+include_directories(${absinthe_GENERATE_DIR}/include)
 
 add_subdirectory(src)
 # add_subdirectory(tools)

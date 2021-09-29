@@ -4,12 +4,13 @@ add_library(absinthe_util ${SRC_FILES})
 
 target_include_directories(absinthe_util
 PRIVATE
-    BZip2_INCLUDE_DIRS
+    ${BZIP2_INCLUDE_DIR}
     ${libimobiledevice_INCLUDE_DIR}
 )
 
 target_link_libraries(absinthe_util
+PRIVATE
     BZip2::BZip2
     ${libimobiledevice_LIBRARIES}
-    libc++fs
+    std::filesystem
 )
