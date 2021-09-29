@@ -35,7 +35,7 @@ target_link_libraries(absinthe_gui
 
 target_include_directories(absinthe_gui
 PRIVATE
-    ${IMobileDevice_INCLUDE_DIRS}
+    ${libimobiledevice_INCLUDE_DIR}
 )
 
 if(UNIX)

@@ -22,7 +22,7 @@ IF (NOT WIN32)
    # in the FIND_PATH() and FIND_LIBRARY() calls
    # also fills in libimobiledevice_DEFINITIONS, although that isn't normally useful
    FIND_PACKAGE(PkgConfig)
-   PKG_CHECK_MODULES(PC_libimobiledevice libimobiledevice-1.0)
+   PKG_CHECK_MODULES(PC_libimobiledevice QUIET libimobiledevice-1.0)
    SET(libimobiledevice_DEFINITIONS ${PC_libimobiledevice_CFLAGS_OTHER})
 ENDIF (NOT WIN32)
 
@@ -32,7 +32,7 @@ FIND_PATH(libimobiledevice_INCLUDE_DIR libimobiledevice/libimobiledevice.h
    ${PC_libimobiledevice_INCLUDE_DIRS}
    )
 
-FIND_LIBRARY(libimobiledevice_LIBRARY NAMES imobiledevice libimobiledevice
+FIND_LIBRARY(libimobiledevice_LIBRARY NAMES imobiledevice libimobiledevice imobiledevice-1.0
    HINTS
    ${PC_libimobiledevice_LIBDIR}
    ${PC_libimobiledevice_LIBRARY_DIRS}
@@ -42,8 +42,8 @@ MARK_AS_ADVANCED(libimobiledevice_INCLUDE_DIR libimobiledevice_LIBRARY)
 
 # handle the QUIETLY and REQUIRED arguments and set libimobiledevice_FOUND to TRUE if 
 # all listed variables are TRUE
-# INCLUDE(FindPackageHandleStandardArgs)
-# FIND_PACKAGE_HANDLE_STANDARD_ARGS(libimobiledevice DEFAULT_MSG libimobiledevice_LIBRARY libimobiledevice_INCLUDE_DIR)
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(libimobiledevice DEFAULT_MSG libimobiledevice_LIBRARY libimobiledevice_INCLUDE_DIR)
 
 SET(libimobiledevice_LIBRARIES    ${libimobiledevice_LIBRARY})
 SET(libimobiledevice_INCLUDE_DIRS ${libimobiledevice_INCLUDE_DIR})

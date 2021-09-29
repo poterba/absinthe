@@ -6,7 +6,7 @@ target_include_directories(absinthe_cli
 PRIVATE
     absinthe_dyld
     absinthe_util
-    ${IMobileDevice_INCLUDE_DIRS}
+    ${libimobiledevice_INCLUDE_DIR}
 )
 
 target_link_directories(absinthe_cli

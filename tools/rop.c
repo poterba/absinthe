@@ -147,7 +147,7 @@ void ropWrite(unsigned int value) {
 		ropFileAddr = ropWriteAddr;
 	}
 }
-
+  
 void ropWriteVars() {
 	if (ropWriteVarsMode == ROP_MODE_MEM) {
 		unsigned int i;
