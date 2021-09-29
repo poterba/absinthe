@@ -9,6 +9,20 @@ on: [push]
 #     branches: [ main ]
 
 jobs: 
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get install ninja-build libimobiledevice
+  windows:
+    runs-on: windows-latest
+    steps:
+      - run: choco install ninja libimobiledevice
+  mac:
+    runs-on: macos-latest
+    steps:
+      - run: brew install ninja libimobiledevice
+
   build:
     env:
       buildDir: '${{ github.workspace }}/build'
@@ -21,12 +35,10 @@ jobs:
           - ubuntu-latest
           - windows-latest
     steps:
+      - name: Install xmllint
+        run: sudo apt-get install -y libimobiledevice
       - uses: actions/checkout@v2
-      - name: Download Conan package manager.
-        run: |
-            pip3 install wheel setuptools
-            pip3 install conan
-            conan --version
+      - run: pip3 install conan
       - uses: lukka/run-cmake@v3
         with:
           cmakeAppendedArgs: '-GNinja'
