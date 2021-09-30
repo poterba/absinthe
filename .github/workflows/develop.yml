@@ -31,8 +31,10 @@ jobs:
       - if: ${{ matrix.os == 'ubuntu-latest'}}
         run: sudo apt-get update && sudo apt-get install -y ninja-build libimobiledevice-dev && pip3 install conan
 
-      - run: choco install ninja conan
-        if: ${{ matrix.os == 'windows-latest'}}
+      - if: ${{ matrix.os == 'windows-latest'}}
+        run: |
+          choco install ninja conan
+          refreshenv
 
       - uses: lukka/run-cmake@v3
         with:
