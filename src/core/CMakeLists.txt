@@ -8,8 +8,14 @@ target_include_directories(absinthe_core
 )
 
 target_link_libraries(absinthe_core
+  PRIVATE
     absinthe_backup
     absinthe_crashreport
     absinthe_util
+    OpenSSL::Crypto
     ${libplist_LIBRARY}
     ${libimobiledevice_LIBRARIES})
+
+if(UNIX AND NOT APPLE)
+  target_link_libraries(absinthe_core PRIVATE atomic)
+endif()
