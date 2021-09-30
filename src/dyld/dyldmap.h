@@ -21,7 +21,6 @@
 #define DYLDMAP_H_
 
 #include "common.h"
-#include "boolean.h"
 
 #define DYLDMAP_EXEC   1
 #define DYLDMAP_WRITE  2
@@ -47,7 +46,7 @@ typedef struct dyldmap_t {
  */
 dyldmap_t* dyldmap_create();
 dyldmap_t* dyldmap_parse(unsigned char* data, uint32_t offset);
-boolean_t dyldmap_contains(dyldmap_t* map, uint64_t address);
+bool dyldmap_contains(dyldmap_t* map, uint64_t address);
 void dyldmap_debug(dyldmap_t* image);
 void dyldmap_free(dyldmap_t* map);
 

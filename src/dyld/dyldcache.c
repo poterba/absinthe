@@ -374,7 +374,7 @@ dyldmap_t* dyldcache_map_address(dyldcache_t* cache, uint64_t address) {
 	dyldmap_t* map = NULL;
 	for(i = 0; i < cache->header->mapping_count; i++) {
 		map = cache->maps[i];
-		if(dyldmap_contains(map, address) == kTrue) {
+		if(dyldmap_contains(map, address)) {
 			return map;
 		}
 	}

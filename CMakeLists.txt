@@ -35,6 +35,13 @@ find_package(Filesystem REQUIRED)
 find_package(libimobiledevice REQUIRED)
 find_package(libplist REQUIRED)
 
+if(APPLE)
+  find_library(FOUNDATION Foundation)
+  if (NOT FOUNDATION)
+    message(FATAL_ERROR "Foundation not found")
+  endif()
+endif()
+
 include_directories(include)
 configure_file(include/fswrapper.h.in ${absinthe_GENERATE_DIR}/include/fswrapper.h)
 include_directories(${absinthe_GENERATE_DIR}/include)

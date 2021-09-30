@@ -34,7 +34,6 @@
 #include "debug.h"
 #include "backup.h"
 #include "device.h"
-#include "boolean.h"
 #include "jailbreak.h"
 #include "dictionary.h"
 #include "crashreporter.h"

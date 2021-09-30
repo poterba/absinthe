@@ -23,8 +23,6 @@
 #include <stdint.h>
 #include <bzlib.h>
 
-#include "boolean.h"
-
 /*
 	File format:
 		0	8	"BSDIFF40" (bzip2) or "BSDIFN40" (raw)

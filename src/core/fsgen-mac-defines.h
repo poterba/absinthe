@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdint.h>
 #ifndef __APPLE__
 #include <sys/types.h>
@@ -53,6 +55,7 @@ struct vn_ioctl {
 #define VNIOCATTACH	_IOWR('F', 0, struct vn_ioctl)	/* attach file */
 #define VNIOCDETACH _IOWR('F', 1, struct vn_ioctl)
 
+#ifndef __APPLE__
 typedef uint32_t mach_port_right_t;
 
 typedef unsigned int mach_msg_bits_t;
@@ -119,9 +122,13 @@ struct stat {
 	int64_t	        st_qspare[2];		/* RESERVED: DO NOT USE! */ \
 } __attribute__((packed));
 
+#endif // __APPLE__
+
 #define	CTL_KERN	1		/* "high kernel": proc, limits */
 #define	KERN_PROC		14	/* struct: process entries */
 #define KERN_PROC_ALL		0	/* everything */
+
+#ifndef __APPLE__
 
 typedef struct fsid { int32_t val[2]; } __darwin_fsid_t;	/* file system id type */
 
@@ -189,6 +196,7 @@ struct proc_regionwithpathinfo {
 	struct proc_regioninfo	prp_prinfo;
 	struct vnode_info_path	prp_vip;
 };
+#endif // __APPLE__
 
 #define PROC_PIDREGIONPATHINFO		8
 #define SM_SHARED          4

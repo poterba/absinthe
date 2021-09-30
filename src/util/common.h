@@ -19,6 +19,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>

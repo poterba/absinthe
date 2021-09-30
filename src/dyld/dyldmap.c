@@ -23,7 +23,6 @@
 
 #include "debug.h"
 #include "common.h"
-#include "boolean.h"
 #include "dyldmap.h"
 
 dyldmap_t* dyldmap_create() {
@@ -50,12 +49,12 @@ dyldmap_t* dyldmap_parse(unsigned char* data, uint32_t offset) {
 	return map;
 }
 
-boolean_t dyldmap_contains(dyldmap_t* map, uint64_t address) {
+bool dyldmap_contains(dyldmap_t* map, uint64_t address) {
 	if(address >= map->address &&
 			address < (map->address + map->size)) {
-		return kTrue;
+		return true;
 	}
-	return kFalse;
+	return false;
 }
 
 void dyldmap_free(dyldmap_t* map) {

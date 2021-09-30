@@ -23,7 +23,6 @@
 
 #include "debug.h"
 #include "common.h"
-#include "boolean.h"
 
 int __mkdir(const char* path, int mode)
 {
@@ -105,7 +104,7 @@ char* prot2str(uint32_t prot) {
 	return str;
 }
 
-int check_ascii_string(const char* string, size_t length) {
+bool check_ascii_string(const char* string, size_t length) {
 	size_t i = 0;
 	if (string) {
 		// Loop through each byte in this string and make sure it contains no invalid
@@ -114,12 +113,12 @@ int check_ascii_string(const char* string, size_t length) {
 			char letter = string[i];
 			if ((letter & 0x80) > 0 || (letter & 0x7F) == 0) {
 				// We have an invalid ASCII character here folks!
-				return kFalse;
+				return false;
 			}
 		}
 	}
 
-	return kTrue;
+	return true;
 }
 
 int check_ascii_pointer(uint32_t pointer) {
