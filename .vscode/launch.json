@@ -7,7 +7,7 @@
             "type": "cppdbg",
             "program": "${command:cmake.launchTargetPath}",
             "cwd": "${workspaceFolder}",
-            "targetArchitecture": "arm64",
+            // "targetArchitecture": "arm64",
             "setupCommands": [
                 {
                     "description": "Enable all-exceptions",
