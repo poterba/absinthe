@@ -11,7 +11,8 @@ target_include_directories(absinthe_util
 target_link_libraries(absinthe_util
   PUBLIC
     BZip2::BZip2
-    ${libimobiledevice_LIBRARIES})
+    ${libimobiledevice_LIBRARIES}
+    ${libplist_LIBRARIES})
 
 target_link_libraries(absinthe_util
   PRIVATE
