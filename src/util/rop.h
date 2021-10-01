@@ -9,7 +9,15 @@
 #define ROP_H_
 
 #if __APPLE__
+#include <sys/sysctl.h>
+#include <servers/bootstrap.h>
+#include <mach/mach.h>
+#include <libproc.h>
 #include "mach/message.h"
+#else
+#include "fsgen-global-constants.h"
+#include "fsgen-mac-defines.h"
+#include "defines/linux.h"
 #endif
 
 #define ROP_LOAD_REG4_CONST_LEN 0xc
@@ -21,6 +29,15 @@
 
 typedef unsigned int Addr;
 extern unsigned int dscs;
+extern FILE* ropFile;
+extern FILE* ropVarsFile;
+extern unsigned int ropWriteMode;
+extern unsigned int ropWriteVarsMode;
+extern unsigned int ropWriteAddr;
+extern unsigned int ropFileAddr;
+extern unsigned char vars[VARS_MAX_SIZE];
+extern Addr varsBaseAddr;
+extern unsigned int varsWritten;
 
 struct trojan_msg {
     mach_msg_header_t          header;
