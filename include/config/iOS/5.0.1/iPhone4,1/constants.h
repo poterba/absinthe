@@ -1,3 +1,5 @@
+#pragma once
+
 #define DEBUG
 
 #define STRLEN_PID			3

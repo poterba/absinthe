@@ -1,7 +1,4 @@
-# Greenpois0n Absinthe 2.0
-
-http://greenpois0n.com/
-
+# [Greenpois0n](http://greenpois0n.com/) Absinthe 2.0
 
 ## DESCRIPTION
 
@@ -12,7 +9,6 @@ Absinthe 2.0 is an untethered jailbreak for iOS 5.1.1 devices
 - MacOSX 10.5 +
 - Windows XP +
 - Linux x86/x86_64 (Kernel >= 2.6.15, libgtk+-2.0 >= 2.22.1)
-
 
 SUPPORTED FIRMWARE: 5.1.1
 
@@ -52,10 +48,11 @@ macOS:
 brew install libimobiledevice conan
 ```
 
-Debian:
+Debian/Ubuntu:
 ```bash
-sudo apt-get install libgtk-3-dev libimobiledevice
-pip3 install conan
+
+sudo apt-get install libgtk-3-dev libimobiledevice-dev python3-pip
+sudo pip3 install conan
 ```
 
 # NOTES
@@ -69,6 +66,9 @@ a) If your device is already jailbroken, there is no reason to re-apply the jail
 # CREDITS:
 
 5.1.1 Exploits by: @pod2g, @planetbeing, @pimskeks
+
 Artwork by @iOPK.
+
 GUI by: Hanene Samara & @pimskeks.
+
 Servers proudly supplied by Chronic-Dev, LLC (@chronicdevteam)

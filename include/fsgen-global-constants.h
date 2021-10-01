@@ -15,8 +15,6 @@
 #define	USELESS			0xdeadbeef
 #define	PLACE_HOLDER		0xdeadbeef
 
-#define LOG_SHIFT (16 + STRLEN_PID + constants->STRLEN_FILENAME)
-#define P3_ADDR_LO (constants->P2_ADDR_LO + ((constants->P3 - constants->P2) * 4))
 
 #define SHELLCODE_ADDR 0x80000400
 #define ZFREEHOOK_ADDR (offsets->ZFREE - 1)
@@ -2203,15 +2201,15 @@ struct constants* global_constants[MAX_FIRMWARE][MAX_DEVICE] =
 
     [FW9A405] = {
         [iPad1_1] = &constants_iPad1_1,
-	[iPhone2_1] = &constants_iPhone2_1,
+        [iPhone2_1] = &constants_iPhone2_1,
         [iPhone3_1] = &constants_iPhone3_1,
         [iPhone3_3] = &constants_iPhone3_3,
         [iPhone4_1] = &constants_iPhone4_1,
         [iPad2_1] = &constants_iPad2_1,
         [iPad2_2] = &constants_iPad2_2,
         [iPad2_3] = &constants_iPad2_3,
-	[iPod3_1] = &constants_iPod3_1,
-	[iPod4_1] = &constants_iPod4_1,
+        [iPod3_1] = &constants_iPod3_1,
+        [iPod4_1] = &constants_iPod4_1,
     },
 
     [FW9A406] = {

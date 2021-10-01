@@ -1,4 +1,3 @@
-#ifdef __APPLE__
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -7,39 +6,15 @@
 #include <syslog.h>
 #include <sys/types.h>
 #include <sys/ptrace.h>
-#include <sys/sysctl.h>
-#include <servers/bootstrap.h>
-#include <mach/mach.h>
+
 #include <syslog.h>
 
 #include <dlfcn.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#include <libproc.h>
 
 #define offsetof(type, member)  __builtin_offsetof (type, member)
 
-/*
-#include <Foundation/Foundation.h>
-#include <sys/sysctl.h>
-#include <sys/resource.h>
-#include <spawn.h>
-#include <stdio.h>
-#include <sys/param.h>
-#include <sys/mount.h>
-#include <dlfcn.h>
-#include <sandbox.h>
-#include <launch.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include "substrate.h"
-#include <sys/types.h>
-#include <sys/mman.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <libproc.h>
-*/
 #include "constants.h"
 #include "rop.h"
 
@@ -778,8 +753,3 @@ int ropMain(int slide) {
 
         return 0;
 }
-#else
-int ropMain(int slide) {
-	return 0;
-}
-#endif
