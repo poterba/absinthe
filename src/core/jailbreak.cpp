@@ -17,6 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
+#include "jailbreak.hpp"
+
+#include "mb1.hpp"
+#include "bpatch.hpp"
+#include "fsgen.hpp"
+#include "debug.hpp"
+#include "backup.hpp"
+#include "device.hpp"
+#include "dictionary.hpp"
+#include "crashreporter.hpp"
+#include "idevicebackup2.hpp"
+
+#include "dyldcache.hpp"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,19 +44,6 @@
 #include <libimobiledevice/afc.h>
 #include <libimobiledevice/sbservices.h>
 #include <libimobiledevice/file_relay.h>
-
-#include "jailbreak.hpp"
-#include "mb1.hpp"
-#include "bpatch.hpp"
-#include "fsgen.hpp"
-#include "debug.hpp"
-#include "backup.hpp"
-#include "device.hpp"
-#include "dictionary.hpp"
-#include "crashreporter.hpp"
-#include "idevicebackup2.hpp"
-
-#include "dyldcache.hpp"
 
 #include "offsets.hpp"
 

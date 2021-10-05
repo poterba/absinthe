@@ -35,7 +35,9 @@
 #define DYLDARCH_ARMV6   "armv6"
 #define DYLDARCH_ARMV7   "armv7"
 
-namespace dyldcache {
+namespace absinthe {
+namespace dyld {
+namespace cache {
 
 typedef enum {
 	kArmType,
@@ -124,4 +126,6 @@ dyldmap_t** maps_load(dyldcache_t* cache);
 void maps_debug(dyldmap_t** maps);
 void maps_free(dyldmap_t** maps);
 
-} // namespace dyldcache
+} // namespace cache
+} // namespace dyld
+} // namespace absinthe

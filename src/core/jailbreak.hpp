@@ -1,5 +1,5 @@
-#ifndef __JAILBREAK_H
-#define __JAILBREAK_H
+
+#pragma once
 
 #define CONNECTION_NAME "jailbreak"
 #define VPN_TRIGGER_ADDRESS "127.0.0.1"
@@ -47,6 +47,4 @@ extern "C"
 
 #ifdef __cplusplus
 };
-#endif
-
 #endif

@@ -12,7 +12,7 @@
 #include <servers/bootstrap.h>
 #include <mach/mach.h>
 #include <libproc.h>
-#include <mach/message.h>
+#include "mach/message.hpp"
 #else
 #include "fsgen-mac-defines.hpp"
 #include "defines/linux.hpp"

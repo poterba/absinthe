@@ -31,11 +31,10 @@
 #include "dyldmap.hpp"
 #include "dyldimage.hpp"
 
-namespace dyldcache {
+namespace absinthe {
+namespace dyld {
+namespace cache {
 
-/*
- * Dyldcache Functions
- */
 dyldcache_t* create() {
 	dyldcache_t* cache = (dyldcache_t*) malloc(sizeof(dyldcache_t));
 	if (cache) {
@@ -416,4 +415,6 @@ dyldimage_t* next_image(dyldcache_t* cache, dyldimage_t* image) {
 	return next;
 }
 
-} // namespace dyldcache
+} // namespace cache
+} // namespace dyld
+} // namespace absinthe
