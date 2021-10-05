@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef MACHO_H_
-#define MACHO_H_
+#pragma once
 
 #include "common.h"
 #include "macho_symtab.h"
@@ -102,5 +101,3 @@ macho_section_t** macho_sections_create(uint32_t count);
 macho_section_t** macho_sections_load(macho_t* macho);
 void macho_sections_debug(macho_section_t** sections);
 void macho_sections_free(macho_section_t** sections);
-
-#endif /* MACHO_H_ */

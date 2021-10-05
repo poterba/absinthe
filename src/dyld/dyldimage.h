@@ -17,8 +17,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef DYLDIMAGE_H_
-#define DYLDIMAGE_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -61,5 +60,3 @@ dyldimage_info_t* dyldimage_info_create();
 dyldimage_info_t* dyldimage_info_parse(unsigned char* data, uint32_t offset);
 void dyldimage_info_free(dyldimage_info_t* info);
 void dyldimage_info_debug(dyldimage_info_t* info);
-
-#endif /* DYLDIMAGE_H_ */

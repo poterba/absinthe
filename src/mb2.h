@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef MB2_H_
-#define MB2_H_
+#pragma once
 
 #include <libimobiledevice/mobilebackup2.h>
 
@@ -60,5 +59,3 @@ typedef void (*mb2_attack_plist_cb_t)(plist_t *newplist, void *userdata);
 void mb2_set_status_plist_cb_func(mb2_status_plist_cb_t callback, void *userdata);
 
 void mb2_set_attack_plist_cb_func(mb2_attack_plist_cb_t callback, void *userdata);
-
-#endif /* MB2_H_ */

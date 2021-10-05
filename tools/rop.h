@@ -4,10 +4,6 @@
  *  Created on: Jan 12, 2012
  *      Author: posixninja
  */
-
-#ifndef ROP_H_
-#define ROP_H_
+#pragma once
 
 int ropMain(int dscs);
-
-#endif /* ROP_H_ */

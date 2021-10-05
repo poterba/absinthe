@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef CRASHREPORTMOVER_H_
-#define CRASHREPORTMOVER_H_
+#pragma once
 
 #include <libimobiledevice/libimobiledevice.h>
 
@@ -34,5 +33,3 @@ crashreportmover_t* crashreportmover_open(device_t* device, uint16_t port);
 
 int crashreportmover_close(crashreportmover_t* mover);
 void crashreportmover_free(crashreportmover_t* mover);
-
-#endif /* CRASHREPORTMOVER_H_ */

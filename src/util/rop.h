@@ -5,8 +5,7 @@
  *      Author: posixninja
  */
 
-#ifndef ROP_H_
-#define ROP_H_
+#pragma once
 
 #if __APPLE__
 #include <sys/sysctl.h>
@@ -15,10 +14,11 @@
 #include <libproc.h>
 #include "mach/message.h"
 #else
-#include "fsgen-global-constants.h"
 #include "fsgen-mac-defines.h"
 #include "defines/linux.h"
 #endif
+
+#include "fsgen-global-constants.h"
 
 #define ROP_LOAD_REG4_CONST_LEN 0xc
 #define ROP_SAVE_REG0_LEN (ROP_LOAD_REG4_CONST_LEN + 0xc)
@@ -89,5 +89,3 @@ Addr newBuffer(unsigned int size);
 Addr newString(char* s);
 Addr newInteger(unsigned int value);
 Addr newArray(unsigned int values[], unsigned int count);
-
-#endif /* ROP_H_ */

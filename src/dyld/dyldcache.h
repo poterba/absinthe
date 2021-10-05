@@ -17,8 +17,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef DYLDCACHE_H_
-#define DYLDCACHE_H_
+#pragma once
 
 #include "dyldmap.h"
 #include "dyldimage.h"
@@ -36,17 +35,18 @@
 #define DYLDARCH_ARMV6   "armv6"
 #define DYLDARCH_ARMV7   "armv7"
 
+
 typedef enum {
 	kArmType,
 	kIntelType
 } cpu_type_t;
 
-typedef enum {
-	kArmv6,
-	kArmv7,
-	kIntelx86,
-	kIntelx86_64
-} cpu_subtype_t;
+// typedef enum {
+// 	kArmv6,
+// 	kArmv7,
+// 	kIntelx86,
+// 	kIntelx86_64
+// } cpu_subtype_t;
 
 typedef struct architecture_t {
 	char* name;
@@ -122,5 +122,3 @@ dyldmap_t** dyldcache_maps_create(uint32_t count);
 dyldmap_t** dyldcache_maps_load(dyldcache_t* cache);
 void dyldcache_maps_debug(dyldmap_t** maps);
 void dyldcache_maps_free(dyldmap_t** maps);
-
-#endif /* DYLDCACHE_H_ */

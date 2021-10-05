@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef MACHO_SEGMENT_H_
-#define MACHO_SEGMENT_H_
+#pragma once
 
 #include "common.h"
 #include "macho_section.h"
@@ -62,5 +61,3 @@ macho_segment_cmd_t* macho_segment_cmd_create();
 macho_segment_cmd_t* macho_segment_cmd_load(unsigned char* data, unsigned int offset);
 void macho_segment_cmd_debug(macho_segment_cmd_t* cmd);
 void macho_segment_cmd_free(macho_segment_cmd_t* cmd);
-
-#endif /* MACHO_SEGMENT_H_ */

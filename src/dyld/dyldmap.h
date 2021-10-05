@@ -17,8 +17,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef DYLDMAP_H_
-#define DYLDMAP_H_
+#pragma once
 
 #include "common.h"
 
@@ -57,5 +56,3 @@ dyldmap_info_t* dyldmap_info_create();
 dyldmap_info_t* dyldmap_info_parse(unsigned char* data, uint32_t offset);
 void dyldmap_info_debug(dyldmap_info_t* map);
 void dyldmap_info_free(dyldmap_info_t* map);
-
-#endif /* DYLDMAP_H_ */

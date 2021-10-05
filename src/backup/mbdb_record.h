@@ -18,8 +18,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef MBDB_RECORD_H_
-#define MBDB_RECORD_H_
+#pragma once
 
 struct mbdb_t;
 
@@ -84,6 +83,3 @@ void mbdb_record_set_flag(mbdb_record_t* record, unsigned char flag);
 // TODO sth like mbdb_record_add_property()
 
 int mbdb_record_build(mbdb_record_t* record, unsigned char** data, unsigned int* size);
-
-
-#endif /* MBDB_RECORD_H_ */

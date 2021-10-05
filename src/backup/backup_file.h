@@ -18,8 +18,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef BACKUP_FILE_H_
-#define BACKUP_FILE_H_
+#pragma once
 
 //#include "mbdx_record.h"
 #include "mbdb_record.h"
@@ -60,5 +59,3 @@ void backup_file_set_flag(backup_file_t* bfile, unsigned char flag);
 void backup_file_free(backup_file_t* file);
 
 int backup_file_get_record_data(backup_file_t* bfile, unsigned char** data, unsigned int* size);
-
-#endif /* BACKUP_FILE_H_ */

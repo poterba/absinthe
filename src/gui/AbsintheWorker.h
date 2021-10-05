@@ -1,5 +1,5 @@
-#ifndef __ABSINTHEWORKER_H
-#define __ABSINTHEWORKER_H
+
+#pragma once
 
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>
@@ -25,5 +25,3 @@ public:
 	void processStatus(const char* msg, int progress);
 	void processFinished(const char* error);
 };
-
-#endif /* __ABSINTHEWORKER_H */

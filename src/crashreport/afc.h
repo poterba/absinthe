@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef AFC_H_
-#define AFC_H_
+#pragma once
 
 #include <libimobiledevice/afc.h>
 #include "lockdown.h"
@@ -37,4 +36,3 @@ int afc_send_file(afc_t* afc, const char* local, const char* remote);
 int afc_close(afc_t* afc);
 void afc_free(afc_t* afc);
 void apparition_afc_get_file_contents(afc_t* afc, const char *filename, char **data, uint64_t *size);
-#endif /* AFC_H_ */

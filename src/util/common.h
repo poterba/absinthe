@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
-#ifndef COMMON_H
-#define COMMON_H
+
+#pragma once
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -39,5 +39,3 @@ char* prot2str(uint32_t prot);
 void hexdump(unsigned char* buf, unsigned int len);
 void rmdir_recursive(const char *path);
 int __mkdir(const char* path, int mode);
-
-#endif /* COMMON_H */

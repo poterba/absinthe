@@ -17,8 +17,7 @@
  * along with this program.  If not, see <dicttp://www.gnu.org/licenses/>.
  **/
 
-#ifndef DICTIONARY_H_
-#define DICTIONARY_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -108,5 +107,3 @@ void dictionary_set_orders(dictionary_t* dict, uintptr_t *ptr);
 
 uintptr_t* dictionary_get_hashes(dictionary_t* dict);
 void dictionary_set_hashes(dictionary_t* dict, uintptr_t *ptr);
-
-#endif /* DICTIONARY_H_ */

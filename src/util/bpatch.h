@@ -17,8 +17,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef BPATCH_H_
-#define BPATCH_H_
+#pragma once
 
 #include <stdint.h>
 #include <bzlib.h>
@@ -77,5 +76,3 @@ void bpatch_header_free(bpatch_header_t* header);
 void bpatch_header_debug(bpatch_header_t* header);
 
 unsigned int bpatch_decompress(char* input, unsigned int in_size, char* output, unsigned int* out_size);
-
-#endif /* BPATCH_H_ */

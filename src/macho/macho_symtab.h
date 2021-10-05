@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef MACHO_SYMTAB_H_
-#define MACHO_SYMTAB_H_
+#pragma once
 
 #include "common.h"
 
@@ -63,5 +62,3 @@ macho_symtab_cmd_t* macho_symtab_cmd_create();
 macho_symtab_cmd_t* macho_symtab_cmd_load(unsigned char* data);
 void macho_symtab_cmd_debug(macho_symtab_cmd_t* cmd);
 void macho_symtab_cmd_free(macho_symtab_cmd_t* cmd);
-
-#endif /* MACHO_SYMTAB_H_ */

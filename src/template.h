@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef MACHO_SECTION_H_
-#define MACHO_SECTION_H_
+#pragma once
 
 typedef struct macho_header_t {
 	uint32_t magic;
@@ -43,5 +42,3 @@ template_info_t* template_info_create();
 template_info_t* template_info_load(unsigned char* data, unsigned int offset);
 void template_info_debug(template_info_t* info);
 void template_info_free(template_info_t* info);
-
-#endif /* MACHO_SECTION_H_ */

@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef CRASHREPORTCOPY_H_
-#define CRASHREPORTCOPY_H_
+#pragma once
 
 #include <libimobiledevice/libimobiledevice.h>
 
@@ -37,5 +36,3 @@ crashreportcopy_t* crashreportcopy_open(device_t* device, uint16_t port);
 
 int crashreportcopy_close(crashreportcopy_t* copier);
 void crashreportcopy_free(crashreportcopy_t* copier);
-
-#endif /* CRASHREPORTCOPY_H_ */

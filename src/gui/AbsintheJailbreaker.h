@@ -1,5 +1,5 @@
-#ifndef __ABSINTHEJAILBREAKER_H 
-#define __ABSINTHEJAILBREAKER_H
+
+#pragma once
 
 #ifdef WIN32
 #include <windows.h>
@@ -25,5 +25,3 @@ public:
 	void statusCallback(const char* message, int progress);
 	void* Entry(void* data);
 };
-
-#endif /* __ABSINTHEJAILBREAKER_H */

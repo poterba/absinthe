@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef DEVICE_H_
-#define DEVICE_H_
+#pragma once
 
 #include <libimobiledevice/libimobiledevice.h>
 
@@ -31,5 +30,3 @@ typedef struct device_t {
 device_t* device_create(const char* udid);
 void device_free(device_t* device);
 void device_enable_debug();
-
-#endif /* DEVICE_H_ */

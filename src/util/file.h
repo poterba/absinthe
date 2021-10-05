@@ -17,8 +17,7 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef FILE_H_
-#define FILE_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -38,5 +37,3 @@ file_t* file_open(const char* path);
 int file_read(const char* file, unsigned char** buf, unsigned int* length);
 int file_write(const char* file, unsigned char* buf, unsigned int length);
 int file_copy(const char* from, const char* to);
-
-#endif /* FILE_H_ */

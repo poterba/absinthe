@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef CRASHREPORT_H_
-#define CRASHREPORT_H_
+#pragma once
 
 #include <plist/plist.h>
 
@@ -64,5 +63,3 @@ char* crashreport_parse_name(const char* description);
 unsigned int crashreport_parse_pid(const char* description);
 arm_state_t* crashreport_parse_state(const char* description);
 dylib_info_t** crashreport_parse_dylibs(const char* description);
-
-#endif /* CRASHREPORT_H_ */

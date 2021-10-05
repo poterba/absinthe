@@ -16,8 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef ENDIANNESS_H
-#define ENDIANNESS_H
+#pragma once
 
 #ifndef __LITTLE_ENDIAN
 #define __LITTLE_ENDIAN 1234
@@ -120,4 +119,3 @@ typedef enum {
 	kLittleEndian
 } endian_t;
 
-#endif /* ENDIANNESS_H */

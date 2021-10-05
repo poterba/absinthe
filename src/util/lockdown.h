@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef LOCKDOWN_H_
-#define LOCKDOWN_H_
+#pragma once
 
 #include <libimobiledevice/lockdown.h>
 #include "device.h"
@@ -36,5 +35,3 @@ int lockdown_start_service2(lockdown_t* lockdown, const char* service, uint16_t*
 int lockdown_stop_service(lockdown_t* lockdown, const char* service);
 int lockdown_close(lockdown_t* lockdown);
 void lockdown_free(lockdown_t* lockdown);
-
-#endif /* LOCKDOWN_H_ */

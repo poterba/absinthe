@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef MACHO_COMMAND_H_
-#define MACHO_COMMAND_H_
+#pragma once
 
 #include "common.h"
 
@@ -76,5 +75,3 @@ macho_command_info_t* macho_command_info_create();
 macho_command_info_t* macho_command_info_load(unsigned char* data, unsigned int offset);
 void macho_command_info_debug(macho_command_info_t* info);
 void macho_command_info_free(macho_command_info_t* info);
-
-#endif /* MACHO_COMMAND_H_ */

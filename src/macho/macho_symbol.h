@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef MACHO_SYMBOL_H_
-#define MACHO_SYMBOL_H_
+#pragma once
 
 typedef struct macho_header_t {
 	uint32_t magic;
@@ -43,5 +42,3 @@ macho_symbol_info_t* macho_symbol_info_create();
 macho_symbol_info_t* macho_symbol_info_load(unsigned char* data, unsigned int offset);
 void macho_symbol_info_debug(macho_symbol_info_t* info);
 void macho_symbol_info_free(macho_symbol_info_t* info);
-
-#endif /* MACHO_SYMBOL_H_ */

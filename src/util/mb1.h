@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef MB1_H_
-#define MB1_H_
+#pragma once
 
 #include <libimobiledevice/mobilebackup.h>
 
@@ -41,5 +40,3 @@ mb1_t* mb1_open(device_t* device, uint16_t port);
 void mb1_free(mb1_t* mb1);
 
 int mb1_crash(mb1_t* mb1);
-
-#endif /* MB1_H_ */

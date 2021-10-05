@@ -1,5 +1,6 @@
-#ifndef __ITUNESKILLER_H 
-#define __ITUNESKILLER_H
+
+#pragma once
+
 #if defined(__APPLE__) || defined(WIN32)
 
 #ifdef WIN32
@@ -24,4 +25,3 @@ public:
 	void* Entry(void* data);
 };
 #endif
-#endif /* __ITUNESKILLER_H */
