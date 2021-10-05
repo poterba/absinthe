@@ -1,6 +1,6 @@
 #include <stdio.h>
 #import <Cocoa/Cocoa.h>
-#include "AbsintheMainWnd.h"
+#include "AbsintheMainWnd.hpp"
 
 static AbsintheMainWnd* __this = NULL;
 

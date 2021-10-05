@@ -5,8 +5,8 @@
 
 #include <string.h>
 
-#include "AbsintheMainWnd.h"
-#include "debug.h"
+#include "AbsintheMainWnd.hpp"
+#include "debug.hpp"
 
 #ifdef WIN32
 #include <windows.h>

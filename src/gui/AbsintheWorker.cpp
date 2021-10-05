@@ -1,11 +1,11 @@
 #include <cstdio>
 #include <stdlib.h>
 #include <string.h>
-#include "AbsintheWorker.h"
-#include "AbsintheJailbreaker.h"
-#include "iTunesKiller.h"
-#include "device_types.h"
-#include "jailbreak.h"
+#include "AbsintheWorker.hpp"
+#include "AbsintheJailbreaker.hpp"
+#include "iTunesKiller.hpp"
+#include "device_types.hpp"
+#include "jailbreak.hpp"
 
 extern "C" {
 typedef int16_t userpref_error_t;

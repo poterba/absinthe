@@ -1,4 +1,4 @@
-file(GLOB SRC_FILES "*.c" "*.h")
+file(GLOB SRC_FILES *.cpp *.hpp)
 add_library(absinthe_backup ${SRC_FILES})
 
 target_link_libraries(absinthe_backup

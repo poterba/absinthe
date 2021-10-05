@@ -1,5 +1,5 @@
 #include <gtk/gtk.h>
-#include "AbsintheMainWnd.h"
+#include "AbsintheMainWnd.hpp"
 
 int AbsintheMainWnd::msgBox(const char* message, const char* caption, int style)
 {

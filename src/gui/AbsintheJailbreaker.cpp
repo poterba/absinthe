@@ -7,8 +7,8 @@
 #include <pthread.h>
 #endif
 
-#include "AbsintheJailbreaker.h"
-#include "jailbreak.h"
+#include "AbsintheJailbreaker.hpp"
+#include "jailbreak.hpp"
 
 static AbsintheJailbreaker* self;
 

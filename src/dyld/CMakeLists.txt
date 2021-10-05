@@ -1,5 +1,5 @@
 
-file(GLOB SRC_FILES "*.c" "*.h")
+file(GLOB SRC_FILES *.cpp *.hpp)
 add_library(absinthe_dyld ${SRC_FILES})
 
 set(DEPENDENCIES absinthe_util)

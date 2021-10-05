@@ -12,13 +12,13 @@
 #include <servers/bootstrap.h>
 #include <mach/mach.h>
 #include <libproc.h>
-#include "mach/message.h"
+#include "mach/message.hpp"
 #else
-#include "fsgen-mac-defines.h"
-#include "defines/linux.h"
+#include "fsgen-mac-defines.hpp"
+#include "defines/linux.hpp"
 #endif
 
-#include "fsgen-global-constants.h"
+#include "fsgen-global-constants.hpp"
 
 #define ROP_LOAD_REG4_CONST_LEN 0xc
 #define ROP_SAVE_REG0_LEN (ROP_LOAD_REG4_CONST_LEN + 0xc)

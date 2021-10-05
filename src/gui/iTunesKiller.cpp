@@ -1,8 +1,8 @@
 #if defined(__APPLE__) || defined(WIN32)
 #include <stdio.h>
-#include "iTunesKiller.h"
+#include "iTunesKiller.hpp"
 
-#include "debug.h"
+#include "debug.hpp"
 
 #if defined(__APPLE__)
 #include <stdlib.h>

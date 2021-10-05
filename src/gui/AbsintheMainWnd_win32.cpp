@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <version.h>
-#include "AbsintheMainWnd.h"
+#include "AbsintheMainWnd.hpp"
 
 #include <stdio.h>
 

@@ -1,5 +1,5 @@
 
-file(GLOB SRC_FILES "*.c" "*.h")
+file(GLOB SRC_FILES *.cpp *.hpp)
 add_executable(absinthe_tool_mb2insert ${SRC_FILES})
 
 target_include_directories(absinthe_tool_mb2insert

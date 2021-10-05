@@ -1,5 +1,5 @@
 
-file(GLOB SRC_FILES "*.c" "*.h")
+file(GLOB SRC_FILES *.cpp *.hpp)
 add_library(absinthe_util ${SRC_FILES})
 
 target_include_directories(absinthe_util
