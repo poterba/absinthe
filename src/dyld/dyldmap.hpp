@@ -25,34 +25,42 @@
 #define DYLDMAP_WRITE  2
 #define DYLDMAP_READ   4
 
-typedef struct dyldmap_info_t {
+namespace absinthe {
+namespace dyld {
+namespace map {
+
+typedef struct info_t {
 	uint64_t address;
 	uint64_t size;
 	uint64_t offset;
 	uint32_t maxProt;
 	uint32_t initProt;
-} dyldmap_info_t;
+} info_t;
 
 typedef struct dyldmap_t {
 	uint64_t address;
 	uint64_t size;
 	uint64_t offset;
-	dyldmap_info_t* info;
+	info_t* info;
 } dyldmap_t;
 
 /*
  * Dyldcache Map Functions
  */
-dyldmap_t* dyldmap_create();
-dyldmap_t* dyldmap_parse(unsigned char* data, uint32_t offset);
-bool dyldmap_contains(dyldmap_t* map, uint64_t address);
-void dyldmap_debug(dyldmap_t* image);
-void dyldmap_free(dyldmap_t* map);
+dyldmap_t* create();
+dyldmap_t* parse(unsigned char* data, uint32_t offset);
+bool contains(dyldmap_t* map, uint64_t address);
+void debug(dyldmap_t* image);
+void free(dyldmap_t* map);
 
 /*
  * Dyldcache Map Info Functions
  */
-dyldmap_info_t* dyldmap_info_create();
-dyldmap_info_t* dyldmap_info_parse(unsigned char* data, uint32_t offset);
-void dyldmap_info_debug(dyldmap_info_t* map);
-void dyldmap_info_free(dyldmap_info_t* map);
+info_t* info_create();
+info_t* info_parse(unsigned char* data, uint32_t offset);
+void info_debug(info_t* map);
+void info_free(info_t* map);
+
+} // namespace map
+} // namespace dyld
+} // namespace absinthe

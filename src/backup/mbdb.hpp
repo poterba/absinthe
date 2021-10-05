@@ -18,33 +18,36 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef MBDB_H
-#define MBDB_H
+#pragma once
 
 #include "mbdb_record.hpp"
 
 #define MBDB_MAGIC "\x6d\x62\x64\x62\x05\x00"
 
+namespace absinthe {
+namespace backup {
+namespace mbdb {
 
-typedef struct mbdb_header {
+typedef struct header {
     unsigned char magic[6];		       // 'mbdb\5\0'
-} mbdb_header_t;
+} header_t;
 
 typedef struct mbdb_t {
     unsigned int size;
     unsigned char* data;
-    mbdb_header_t* header;
+    header_t* header;
     int num_records;
-    mbdb_record_t** records;
+    mbdb_record::mbdb_record_t** records;
 } mbdb_t;
 
 extern mbdb_t* apparition_mbdb;
 
-mbdb_t* mbdb_create();
-mbdb_t* mbdb_open(unsigned char* file);
-mbdb_t* mbdb_parse(unsigned char* data, unsigned int size);
-mbdb_record_t* mbdb_get_record(mbdb_t* mbdb, unsigned int offset);
-void mbdb_free(mbdb_t* mbdb);
+mbdb_t* create();
+mbdb_t* open(unsigned char* file);
+mbdb_t* parse(unsigned char* data, unsigned int size);
+mbdb_record::mbdb_record_t* get_record(mbdb_t* mbdb, unsigned int offset);
+void free(mbdb_t* mbdb);
 
-#endif
-
+} // namespace mbdb
+} // namespace backup
+} // namespace absinthe

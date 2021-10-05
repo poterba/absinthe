@@ -43,8 +43,6 @@ struct __darwin_timespec {
 	int tv_nsec;
 };
 
-#define IOCPARM_MASK    0x1fff
-
 typedef uint32_t __darwin_dev_t;
 typedef uint16_t __darwin_mode_t;
 typedef uint64_t __darwin_off_t;

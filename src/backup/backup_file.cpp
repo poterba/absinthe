@@ -18,16 +18,20 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
+#include "backup_file.hpp"
+
+#include "mbdb_record.hpp"
+#include "debug.hpp"
+
+#include <openssl/sha.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <openssl/sha.h>
-
-#include "backup_file.hpp"
-//#include "mbdx_record.hpp"
-#include "mbdb_record.hpp"
-#include "debug.hpp"
+namespace absinthe {
+namespace backup {
+namespace backup_file {
 
 static backup_file_t* backup_file_new()
 {
@@ -40,14 +44,14 @@ static backup_file_t* backup_file_new()
 	return file;
 }
 
-backup_file_t* backup_file_create(const char* filepath)
+backup_file_t* create(const char* filepath)
 {
 	backup_file_t* file = backup_file_new();
 	if (filepath) {
 		file->filepath = strdup(filepath);
 	}
-	file->mbdb_record = mbdb_record_create();
-	mbdb_record_init(file->mbdb_record);
+	file->mbdb_record = mbdb_record::create();
+	mbdb_record::init(file->mbdb_record);
 	return file;
 }
 
@@ -57,13 +61,13 @@ backup_file_t* backup_file_create_with_data(unsigned char* data, unsigned int si
 	if (!file) {
 		return NULL;
 	}
-	file->mbdb_record = mbdb_record_create();
-	mbdb_record_init(file->mbdb_record);
-	backup_file_assign_file_data(file, data, size, copy);
+	file->mbdb_record = mbdb_record::create();
+	mbdb_record::init(file->mbdb_record);
+	assign_file_data(file, data, size, copy);
 	return file;
 }
 
-backup_file_t* backup_file_create_from_record(mbdb_record_t* record)
+backup_file_t* create_from_record(mbdb_record::mbdb_record_t* record)
 {
 	if (!record) {
 		return NULL;
@@ -71,14 +75,14 @@ backup_file_t* backup_file_create_from_record(mbdb_record_t* record)
 	backup_file_t* file = backup_file_new();
 	if (!file) return NULL;
 	
-	file->mbdb_record = (mbdb_record_t*)malloc(sizeof(mbdb_record_t));
+	file->mbdb_record = (mbdb_record::mbdb_record_t*)malloc(sizeof(mbdb_record::mbdb_record_t));
 	if(file->mbdb_record == NULL) {
 		error("Allocation Error\n");
 		return NULL;
 	}
 
 	// we need to make a real copy of the record
-	memcpy(file->mbdb_record, record, sizeof(mbdb_record_t));
+	memcpy(file->mbdb_record, record, sizeof(mbdb_record::mbdb_record_t));
 	if (record->domain) {
 		file->mbdb_record->domain = strdup(record->domain);
 	}
@@ -97,10 +101,10 @@ backup_file_t* backup_file_create_from_record(mbdb_record_t* record)
 		memcpy(file->mbdb_record->unknown1, record->unknown1, record->unknown1_size);
 	}
 	if (record->property_count > 0) {
-		file->mbdb_record->properties = (mbdb_record_property_t**)malloc(sizeof(mbdb_record_property_t*) * record->property_count);
+		file->mbdb_record->properties = (mbdb_record::property_t**)malloc(sizeof(mbdb_record::property_t*) * record->property_count);
 		int i;
 		for (i = 0; i < record->property_count; i++) {
-			mbdb_record_property_t* prop = malloc(sizeof(mbdb_record_property_t));
+			mbdb_record::property_t* prop = malloc(sizeof(mbdb_record::property_t));
 			prop->name_size = record->properties[i]->name_size;
 			prop->name = (char*)malloc(prop->name_size+1);
 			memcpy(prop->name, record->properties[i]->name, prop->name_size);
@@ -113,7 +117,7 @@ backup_file_t* backup_file_create_from_record(mbdb_record_t* record)
 	return file;
 }
 
-void backup_file_assign_file_data(backup_file_t* bfile, unsigned char* data, unsigned int size, int copy)
+void assign_file_data(backup_file_t* bfile, unsigned char* data, unsigned int size, int copy)
 {
 	if (copy) {
 		bfile->data = malloc(size);
@@ -131,7 +135,7 @@ void backup_file_assign_file_data(backup_file_t* bfile, unsigned char* data, uns
 	}
 }
 
-void backup_file_assign_file_path(backup_file_t* bfile, unsigned char* path)
+void assign_file_path(backup_file_t* bfile, unsigned char* path)
 {
 	if (bfile->data && bfile->free_data) {
 		free(bfile->data);
@@ -144,10 +148,10 @@ void backup_file_assign_file_path(backup_file_t* bfile, unsigned char* path)
 	bfile->filepath = strdup(path);
 }
 
-void backup_file_free(backup_file_t* file) {
+void free(backup_file_t* file) {
 	if(file) {
 		if (file->mbdb_record) {
-			mbdb_record_free(file->mbdb_record);
+			mbdb_record::free(file->mbdb_record);
 		}
 		if (file->filepath) {
 			free(file->filepath);
@@ -159,22 +163,22 @@ void backup_file_free(backup_file_t* file) {
 	}
 }
 
-void backup_file_set_domain(backup_file_t* bfile, const char* domain)
+void set_domain(backup_file_t* bfile, const char* domain)
 {
 	if (!bfile) return;
-	mbdb_record_set_domain(bfile->mbdb_record, domain);
+	mbdb_record::set_domain(bfile->mbdb_record, domain);
 }
 
-void backup_file_set_path(backup_file_t* bfile, const char* path)
+void set_path(backup_file_t* bfile, const char* path)
 {
 	if (!bfile) return;
-	mbdb_record_set_path(bfile->mbdb_record, path);
+	mbdb_record::set_path(bfile->mbdb_record, path);
 }
 
-void backup_file_set_target(backup_file_t* bfile, const char* target)
+void set_target(backup_file_t* bfile, const char* target)
 {
 	if (!bfile) return;
-	mbdb_record_set_target(bfile->mbdb_record, target);
+	mbdb_record::set_target(bfile->mbdb_record, target);
 }
 
 static void debug_hash(const unsigned char *hash, int len)
@@ -186,7 +190,7 @@ static void debug_hash(const unsigned char *hash, int len)
 	debug("\n");
 }
 
-void backup_file_update_hash(backup_file_t* bfile)
+void update_hash(backup_file_t* bfile)
 {
 	if (!bfile) return;
 	if (bfile->filepath) {
@@ -209,80 +213,80 @@ void backup_file_update_hash(backup_file_t* bfile)
 		fclose(f);
 		debug("setting datahash to ");
 		debug_hash(sha1, 20);
-		mbdb_record_set_datahash(bfile->mbdb_record, sha1, 20);
+		mbdb_record::set_datahash(bfile->mbdb_record, sha1, 20);
 	} else if (bfile->data) {
 		unsigned char sha1[20] = {0, };
 		SHA1(bfile->data, bfile->size, sha1);
 		debug("setting datahash to ");
 		debug_hash(sha1, 20);
-		mbdb_record_set_datahash(bfile->mbdb_record, sha1, 20);
+		mbdb_record::set_datahash(bfile->mbdb_record, sha1, 20);
 	} else {
 		error("%s: ERROR: neither filename nor data given, setting hash to N/A\n", __func__);
-		mbdb_record_set_datahash(bfile->mbdb_record, NULL, 0);
+		mbdb_record::set_datahash(bfile->mbdb_record, NULL, 0);
 	}
 }
 
-void backup_file_disable_hash(backup_file_t* bfile)
+void disable_hash(backup_file_t* bfile)
 {
 	if (!bfile) return;
-	mbdb_record_set_datahash(bfile->mbdb_record, NULL, 0);
+	mbdb_record::set_datahash(bfile->mbdb_record, NULL, 0);
 }
 
-void backup_file_set_mode(backup_file_t* bfile, unsigned short mode)
+void set_mode(backup_file_t* bfile, unsigned short mode)
 {
 	if (!bfile) return;
-	mbdb_record_set_mode(bfile->mbdb_record, mode);
+	mbdb_record::set_mode(bfile->mbdb_record, mode);
 }
 
-void backup_file_set_inode(backup_file_t* bfile, unsigned int inode)
+void set_inode(backup_file_t* bfile, unsigned int inode)
 {
 	if (!bfile) return;
-	mbdb_record_set_inode(bfile->mbdb_record, inode);
+	mbdb_record::set_inode(bfile->mbdb_record, inode);
 }
 
-void backup_file_set_uid(backup_file_t* bfile, unsigned int uid)
+void set_uid(backup_file_t* bfile, unsigned int uid)
 {
 	if (!bfile) return;
-	mbdb_record_set_uid(bfile->mbdb_record, uid);
+	mbdb_record::set_uid(bfile->mbdb_record, uid);
 }
 
-void backup_file_set_gid(backup_file_t* bfile, unsigned int gid)
+void set_gid(backup_file_t* bfile, unsigned int gid)
 {
 	if (!bfile) return;
-	mbdb_record_set_gid(bfile->mbdb_record, gid);
+	mbdb_record::set_gid(bfile->mbdb_record, gid);
 }
 
-void backup_file_set_time1(backup_file_t* bfile, unsigned int time1)
+void set_time1(backup_file_t* bfile, unsigned int time1)
 {
 	if (!bfile) return;
-	mbdb_record_set_time1(bfile->mbdb_record, time1);
+	mbdb_record::set_time1(bfile->mbdb_record, time1);
 }
 
-void backup_file_set_time2(backup_file_t* bfile, unsigned int time2)
+void set_time2(backup_file_t* bfile, unsigned int time2)
 {
 	if (!bfile) return;
-	mbdb_record_set_time2(bfile->mbdb_record, time2);
+	mbdb_record::set_time2(bfile->mbdb_record, time2);
 }
 
-void backup_file_set_time3(backup_file_t* bfile, unsigned int time3)
+void set_time3(backup_file_t* bfile, unsigned int time3)
 {
 	if (!bfile) return;
-	mbdb_record_set_time3(bfile->mbdb_record, time3);
+	mbdb_record::set_time3(bfile->mbdb_record, time3);
 }
 
-void backup_file_set_length(backup_file_t* bfile, unsigned long long length)
+void set_length(backup_file_t* bfile, unsigned long long length)
 {
 	if (!bfile) return;
-	mbdb_record_set_length(bfile->mbdb_record, length);
+	mbdb_record::set_length(bfile->mbdb_record, length);
 }
 
-void backup_file_set_flag(backup_file_t* bfile, unsigned char flag)
+void set_flag(backup_file_t* bfile, unsigned char flag)
 {
 	if (!bfile) return;
-	mbdb_record_set_flag(bfile->mbdb_record, flag);
+	mbdb_record::set_flag(bfile->mbdb_record, flag);
 }
 
-int backup_file_get_record_data(backup_file_t* bfile, unsigned char** data, unsigned int* size)
+int get_record_data(backup_file_t* bfile, unsigned char** data, unsigned int* size)
 {
 	if (!bfile) return -1;
 	if (!bfile->mbdb_record) {
@@ -290,7 +294,7 @@ int backup_file_get_record_data(backup_file_t* bfile, unsigned char** data, unsi
 		return -1;
 	}
 
-	if (mbdb_record_build(bfile->mbdb_record, data, size) < 0) {
+	if (mbdb_record::build(bfile->mbdb_record, data, size) < 0) {
 		error("%s: ERROR: could not build mbdb_record data\n", __func__);
 		return -1;
 	}

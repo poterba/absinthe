@@ -20,6 +20,10 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdio.h>
+
+namespace absinthe {
+namespace util {
 
 typedef struct file_t {
 	FILE* desc;
@@ -37,3 +41,6 @@ file_t* file_open(const char* path);
 int file_read(const char* file, unsigned char** buf, unsigned int* length);
 int file_write(const char* file, unsigned char* buf, unsigned int length);
 int file_copy(const char* from, const char* to);
+
+} // namespace util
+} // namespace absinthe

@@ -7,20 +7,16 @@
 
 #pragma once
 
-#include "defines.hpp"
-#include <stdio.h>
-
-// #if __APPLE__
-// #include <sys/sysctl.h>
-// #include <servers/bootstrap.h>
-// #include <mach/mach.h>
-// #include <libproc.h>
-// #include <mach/message.h>
-// #else
-// #include "fsgen-mac-defines.hpp"
-// #endif
-
-// #include "fsgen-global-constants.hpp"
+#if __APPLE__
+#include <sys/sysctl.h>
+#include <servers/bootstrap.h>
+#include <mach/mach.h>
+#include <libproc.h>
+#include "mach/message.hpp"
+#else
+#include "fsgen-mac-defines.hpp"
+#include "defines/linux.hpp"
+#endif
 
 #define ROP_LOAD_REG4_CONST_LEN 0xc
 #define ROP_SAVE_REG0_LEN (ROP_LOAD_REG4_CONST_LEN + 0xc)

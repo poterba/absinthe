@@ -19,19 +19,31 @@
 
 #pragma once
 
-#include <libimobiledevice/lockdown.h>
 #include "device.hpp"
 
-typedef struct lockdown_t {
+#include <libimobiledevice/lockdown.h>
+
+namespace absinthe {
+namespace util {
+	
+class Lockdown
+{
+public:
+	Lockdown( device_t* device );
+
+	int get_value(const char *domain, const char *key, plist_t *value);
+	int get_string(const char *key, char** value);
+	int start_service(const char* service, uint16_t* port);
+	int start_service2(const char* service, uint16_t* port, int warn_on_fail);
+	int stop_service(const char* service);
+
+	int close();
+	void free();
+
+private:
 	device_t *device;
 	lockdownd_client_t client;
-} lockdown_t;
+};
 
-lockdown_t* lockdown_open(device_t* device);
-int lockdown_get_value(lockdown_t* lockdown, const char *domain, const char *key, plist_t *value);
-int lockdown_get_string(lockdown_t* lockdown, const char *key, char** value);
-int lockdown_start_service(lockdown_t* lockdown, const char* service, uint16_t* port);
-int lockdown_start_service2(lockdown_t* lockdown, const char* service, uint16_t* port, int warn_on_fail);
-int lockdown_stop_service(lockdown_t* lockdown, const char* service);
-int lockdown_close(lockdown_t* lockdown);
-void lockdown_free(lockdown_t* lockdown);
+} // namespace util
+} // namespace absinthe

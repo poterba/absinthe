@@ -17,17 +17,21 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
+#include "mbdb_record.hpp"
+
+#include "mbdb.hpp"
+#include "endianness.hpp"
+#include "debug.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "mbdb.hpp"
-#include "endianness.hpp"
-#include "mbdb_record.hpp"
-#include "debug.hpp"
+namespace absinthe {
+namespace backup {
+namespace mbdb_record {
 
-mbdb_record_t* mbdb_record_create() {
+mbdb_record_t* create() {
 	mbdb_record_t* record = (mbdb_record_t*) malloc(sizeof(mbdb_record_t));
 	if (record == NULL) {
 		error("Allocation Error!\n");
@@ -38,9 +42,9 @@ mbdb_record_t* mbdb_record_create() {
 	return record;
 }
 
-mbdb_record_t* mbdb_record_parse(unsigned char* data) {
+mbdb_record_t* parse(unsigned char* data) {
 	unsigned int offset = 0;
-	mbdb_record_t* record = mbdb_record_create();
+	mbdb_record_t* record = create();
 	if (record == NULL) {
 		error("Unable to parse mbdb record\n");
 		return NULL;
@@ -169,10 +173,10 @@ mbdb_record_t* mbdb_record_parse(unsigned char* data) {
 	offset += 1;
 
 	if (record->property_count > 0) {
-		record->properties = (mbdb_record_property_t**)malloc(sizeof(mbdb_record_property_t*) * record->property_count);
+		record->properties = (property_t**)malloc(sizeof(property_t*) * record->property_count);
 		int i;
 		for (i = 0; i < record->property_count; i++) {
-			mbdb_record_property_t* prop = malloc(sizeof(mbdb_record_property_t));
+			property_t* prop = malloc(sizeof(property_t));
 			prop->name_size = be16toh(*((unsigned short*)&data[offset]));
 			prop->name = (char*)malloc(prop->name_size+1);
 			offset+=2;
@@ -192,13 +196,13 @@ mbdb_record_t* mbdb_record_parse(unsigned char* data) {
 	}
 	record->this_size = offset;
 
-	//mbdb_record_debug(record);
+	//debug(record);
 
 	return record;
 }
 
 /*
- struct mbdb_record_t {
+ struct t {
  char* domain;
  char* path;
  char* target;	                  // absolute path
@@ -218,7 +222,7 @@ mbdb_record_t* mbdb_record_parse(unsigned char* data) {
  } __attribute__((__packed__));
  */
 
-void mbdb_record_free(mbdb_record_t* record) {
+void free(mbdb_record_t* record) {
 	if (record) {
 		if (record->domain) {
 			free(record->domain);
@@ -252,7 +256,7 @@ void mbdb_record_free(mbdb_record_t* record) {
 	}
 }
 
-void mbdb_record_debug(mbdb_record_t* record) {
+void debug(mbdb_record_t* record) {
 	debug("mbdb record\n");
 	debug("\tdomain = %s\n", record->domain);
 	debug("\tpath = %s\n", record->path);
@@ -272,7 +276,7 @@ void mbdb_record_debug(mbdb_record_t* record) {
 	debug("\tproperty_count = %d\n", record->property_count);
 }
 
-void mbdb_record_init(mbdb_record_t* record)
+void init(mbdb_record_t* record)
 {
 	if (!record) {
 		return;
@@ -284,7 +288,7 @@ void mbdb_record_init(mbdb_record_t* record)
 	record->this_size = 2+2+2+2+2+2+4+4+4+4+4+4+4+8+1+1;
 }
 
-void mbdb_record_set_domain(mbdb_record_t* record, const char* domain)
+void set_domain(mbdb_record_t* record, const char* domain)
 {
 	if (!record) return;
 	unsigned short old_size = record->domain_size;
@@ -304,7 +308,7 @@ void mbdb_record_set_domain(mbdb_record_t* record, const char* domain)
 	}
 }
 
-void mbdb_record_set_path(mbdb_record_t* record, const char* path)
+void set_path(mbdb_record_t* record, const char* path)
 {
 	if (!record) return;
 	unsigned short old_size = record->path_size;
@@ -324,7 +328,7 @@ void mbdb_record_set_path(mbdb_record_t* record, const char* path)
 	}
 }
 
-void mbdb_record_set_target(mbdb_record_t* record, const char* target)
+void set_target(mbdb_record_t* record, const char* target)
 {
 	if (!record) return;
 	unsigned short old_size = record->target_size;
@@ -344,7 +348,7 @@ void mbdb_record_set_target(mbdb_record_t* record, const char* target)
 	}
 }
 
-void mbdb_record_set_datahash(mbdb_record_t* record, const char* hash, unsigned short hash_size)
+void set_datahash(mbdb_record_t* record, const char* hash, unsigned short hash_size)
 {
 	if (!record) return;
 	unsigned short old_size = record->datahash_size;
@@ -365,7 +369,7 @@ void mbdb_record_set_datahash(mbdb_record_t* record, const char* hash, unsigned 
 	}
 }
 
-void mbdb_record_set_unknown1(mbdb_record_t* record, const char* data, unsigned short size)
+void set_unknown1(mbdb_record_t* record, const char* data, unsigned short size)
 {
 	if (!record) return;
 	unsigned short old_size = record->unknown1_size;
@@ -386,67 +390,67 @@ void mbdb_record_set_unknown1(mbdb_record_t* record, const char* data, unsigned 
 	}
 }
 
-void mbdb_record_set_mode(mbdb_record_t* record, unsigned short mode)
+void set_mode(mbdb_record_t* record, unsigned short mode)
 {
 	if (!record) return;
 	record->mode = mode;
 }
 
-void mbdb_record_set_unknown2(mbdb_record_t* record, unsigned int unknown2)
+void set_unknown2(mbdb_record_t* record, unsigned int unknown2)
 {
 	if (!record) return;
 	record->unknown2 = unknown2;
 }
 
-void mbdb_record_set_inode(mbdb_record_t* record, unsigned int inode)
+void set_inode(mbdb_record_t* record, unsigned int inode)
 {
 	if (!record) return;
 	record->inode = inode;
 }
 
-void mbdb_record_set_uid(mbdb_record_t* record, unsigned int uid)
+void set_uid(mbdb_record_t* record, unsigned int uid)
 {
 	if (!record) return;
 	record->uid = uid;
 }
 
-void mbdb_record_set_gid(mbdb_record_t* record, unsigned int gid)
+void set_gid(mbdb_record_t* record, unsigned int gid)
 {
 	if (!record) return;
 	record->gid = gid;
 }
 
-void mbdb_record_set_time1(mbdb_record_t* record, unsigned int time1)
+void set_time1(mbdb_record_t* record, unsigned int time1)
 {
 	if (!record) return;
 	record->time1 = time1;
 }
 
-void mbdb_record_set_time2(mbdb_record_t* record, unsigned int time2)
+void set_time2(mbdb_record_t* record, unsigned int time2)
 {
 	if (!record) return;
 	record->time2 = time2;
 }
 
-void mbdb_record_set_time3(mbdb_record_t* record, unsigned int time3)
+void set_time3(mbdb_record_t* record, unsigned int time3)
 {
 	if (!record) return;
 	record->time3 = time3;
 }
 
-void mbdb_record_set_length(mbdb_record_t* record, unsigned long long length)
+void set_length(mbdb_record_t* record, unsigned long long length)
 {
 	if (!record) return;
 	record->length = length;
 }
 
-void mbdb_record_set_flag(mbdb_record_t* record, unsigned char flag)
+void set_flag(mbdb_record_t* record, unsigned char flag)
 {
 	if (!record) return;
 	record->flag = flag;
 }
 
-int mbdb_record_build(mbdb_record_t* record, unsigned char** data, unsigned int* size) {
+int build(mbdb_record_t* record, unsigned char** data, unsigned int* size) {
 	unsigned int offset = 0;
 	unsigned char* data_buf = NULL;
 
@@ -554,7 +558,7 @@ int mbdb_record_build(mbdb_record_t* record, unsigned char** data, unsigned int*
 	// add properties
 	int i;
 	for (i = 0; i < (int)prop; i++) {
-		mbdb_record_property_t* property = record->properties[i];
+		property_t* property = record->properties[i];
 
 		unsigned short pnsize = htobe16(property->name_size);
 		memcpy(&data_buf[offset], &pnsize, 2);
@@ -581,3 +585,7 @@ int mbdb_record_build(mbdb_record_t* record, unsigned char** data, unsigned int*
 
 	return 0;
 }
+
+} // namespace mbdb_record
+} // namespace backup
+} // namespace absinthe

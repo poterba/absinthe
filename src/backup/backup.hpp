@@ -17,36 +17,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef _BACKUP_H_
-#define _BACKUP_H_
+#pragma once
 
 #include "mbdb.hpp"
 #include "backup_file.hpp"
 
+namespace absinthe {
+namespace backup {
+
 typedef struct backup_t {
     char *path;
-    mbdb_t *mbdb;
+    mbdb::mbdb_t *mbdb;
 } backup_t;
 
 backup_t *backup_open(const char *directory, const char *uuid);
-int backup_get_file_index(backup_t * backup, const char *domain,
+int get_file_index(backup_t * backup, const char *domain,
                           const char *path);
-char *backup_get_file_path(backup_t * backup, backup_file_t * bfile);
-backup_file_t *backup_get_file(backup_t * backup, const char *domain,
+char *backup_get_file_path(backup_t * backup, backup_file::backup_file_t * bfile);
+backup_file::backup_file_t *backup_get_file(backup_t * backup, const char *domain,
                                const char *path);
-int backup_update_file(backup_t * backup, backup_file_t * bfile);
-int backup_remove_file(backup_t * backup, backup_file_t * bfile);
-void backup_free(backup_t * backup);
-int backup_mkdir(backup_t * backup, char *domain, char *path, int mode, int uid,
+int update_file(backup_t * backup, backup_file::backup_file_t * bfile);
+int remove_file(backup_t * backup, backup_file::backup_file_t * bfile);
+void free(backup_t * backup);
+int mkdir(backup_t * backup, char *domain, char *path, int mode, int uid,
                  int gid, int flag);
-int backup_symlink(backup_t * backup, char *domain, char *path, char *to,
+int symlink(backup_t * backup, char *domain, char *path, char *to,
                    int uid, int gid, int flag);
-int backup_add_file_from_path(backup_t * backup, char *domain, char *localpath,
+int add_file_from_path(backup_t * backup, char *domain, char *localpath,
                               char *path, int mode, int uid, int gid, int flag);
-int backup_add_file_from_data(backup_t * backup, char *domain, char *data,
+int add_file_from_data(backup_t * backup, char *domain, char *data,
                               unsigned int size, char *path, int mode, int uid,
                               int gid, int flag);
 
-int backup_write_mbdb(backup_t * backup);
+int write_mbdb(backup_t * backup);
 
-#endif
+} // namespace backup
+} // namespace absinthe

@@ -1,28 +1,22 @@
 
+#include "fsgen.hpp"
+
+#include "defines.hpp"
+
+#include "endianness.hpp"
+#include "rop.hpp"
+
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mount.h>
 #include <sys/mman.h>
 
-#ifdef __APPLE__
-#include <sys/proc_info.h>
-
-#elif __linux__
-#include <sys/ptrace.h>
-
-#endif
-
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
-#include "fsgen.hpp"
-#include "fsgen-mac-defines.hpp"
-#include "fsgen-global-constants.hpp"
-
-#include "endianness.hpp"
-#include "rop.hpp"
+namespace absinthe {
+namespace core {
 
 typedef unsigned int Addr;
 
@@ -845,6 +839,9 @@ int generate_rop(FILE *out, int is_bootstrap, const char *firmwareName, const ch
 
 	return 0;
 }
+
+} // namespace core
+} // namespace absinthe
 
 #ifdef FSGEN_MAIN
 int main(int argc, char *argv[])

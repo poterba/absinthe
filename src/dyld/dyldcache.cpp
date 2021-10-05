@@ -309,19 +309,19 @@ void images_free(dyldimage_t** images) {
 /*
  * Dyldcache Maps Functions
  */
-dyldmap_t** maps_create(uint32_t count) {
-	uint32_t size = (count+1) * sizeof(dyldmap_t*);
-	dyldmap_t** maps = (dyldmap_t**) malloc(size);
+map::dyldmap_t** maps_create(uint32_t count) {
+	uint32_t size = (count+1) * sizeof(map::dyldmap_t*);
+	map::dyldmap_t** maps = (map::dyldmap_t**) malloc(size);
 	if (maps) {
 		memset(maps, '\0', size);
 	}
 	return maps;
 }
 
-dyldmap_t** maps_load(dyldcache_t* cache) {
+map::dyldmap_t** maps_load(dyldcache_t* cache) {
 	int i = 0;
 	uint32_t count = 0;
-	dyldmap_t** maps = NULL;
+	map::dyldmap_t** maps = NULL;
 	if (cache) {
 		count = cache->header->mapping_count;
 		maps = maps_create(count);
@@ -343,7 +343,7 @@ dyldmap_t** maps_load(dyldcache_t* cache) {
 	return maps;
 }
 
-void maps_debug(dyldmap_t** maps) {
+void maps_debug(map::dyldmap_t** maps) {
 	if (maps) {
 		debug("\tMaps:\n");
 		int i = 0;
@@ -355,7 +355,7 @@ void maps_debug(dyldmap_t** maps) {
 	}
 }
 
-void maps_free(dyldmap_t** maps) {
+void maps_free(map::dyldmap_t** maps) {
 	if (maps) {
 		int i = 0;
 		// Loop through each map and free it
@@ -367,13 +367,13 @@ void maps_free(dyldmap_t** maps) {
 	}
 }
 
-dyldmap_t* map_image(dyldcache_t* cache, dyldimage_t* image) {
+map::dyldmap_t* map_image(dyldcache_t* cache, dyldimage_t* image) {
 	return map_address(cache, image->address);
 }
 
-dyldmap_t* map_address(dyldcache_t* cache, uint64_t address) {
+map::dyldmap_t* map_address(dyldcache_t* cache, uint64_t address) {
 	int i = 0;
-	dyldmap_t* map = NULL;
+	map::dyldmap_t* map = NULL;
 	for(i = 0; i < cache->header->mapping_count; i++) {
 		map = cache->maps[i];
 		if(dyldmap_contains(map, address)) {

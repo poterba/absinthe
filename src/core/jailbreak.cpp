@@ -58,6 +58,9 @@
 
 #define AFCTMP         "HackStore"
 
+namespace absinthe {
+namespace core {
+
 typedef struct _compatibility {
     char *product;
     char *build;
@@ -734,7 +737,7 @@ static void afc_free_dictionary(char **dictionary) //ghetto i know, not sure whe
 
 static void move_back_files_afc(afc_client_t afc) {
 	char** list = NULL;
-	if (afc_read_directory(afc, "/"AFCTMP, &list) != AFC_E_SUCCESS) {
+	if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS) {
 		//fprintf(stderr, "Uh, oh, the folder '%s' does not exist or is not accessible...\n", AFCTMP);
 	}
 
@@ -752,7 +755,7 @@ static void move_back_files_afc(afc_client_t afc) {
 
 		char* tmxname = (char*) malloc(
 				1 + strlen(AFCTMP) + 1 + strlen(list[i]) + 1);
-		strcpy(tmxname, "/"AFCTMP"/");
+		strcpy(tmxname, "/" AFCTMP "/");
 		strcat(tmxname, list[i]);
 
 		debug("moving %s to %s\n", tmxname, tmpname);
@@ -768,35 +771,35 @@ static void move_back_files_afc(afc_client_t afc) {
 
 static int inodenum = 54323;
 
-static int backup_add_file(backup_t* backup, const char* path, int mode,
+static int backup_add_file(backup::backup_t* backup, const char* path, int mode,
 		const char* domain, const char* destpath) {
 	int res = 0;
 	char* buff = NULL;
 	int buffsize = 0;
-	if (file_read(path, (unsigned char**) &buff, &buffsize) < 0) {
+	if (util::file_read(path, (unsigned char**) &buff, &buffsize) < 0) {
 		return -1;
 	}
-	backup_file_t* bf = backup_file_create_with_data(buff, buffsize, 0);
+	backup::backup_file::backup_file::t* bf = backup_file::create_with_data(buff, buffsize, 0);
 	if (bf) {
-		backup_file_set_domain(bf, domain);
-		backup_file_set_path(bf, destpath);
-		backup_file_set_mode(bf, mode | 0100000);
-		backup_file_set_inode(bf, inodenum++);
-		backup_file_set_uid(bf, 0);
-		backup_file_set_gid(bf, 0);
+		backup::backup_file::set_domain(bf, domain);
+		backup::backup_file::set_path(bf, destpath);
+		backup::backup_file::set_mode(bf, mode | 0100000);
+		backup::backup_file::set_inode(bf, inodenum++);
+		backup::backup_file::set_uid(bf, 0);
+		backup::backup_file::set_gid(bf, 0);
 		unsigned int tm = (unsigned int) (time(NULL ));
-		backup_file_set_time1(bf, tm);
-		backup_file_set_time2(bf, tm);
-		backup_file_set_time3(bf, tm);
-		backup_file_set_length(bf, buffsize);
-		backup_file_set_flag(bf, 4);
-		backup_file_update_hash(bf);
+		backup::backup_file::set_time1(bf, tm);
+		backup::backup_file::set_time2(bf, tm);
+		backup::backup_file::set_time3(bf, tm);
+		backup::backup_file::set_length(bf, buffsize);
+		backup::backup_file::set_flag(bf, 4);
+		backup::backup_file::update_hash(bf);
 
-		if (backup_update_file(backup, bf) < 0) {
+		if (backup::update_file(backup, bf) < 0) {
 			fprintf(stderr, "ERROR: could not add file to backup\n");
 			res = -1;
 		}
-		backup_file_free(bf);
+		backup_file::free(bf);
 		if (buff) {
 			free(buff);
 		}
@@ -861,7 +864,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 
 	// check if directory exists
 	char** list = NULL;
-	if (afc_read_directory(afc, "/"AFCTMP, &list) != AFC_E_SUCCESS) {
+	if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS) {
 		// we're good, directory does not exist.
 	} else {
 		free_dictionary(list);
@@ -873,14 +876,14 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 	}
 
 	status_cb(NULL, 6);
-	afc_make_directory(afc, "/"AFCTMP);
+	afc_make_directory(afc, "/" AFCTMP);
 
 	debug("moving dirs aside...\n");
-	afc_rename_path(afc, "/Books", "/"AFCTMP"/Books");
-	afc_rename_path(afc, "/DCIM", "/"AFCTMP"/DCIM");
-	afc_rename_path(afc, "/PhotoData", "/"AFCTMP"/PhotoData");
+	afc_rename_path(afc, "/Books", "/" AFCTMP "/Books");
+	afc_rename_path(afc, "/DCIM", "/" AFCTMP "/DCIM");
+	afc_rename_path(afc, "/PhotoData", "/" AFCTMP "/PhotoData");
 	afc_rename_path(afc, "/Photos", "/"AFCTMP"/Photos");
-	afc_rename_path(afc, "/Recordings", "/"AFCTMP"/Recordings");
+	afc_rename_path(afc, "/Recordings", "/" AFCTMP "/Recordings");
 	// TODO other paths?
 
 	afc_client_free(afc);
@@ -901,7 +904,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 	char *bargv[] = { "idevicebackup2", "backup", backup_directory, NULL };
 	idevicebackup2(3, bargv);
 
-	backup_t* backup = backup_open(backup_directory, udid);
+	backup::backup_t* backup = backup::open(backup_directory, udid);
 	if (!backup) {
 		fprintf(stderr, "ERROR: failed to open backup\n");
 		return -1;
@@ -912,7 +915,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 	/********************************************************/
 	status_cb("Preparing jailbreak files...", 20);
 
-	backup_file_t* bf = NULL;
+	backup_file::backup_file::t* bf = NULL;
 	bf = backup_get_file(backup, "SystemPreferencesDomain",
 			"SystemConfiguration/preferences.plist");
 	if (bf) {
@@ -926,7 +929,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 		unsigned char* prefs = NULL;
 		uint32_t plen = 0;
 
-		if (file_read(fn, &prefs, &plen) > 8) {
+		if (util::file_read(fn, &prefs, &plen) > 8) {
 			plist_t pl = NULL;
 			if (memcmp(prefs, "bplist00", 8) == 0) {
 				plist_from_bin(prefs, plen, &pl);
@@ -944,11 +947,11 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 
 			plist_to_bin(pl, (char**) &prefs, &plen);
 
-			backup_file_assign_file_data(bf, prefs, plen, 1);
+			backup_file::assign_file_data(bf, prefs, plen, 1);
 			free(prefs);
 			prefs = NULL;
-			backup_file_set_length(bf, plen);
-			backup_file_update_hash(bf);
+			backup_file::set_length(bf, plen);
+			backup_file::update_hash(bf);
 
 			if (backup_update_file(backup, bf) < 0) {
 				fprintf(stderr, "ERROR: could not add file to backup\n");
@@ -963,54 +966,54 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 		fprintf(stderr,
 				"ERROR: could not locate preferences.plist in backup.\n");
 	}
-	backup_file_free(bf);
+	backup_file::free(bf);
 
 	/********************************************************/
 	/* add a webclip to backup */
 	/********************************************************/
 	status_cb(NULL, 22);
 	if (backup_get_file_index(backup, "HomeDomain", "Library/WebClips") < 0) {
-		bf = backup_file_create(NULL );
-		backup_file_set_domain(bf, "HomeDomain");
-		backup_file_set_path(bf, "Library/WebClips");
-		backup_file_set_mode(bf, 040755);
-		backup_file_set_inode(bf, 54321);
-		backup_file_set_uid(bf, 501);
-		backup_file_set_gid(bf, 501);
+		bf = backup_file::create(NULL );
+		backup_file::set_domain(bf, "HomeDomain");
+		backup_file::set_path(bf, "Library/WebClips");
+		backup_file::set_mode(bf, 040755);
+		backup_file::set_inode(bf, 54321);
+		backup_file::set_uid(bf, 501);
+		backup_file::set_gid(bf, 501);
 		unsigned int tm = (unsigned int) (time(NULL ));
-		backup_file_set_time1(bf, tm);
-		backup_file_set_time2(bf, tm);
-		backup_file_set_time3(bf, tm);
-		backup_file_set_length(bf, 0);
-		backup_file_set_flag(bf, 4);
+		backup_file::set_time1(bf, tm);
+		backup_file::set_time2(bf, tm);
+		backup_file::set_time3(bf, tm);
+		backup_file::set_length(bf, 0);
+		backup_file::set_flag(bf, 4);
 		if (backup_update_file(backup, bf) < 0) {
 			fprintf(stderr, "ERROR: could not add file to backup\n");
 		}
-		backup_file_free(bf);
+		backup_file::free(bf);
 	}
 	status_cb(NULL, 24);
 	bf = backup_get_file(backup, "HomeDomain",
 			"Library/WebClips/corona.webclip");
 	if (!bf) {
-		bf = backup_file_create(NULL );
-		backup_file_set_domain(bf, "HomeDomain");
-		backup_file_set_path(bf, "Library/WebClips/corona.webclip");
+		bf = backup_file::create(NULL );
+		backup_file::set_domain(bf, "HomeDomain");
+		backup_file::set_path(bf, "Library/WebClips/corona.webclip");
 	}
 	if (bf) {
-		backup_file_set_mode(bf, 040755);
-		backup_file_set_inode(bf, 54322);
-		backup_file_set_uid(bf, 501);
-		backup_file_set_gid(bf, 501);
+		backup_file::set_mode(bf, 040755);
+		backup_file::set_inode(bf, 54322);
+		backup_file::set_uid(bf, 501);
+		backup_file::set_gid(bf, 501);
 		unsigned int tm = (unsigned int) (time(NULL ));
-		backup_file_set_time1(bf, tm);
-		backup_file_set_time2(bf, tm);
-		backup_file_set_time3(bf, tm);
-		backup_file_set_length(bf, 0);
-		backup_file_set_flag(bf, 4);
+		backup_file::set_time1(bf, tm);
+		backup_file::set_time2(bf, tm);
+		backup_file::set_time3(bf, tm);
+		backup_file::set_length(bf, 0);
+		backup_file::set_flag(bf, 4);
 		if (backup_update_file(backup, bf) < 0) {
 			fprintf(stderr, "ERROR: could not add file to backup\n");
 		}
-		backup_file_free(bf);
+		backup_file::free(bf);
 	}
 
 	status_cb(NULL, 26);
@@ -1018,26 +1021,26 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 	int info_size = 0;
 	file_read("data/common/webclip_Info.plist", (unsigned char**) &info_plist,
 			&info_size);
-	bf = backup_file_create_with_data(info_plist, info_size, 0);
+	bf = backup_file::create_with_data(info_plist, info_size, 0);
 	if (bf) {
-		backup_file_set_domain(bf, "HomeDomain");
-		backup_file_set_path(bf, "Library/WebClips/corona.webclip/Info.plist");
-		backup_file_set_mode(bf, 0100644);
-		backup_file_set_inode(bf, 54323);
-		backup_file_set_uid(bf, 501);
-		backup_file_set_gid(bf, 501);
+		backup_file::set_domain(bf, "HomeDomain");
+		backup_file::set_path(bf, "Library/WebClips/corona.webclip/Info.plist");
+		backup_file::set_mode(bf, 0100644);
+		backup_file::set_inode(bf, 54323);
+		backup_file::set_uid(bf, 501);
+		backup_file::set_gid(bf, 501);
 		unsigned int tm = (unsigned int) (time(NULL ));
-		backup_file_set_time1(bf, tm);
-		backup_file_set_time2(bf, tm);
-		backup_file_set_time3(bf, tm);
-		backup_file_set_length(bf, info_size);
-		backup_file_set_flag(bf, 4);
-		backup_file_update_hash(bf);
+		backup_file::set_time1(bf, tm);
+		backup_file::set_time2(bf, tm);
+		backup_file::set_time3(bf, tm);
+		backup_file::set_length(bf, info_size);
+		backup_file::set_flag(bf, 4);
+		backup_file::update_hash(bf);
 
 		if (backup_update_file(backup, bf) < 0) {
 			fprintf(stderr, "ERROR: could not add file to backup\n");
 		}
-		backup_file_free(bf);
+		backup_file::free(bf);
 		if (info_plist) {
 			free(info_plist);
 		}
@@ -1056,26 +1059,26 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 		icon_filename = "data/common/webclip_icon.png";
 	}
 	file_read(icon_filename, (unsigned char**) &icon_data, &icon_size);
-	bf = backup_file_create_with_data(icon_data, icon_size, 0);
+	bf = backup_file::create_with_data(icon_data, icon_size, 0);
 	if (bf) {
-		backup_file_set_domain(bf, "HomeDomain");
-		backup_file_set_path(bf, "Library/WebClips/corona.webclip/icon.png");
-		backup_file_set_mode(bf, 0100644);
-		backup_file_set_inode(bf, 54324);
-		backup_file_set_uid(bf, 501);
-		backup_file_set_gid(bf, 501);
+		backup_file::set_domain(bf, "HomeDomain");
+		backup_file::set_path(bf, "Library/WebClips/corona.webclip/icon.png");
+		backup_file::set_mode(bf, 0100644);
+		backup_file::set_inode(bf, 54324);
+		backup_file::set_uid(bf, 501);
+		backup_file::set_gid(bf, 501);
 		unsigned int tm = (unsigned int) (time(NULL ));
-		backup_file_set_time1(bf, tm);
-		backup_file_set_time2(bf, tm);
-		backup_file_set_time3(bf, tm);
-		backup_file_set_length(bf, icon_size);
-		backup_file_set_flag(bf, 4);
-		backup_file_update_hash(bf);
+		backup_file::set_time1(bf, tm);
+		backup_file::set_time2(bf, tm);
+		backup_file::set_time3(bf, tm);
+		backup_file::set_length(bf, icon_size);
+		backup_file::set_flag(bf, 4);
+		backup_file::update_hash(bf);
 
 		if (backup_update_file(backup, bf) < 0) {
 			fprintf(stderr, "ERROR: could not add file to backup\n");
 		}
-		backup_file_free(bf);
+		backup_file::free(bf);
 	}
 	if (icon_data) {
 		free(icon_data);
@@ -1328,9 +1331,9 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 				"SystemConfiguration/com.apple.ipsec.plist");
 		if (bf) {
 			debug("com.apple.ipsec.plist already present, replacing\n");
-			backup_file_assign_file_data(bf, ipsec_plist, ipsec_plist_size, 0);
-			backup_file_set_length(bf, ipsec_plist_size);
-			backup_file_update_hash(bf);
+			backup_file::assign_file_data(bf, ipsec_plist, ipsec_plist_size, 0);
+			backup_file::set_length(bf, ipsec_plist_size);
+			backup_file::update_hash(bf);
 
 			if (backup_update_file(backup, bf) < 0) {
 				error("ERROR: could not add file to backup\n");
@@ -1339,22 +1342,22 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 			}
 		} else {
 			debug("adding com.apple.ipsec.plist\n");
-			bf = backup_file_create_with_data(ipsec_plist, strlen(ipsec_plist),
+			bf = backup_file::create_with_data(ipsec_plist, strlen(ipsec_plist),
 					0);
-			backup_file_set_domain(bf, "SystemPreferencesDomain");
-			backup_file_set_path(bf,
+			backup_file::set_domain(bf, "SystemPreferencesDomain");
+			backup_file::set_path(bf,
 					"SystemConfiguration/com.apple.ipsec.plist");
-			backup_file_set_mode(bf, 0100644);
-			backup_file_set_inode(bf, 123456);
-			backup_file_set_uid(bf, 0);
-			backup_file_set_gid(bf, 0);
+			backup_file::set_mode(bf, 0100644);
+			backup_file::set_inode(bf, 123456);
+			backup_file::set_uid(bf, 0);
+			backup_file::set_gid(bf, 0);
 			unsigned int tm = (unsigned int) (time(NULL ));
-			backup_file_set_time1(bf, tm);
-			backup_file_set_time2(bf, tm);
-			backup_file_set_time3(bf, tm);
-			backup_file_set_length(bf, strlen(ipsec_plist));
-			backup_file_set_flag(bf, 4);
-			backup_file_update_hash(bf);
+			backup_file::set_time1(bf, tm);
+			backup_file::set_time2(bf, tm);
+			backup_file::set_time3(bf, tm);
+			backup_file::set_length(bf, strlen(ipsec_plist));
+			backup_file::set_flag(bf, 4);
+			backup_file::update_hash(bf);
 
 			if (backup_update_file(backup, bf) < 0) {
 				error("ERROR: could not add file to backup\n");
@@ -1362,7 +1365,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 				backup_write_mbdb(backup);
 			}
 		}
-		backup_file_free(bf);
+		backup_file::free(bf);
 		backup_free(backup);
 
 		/********************************************************/
@@ -1429,11 +1432,11 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 
 			plist_to_bin(pl, (char**) &prefs, &plen);
 
-			backup_file_assign_file_data(bf, prefs, plen, 1);
+			backup_file::assign_file_data(bf, prefs, plen, 1);
 			free(prefs);
 			prefs = NULL;
-			backup_file_set_length(bf, plen);
-			backup_file_update_hash(bf);
+			backup_file::set_length(bf, plen);
+			backup_file::update_hash(bf);
 
 			if (backup_update_file(backup, bf) < 0) {
 				error("ERROR: could not add file to backup\n");
@@ -1447,14 +1450,14 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 	} else {
 		error("ERROR: could not locate preferences.plist in backup.\n");
 	}
-	backup_file_free(bf);
+	backup_file::free(bf);
 
 	status_cb(NULL, 10);
 	bf = backup_get_file(backup, "HomeDomain",
 			"Library/WebClips/corona.webclip/Info.plist");
 	if (bf) {
 		backup_remove_file(backup, bf);
-		backup_file_free(bf);
+		backup_file::free(bf);
 	}
 
 	status_cb(NULL, 20);
@@ -1462,7 +1465,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 			"Library/WebClips/corona.webclip/icon.png");
 	if (bf) {
 		backup_remove_file(backup, bf);
-		backup_file_free(bf);
+		backup_file::free(bf);
 	}
 
 	status_cb(NULL, 30);
@@ -1470,7 +1473,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb,
 			"Library/WebClips/corona.webclip");
 	if (bf) {
 		backup_remove_file(backup, bf);
-		backup_file_free(bf);
+		backup_file::free(bf);
 	}
 	backup_write_mbdb(backup);
 	backup_free(backup);
@@ -1805,28 +1808,28 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb,
 	}
 
 	status_cb("Preparing jailbreak data...", 20);
-	backup_file_t* bf = NULL;
+	backup_file::t* bf = NULL;
 
-	bf = backup_file_create(NULL );
+	bf = backup_file::create(NULL );
 	if (bf) {
-		backup_file_set_domain(bf, "BooksDomain");
-		backup_file_set_path(bf,
+		backup_file::set_domain(bf, "BooksDomain");
+		backup_file::set_path(bf,
 				IOS_5_1_LOCKDOWN_INJECT_DIR "/device_public_key.pem");
-		backup_file_set_target(bf, "/usr/sbin/racoon");
-		backup_file_set_mode(bf, 0120644);
-		backup_file_set_inode(bf, 54327);
-		backup_file_set_uid(bf, 0);
-		backup_file_set_gid(bf, 0);
+		backup_file::set_target(bf, "/usr/sbin/racoon");
+		backup_file::set_mode(bf, 0120644);
+		backup_file::set_inode(bf, 54327);
+		backup_file::set_uid(bf, 0);
+		backup_file::set_gid(bf, 0);
 		unsigned int tm = (unsigned int) (time(NULL ));
-		backup_file_set_time1(bf, tm);
-		backup_file_set_time2(bf, tm);
-		backup_file_set_time3(bf, tm);
-		backup_file_set_flag(bf, 0);
+		backup_file::set_time1(bf, tm);
+		backup_file::set_time2(bf, tm);
+		backup_file::set_time3(bf, tm);
+		backup_file::set_flag(bf, 0);
 
 		if (backup_update_file(backup, bf) < 0) {
 			fprintf(stderr, "ERROR: could not add file to backup\n");
 		}
-		backup_file_free(bf);
+		backup_file::free(bf);
 	}
 
 	backup_write_mbdb(backup);
@@ -1953,25 +1956,25 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb,
 		char* key_data = NULL;
 		uint64_t key_size = 0;
 		plist_get_data_val(device_public_key, &key_data, &key_size);
-		backup_file_assign_file_data(bf, (unsigned char*) key_data, key_size,
+		backup_file::assign_file_data(bf, (unsigned char*) key_data, key_size,
 				0);
-		backup_file_set_target(bf, NULL );
-		backup_file_set_mode(bf, 0100644);
-		backup_file_set_inode(bf, 54327);
-		backup_file_set_uid(bf, 0);
-		backup_file_set_gid(bf, 0);
+		backup_file::set_target(bf, NULL );
+		backup_file::set_mode(bf, 0100644);
+		backup_file::set_inode(bf, 54327);
+		backup_file::set_uid(bf, 0);
+		backup_file::set_gid(bf, 0);
 		unsigned int tm = (unsigned int) (time(NULL ));
-		backup_file_set_time1(bf, tm);
-		backup_file_set_time2(bf, tm);
-		backup_file_set_time3(bf, tm);
-		backup_file_set_length(bf, key_size);
-		backup_file_set_flag(bf, 4);
-		backup_file_update_hash(bf);
+		backup_file::set_time1(bf, tm);
+		backup_file::set_time2(bf, tm);
+		backup_file::set_time3(bf, tm);
+		backup_file::set_length(bf, key_size);
+		backup_file::set_flag(bf, 4);
+		backup_file::update_hash(bf);
 
 		if (backup_update_file(backup, bf) < 0) {
 			fprintf(stderr, "ERROR: could not add file to backup\n");
 		}
-		backup_file_free(bf);
+		backup_file::free(bf);
 		if (key_data) {
 			free(key_data);
 		}
@@ -1981,42 +1984,42 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb,
 			"BooksDomain", IOS_5_1_OVERRIDES_INJECT_DIR "/overrides.plist");
 
 	// create audit directory
-	bf = backup_file_create(NULL );
-	backup_file_set_domain(bf, "BooksDomain");
-	backup_file_set_path(bf, IOS_5_1_AUDIT_INJECT_DIR "/audit");
-	backup_file_set_mode(bf, 040755);
-	backup_file_set_inode(bf, 54320);
-	backup_file_set_uid(bf, 0);
-	backup_file_set_gid(bf, 0);
+	bf = backup_file::create(NULL );
+	backup_file::set_domain(bf, "BooksDomain");
+	backup_file::set_path(bf, IOS_5_1_AUDIT_INJECT_DIR "/audit");
+	backup_file::set_mode(bf, 040755);
+	backup_file::set_inode(bf, 54320);
+	backup_file::set_uid(bf, 0);
+	backup_file::set_gid(bf, 0);
 	unsigned int tm = (unsigned int) (time(NULL ));
-	backup_file_set_time1(bf, tm);
-	backup_file_set_time2(bf, tm);
-	backup_file_set_time3(bf, tm);
-	backup_file_set_length(bf, 0);
-	backup_file_set_flag(bf, 0);
+	backup_file::set_time1(bf, tm);
+	backup_file::set_time2(bf, tm);
+	backup_file::set_time3(bf, tm);
+	backup_file::set_length(bf, 0);
+	backup_file::set_flag(bf, 0);
 	if (backup_update_file(backup, bf) < 0) {
 		fprintf(stderr, "ERROR: could not add file to backup\n");
 	}
-	backup_file_free(bf);
+	backup_file::free(bf);
 
 	// create rocky-racoon directory
-	bf = backup_file_create(NULL );
-	backup_file_set_domain(bf, "BooksDomain");
-	backup_file_set_path(bf, IOS_5_1_AUDIT_INJECT_DIR "/audit/rocky-racoon");
-	backup_file_set_mode(bf, 040755);
-	backup_file_set_inode(bf, 54321);
-	backup_file_set_uid(bf, 501);
-	backup_file_set_gid(bf, 501);
+	bf = backup_file::create(NULL );
+	backup_file::set_domain(bf, "BooksDomain");
+	backup_file::set_path(bf, IOS_5_1_AUDIT_INJECT_DIR "/audit/rocky-racoon");
+	backup_file::set_mode(bf, 040755);
+	backup_file::set_inode(bf, 54321);
+	backup_file::set_uid(bf, 501);
+	backup_file::set_gid(bf, 501);
 	tm = (unsigned int) (time(NULL ));
-	backup_file_set_time1(bf, tm);
-	backup_file_set_time2(bf, tm);
-	backup_file_set_time3(bf, tm);
-	backup_file_set_length(bf, 0);
-	backup_file_set_flag(bf, 0);
+	backup_file::set_time1(bf, tm);
+	backup_file::set_time2(bf, tm);
+	backup_file::set_time3(bf, tm);
+	backup_file::set_length(bf, 0);
+	backup_file::set_flag(bf, 0);
 	if (backup_update_file(backup, bf) < 0) {
 		fprintf(stderr, "ERROR: could not add file to backup\n");
 	}
-	backup_file_free(bf);
+	backup_file::free(bf);
 
 	int i;
 	char rocky_file[1024];

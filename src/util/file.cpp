@@ -17,11 +17,10 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include <stdio.h>
+#include "file.hpp"
+
 #include <stdlib.h>
 #include <string.h>
-
-#include "file.hpp"
 
 #define BUFSIZE 4096
 

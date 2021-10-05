@@ -49,6 +49,8 @@
 ///         syncing process and mess up our connection.                                //
 /////////////////////////////////////////////////////////////////////////////////////////
 
+namespace {
+
 static struct option longopts[] = {
 	{ "help",        no_argument,         NULL,   'h' },
 	{ "verbose",     required_argument,   NULL,   'v' },
@@ -59,6 +61,10 @@ static struct option longopts[] = {
 	{ NULL, 0, NULL, 0 }
 };
 
+} // namespace
+
+namespace absinthe {
+
 unsigned long find_aslr_slide(crashreport_t* crash, char* cache) {
 	unsigned long slide = 0;
 	if(crash == NULL || cache == NULL) {
@@ -66,9 +72,9 @@ unsigned long find_aslr_slide(crashreport_t* crash, char* cache) {
 		return 0;
 	}
 
-	dyldcache::dyldcache_t* dyldCache = dyldcache::open(cache);
+	dyld::cache::dyldcache_t* dyldCache = dyld::cache::open(cache);
 	if(dyldCache != NULL) {
-		dyldcache::free(dyldCache);
+		dyld::cache::free(dyldCache);
 	}
 	return slide;
 }
@@ -119,6 +125,8 @@ static void status_cb(const char* msg, int progress)
 	printf("[%d%%] %s\n", progress,msg);
 }
 
+} // namespace absinthe
+
 int main(int argc, char* argv[]) {
 	device_t* device = NULL;
 
@@ -149,7 +157,7 @@ int main(int argc, char* argv[]) {
 	while ((opt = getopt_long(argc, argv, "hva:p:t:u:", longopts, &optindex)) > 0) {
 		switch (opt) {
 		case 'h':
-			usage(argc, argv);
+			absinthe::usage(argc, argv);
 			return 0;
 
 		case 'v':
@@ -173,7 +181,7 @@ int main(int argc, char* argv[]) {
 			break;
 
 		default:
-			usage(argc, argv);
+			absinthe::usage(argc, argv);
 			return -1;
 		}
 	}
@@ -183,15 +191,15 @@ int main(int argc, char* argv[]) {
 		argv += optind;
 
 	} else {
-		usage(argc, argv);
+		absinthe::usage(argc, argv);
 		return -1;
 	}
 
 	/* we need to exit cleanly on running backups and restores or we cause havok */
-	signal(SIGINT, signal_handler);
-	signal(SIGTERM, signal_handler);
+	signal(SIGINT, absinthe::signal_handler);
+	signal(SIGTERM, absinthe::signal_handler);
 #ifndef WIN32	
-	signal(SIGQUIT, signal_handler);
+	signal(SIGQUIT, absinthe::signal_handler);
 	signal(SIGPIPE, SIG_IGN);
 #endif
 
@@ -302,8 +310,8 @@ int main(int argc, char* argv[]) {
 	/********************************************************/
 	/* begin the process */
 	/********************************************************/
-	idevice_event_subscribe(idevice_event_cb, udid);
-	jailbreak(udid, status_cb);
+	idevice_event_subscribe(absinthe::idevice_event_cb, udid);
+	jailbreak(udid, absinthe::status_cb);
 	idevice_event_unsubscribe();
 
 	free(udid);

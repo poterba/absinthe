@@ -28,11 +28,11 @@
 
 #include "file.hpp"
 
-/*
- * Dyld Image Functions
- */
+namespace absinthe {
+namespace dyld {
+namespace image {
 
-dyldimage_t* dyldimage_create() {
+dyldimage_t* create() {
 	dyldimage_t* image = (dyldimage_t*) malloc(sizeof(dyldimage_t));
 	if (image) {
 		memset(image, '\0', sizeof(dyldimage_t));
@@ -40,11 +40,11 @@ dyldimage_t* dyldimage_create() {
 	return image;
 }
 
-dyldimage_t* dyldimage_parse(unsigned char* data, uint32_t offset) {
+dyldimage_t* parse(unsigned char* data, uint32_t offset) {
 	unsigned char* buffer = &data[offset];
-	dyldimage_t* image = dyldimage_create();
+	dyldimage_t* image = create();
 	if (image) {
-		image->info = dyldimage_info_parse(data, offset);
+		image->info = info_parse(data, offset);
 		if(image->info == NULL) {
 			error("Unable to allocate data for dyld image info\n");
 			return NULL;
@@ -57,7 +57,7 @@ dyldimage_t* dyldimage_parse(unsigned char* data, uint32_t offset) {
 	return image;
 }
 
-void dyldimage_free(dyldimage_t* image) {
+void free(dyldimage_t* image) {
 	if (image) {
 		if (image->info) {
 			dyldimage_info_free(image->info);
@@ -67,7 +67,7 @@ void dyldimage_free(dyldimage_t* image) {
 	}
 }
 
-void dyldimage_debug(dyldimage_t* image) {
+void debug(dyldimage_t* image) {
 	if (image) {
 		debug("\t\tImage {\n");
 		if (image->info) {
@@ -81,7 +81,7 @@ void dyldimage_debug(dyldimage_t* image) {
  * Dyld Image Info Functions
  */
 
-dyldimage_info_t* dyldimage_info_create() {
+dyldimage_info_t* info_create() {
 	dyldimage_info_t* info = (dyldimage_info_t*) malloc(sizeof(dyldimage_info_t));
 	if(info) {
 		memset(info, '\0', sizeof(dyldimage_info_t*));
@@ -89,20 +89,20 @@ dyldimage_info_t* dyldimage_info_create() {
 	return info;
 }
 
-dyldimage_info_t* dyldimage_info_parse(unsigned char* data, uint32_t offset) {
-	dyldimage_info_t* info = dyldimage_info_create();
+dyldimage_info_t* info_parse(unsigned char* data, uint32_t offset) {
+	dyldimage_info_t* info = info_create();
 	if(info) {
 		memcpy(info, &data[offset], sizeof(dyldimage_info_t));
 	}
 	return info;
 }
 
-void dyldimage_info_free(dyldimage_info_t* info) {
+void info_free(dyldimage_info_t* info) {
 	if (info) {
 		free(info);
 	}
 }
-void dyldimage_info_debug(dyldimage_info_t* info) {
+void info_debug(dyldimage_info_t* info) {
 	if (info) {
 		debug("\t\t\taddress = 0x%qx\n", info->address);
 		debug("\t\t\t  inode = 0x%qx\n", info->inode);
@@ -112,13 +112,17 @@ void dyldimage_info_debug(dyldimage_info_t* info) {
 	}
 }
 
-void dyldimage_save(dyldimage_t* image, const char* path) {
+void save(dyldimage_t* image, const char* path) {
 	if(image != NULL && image->data != NULL && image->size > 0) {
 		printf("Writing dylib to %s\n", path);
 		file_write(path, image->data, image->size);
 	}
 }
 
-char* dyldimage_get_name(dyldimage_t* image) {
+char* get_name(dyldimage_t* image) {
 	return image->name;
 }
+
+} // namespace image
+} // namespace dyld
+} // namespace absinthe

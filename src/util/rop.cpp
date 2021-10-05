@@ -15,7 +15,6 @@
 
 #define offsetof(type, member)  __builtin_offsetof (type, member)
 
-#include "constants.hpp"
 #include "rop.hpp"
 
 unsigned int p3AddrLo = P3_ADDR_LO;

@@ -18,15 +18,20 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
+#include "mbdb.hpp"
+
+#include "debug.hpp"
+#include "file.hpp"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "mbdb.hpp"
-#include "debug.hpp"
-#include "file.hpp"
+namespace absinthe {
+namespace backup {
+namespace mbdb {
 
-mbdb_t* mbdb_create() {
+mbdb_t* create() {
 	mbdb_t* mbdb = NULL;
 
 	mbdb = (mbdb_t*) malloc(sizeof(mbdb_t));
@@ -37,36 +42,36 @@ mbdb_t* mbdb_create() {
 	return mbdb;
 }
 
-mbdb_t* mbdb_parse(unsigned char* data, unsigned int size) {
+mbdb_t* parse(unsigned char* data, unsigned int size) {
 	int i = 0;
 	unsigned int count = 0;
 	unsigned int offset = 0;
 
 	mbdb_t* mbdb = NULL;
-	mbdb_header_t* header = NULL;
-	mbdb_record_t* record = NULL;
+	header_t* header = NULL;
+	mbdb_record::mbdb_record_t* record = NULL;
 
-	mbdb = mbdb_create();
+	mbdb = create();
 	if(mbdb == NULL) {
 		error("Unable to create mbdb\n");
 		return NULL;
 	}
 
-	header = (mbdb_header_t*) data;
+	header = (header_t*) data;
 	if(strncmp(header->magic, MBDB_MAGIC, 6) != 0) {
 		error("Unable to identify this filetype\n");
 		return NULL;
 	}
 
 	// Copy in our header data
-	mbdb->header = (mbdb_header_t*)malloc(sizeof(mbdb_header_t));
+	mbdb->header = (header_t*)malloc(sizeof(header_t));
 	if(mbdb->header == NULL) {
 		error("Allocation error\n");
 		return NULL;
 	}
-	memset(mbdb->header, '\0', sizeof(mbdb_header_t));
-	memcpy(mbdb->header, &data[offset], sizeof(mbdb_header_t));
-	offset += sizeof(mbdb_header_t);
+	memset(mbdb->header, '\0', sizeof(header_t));
+	memcpy(mbdb->header, &data[offset], sizeof(header_t));
+	offset += sizeof(header_t);
 
 	mbdb->data = (unsigned char*)malloc(size);
 	if (mbdb->data == NULL) {
@@ -76,11 +81,11 @@ mbdb_t* mbdb_parse(unsigned char* data, unsigned int size) {
 	memcpy(mbdb->data, data, size);
 	mbdb->size = size;
 
-	mbdb->records = (mbdb_record_t**)malloc((mbdb->size / 64) * sizeof(mbdb_record_t)); // should be enough
+	mbdb->records = (mbdb_record::mbdb_record_t**)malloc((mbdb->size / 64) * sizeof(mbdb_record::mbdb_record_t)); // should be enough
 	mbdb->num_records = 0;
 
 	while (offset < mbdb->size) {
-		mbdb_record_t* rec = mbdb_record_parse(&(mbdb->data)[offset]);
+		mbdb_record::mbdb_record_t* rec = mbdb_record::parse(&(mbdb->data)[offset]);
 		if (!rec) {
 			error("Unable to parse record at offset 0x%x!\n", offset);
 			break;
@@ -92,20 +97,20 @@ mbdb_t* mbdb_parse(unsigned char* data, unsigned int size) {
 	return mbdb;
 }
 
-mbdb_t* mbdb_open(unsigned char* file) {
+mbdb_t* open(unsigned char* file) {
 	int err = 0;
 	unsigned int size = 0;
 	unsigned char* data = NULL;
 
 	mbdb_t* mbdb = NULL;
 
-	err = file_read(file, &data, &size);
+	err = util::file_read(file, &data, &size);
 	if(err < 0) {
 		error("Unable to read mbdb file\n");
 		return NULL;
 	}
 
-	mbdb = mbdb_parse(data, size);
+	mbdb = parse(data, size);
 	if(mbdb == NULL) {
 		error("Unable to parse mbdb file\n");
 		return NULL;
@@ -115,12 +120,12 @@ mbdb_t* mbdb_open(unsigned char* file) {
 	return mbdb;
 }
 
-mbdb_record_t* mbdb_get_record(mbdb_t* mbdb, unsigned int index)
+mbdb_record::mbdb_record_t* get_record(mbdb_t* mbdb, unsigned int index)
 {
 	return NULL;
 }
 
-void mbdb_free(mbdb_t* mbdb) {
+void free(mbdb_t* mbdb) {
 	if(mbdb) {
 		if(mbdb->header) {
 			free(mbdb->header);
@@ -129,7 +134,7 @@ void mbdb_free(mbdb_t* mbdb) {
 		if(mbdb->records) {
 			int i;
 			for (i = 0; i < mbdb->num_records; i++) {
-				mbdb_record_free(mbdb->records[i]);
+				mbdb_record::free(mbdb->records[i]);
 			}
 			free(mbdb->records);
 		}
@@ -139,3 +144,7 @@ void mbdb_free(mbdb_t* mbdb) {
 		free(mbdb);
 	}
 }
+
+} // namespace mbdb
+} // namespace backup
+} // namespace absinthe

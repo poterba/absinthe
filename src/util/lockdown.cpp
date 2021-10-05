@@ -16,42 +16,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
+#include "lockdown.hpp"
+
+#include "debug.hpp"
+#include "common.hpp"
+#include "device.hpp"
+
+#include <libimobiledevice/libimobiledevice.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <libimobiledevice/lockdown.h>
-#include <libimobiledevice/libimobiledevice.h>
+namespace absinthe {
+namespace util {
 
-#include "debug.hpp"
-#include "common.hpp"
-#include "device.hpp"
-#include "lockdown.hpp"
-
-lockdown_t* lockdown_open(device_t* device) {
-	lockdownd_client_t lockdownd = NULL;
-	if (lockdownd_client_new_with_handshake(device->client, &lockdownd,
-			"absinthe") != LOCKDOWN_E_SUCCESS) {
+Lockdown::Lockdown(device_t* device)
+ : _device(device)
+{
+	if (lockdownd_client_new_with_handshake(
+			device->client,
+			&_client,
+			"absinthe"
+		) != LOCKDOWN_E_SUCCESS)
+	{
 		error("Unable to pair with lockdownd\n");
-		return NULL;
+		throw;
 	}
 
-	lockdown_t* lockdown = (lockdown_t*) malloc(sizeof(lockdown_t));
-	if (lockdown == NULL) {
-		error("Unable to allocate memory for lockdown object\n");
-		return NULL;
-	}
-	memset(lockdown, '\0', sizeof(lockdown_t));
-
-	lockdown->client = lockdownd;
-	lockdown->device = device;
-	return lockdown;
 }
 
-int lockdown_get_value(lockdown_t* lockdown, const char *domain,
-		const char *key, plist_t *value) {
-	if (!lockdown || !lockdown->client) {
+int Lockdown::get_value(const char *domain, const char *key, plist_t *value)
+{
+	if (!lockdown || !lockdown->client)
+	{
 		return -1;
 	}
 
@@ -64,7 +62,8 @@ int lockdown_get_value(lockdown_t* lockdown, const char *domain,
 	}
 }
 
-int lockdown_get_string(lockdown_t* lockdown, const char *key, char** value) {
+int Lockdown::get_string(const char *key, char** value)
+{
 	if (!lockdown || !lockdown->client) {
 		return -1;
 	}
@@ -88,13 +87,13 @@ int lockdown_get_string(lockdown_t* lockdown, const char *key, char** value) {
 	return -1;
 }
 
-int lockdown_start_service(lockdown_t* lockdown, const char* service,
-		uint16_t* port) {
+int Lockdown::start_service(const char* service, uint16_t* port)
+{
     return lockdown_start_service2(lockdown, service, port, 1);
 }
 
-int lockdown_start_service2(lockdown_t* lockdown, const char* service,
-		uint16_t* port, int warn_on_fail) {
+int Lockdown::start_service2(const char* service, uint16_t* port, int warn_on_fail)
+{
 	uint16_t p = 0;
 	lockdownd_start_service(lockdown->client, service, &p);
 
@@ -108,18 +107,21 @@ int lockdown_start_service2(lockdown_t* lockdown, const char* service,
 	return 0;
 }
 
-int lockdown_stop_service(lockdown_t* lockdown, const char* service) {
+int Lockdown::stop_service(const char* service)
+{
 	//TODO: Implement Me
 	return -1;
 }
 
-int lockdown_close(lockdown_t* lockdown) {
+int Lockdown::close(lockdown_t* lockdown)
+{
 	lockdownd_client_free(lockdown->client);
 	lockdown->client = NULL;
 	return 0;
 }
 
-void lockdown_free(lockdown_t* lockdown) {
+void Lockdown::free(lockdown_t* lockdown)
+{
 	if (lockdown) {
 		if (lockdown->client) {
 			lockdown_close(lockdown);
@@ -127,3 +129,6 @@ void lockdown_free(lockdown_t* lockdown) {
 		free(lockdown);
 	}
 }
+
+} // namespace util
+} // namespace absinthe

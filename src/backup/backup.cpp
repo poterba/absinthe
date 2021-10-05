@@ -17,17 +17,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
+#include "backup.hpp"
+
+#include "debug.hpp"
+#include "common.hpp"
+#include "file.hpp"
+
+#include <openssl/sha.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include "debug.hpp"
-#include "common.hpp"
-#include "backup.hpp"
-#include "file.hpp"
-
-#include <openssl/sha.h>
+namespace absinthe {
+namespace backup {
 
 backup_t *backup_open(const char *backupdir, const char *uuid) {
 	if (!backupdir || !uuid) {
@@ -46,7 +50,7 @@ backup_t *backup_open(const char *backupdir, const char *uuid) {
 	strcat(mbdb_path, "/");
 	strcat(mbdb_path, "Manifest.mbdb");
 
-	mbdb_t *mbdb = mbdb_open(mbdb_path);
+	mbdb::mbdb_t *mbdb = mbdb::open(mbdb_path);
 	if (mbdb) {
 		debug("Manifest.mbdb opened, %d records\n", mbdb->num_records);
 	} else {
@@ -550,3 +554,6 @@ int backup_add_file_from_data(backup_t * backup, char *domain, char *data,
 	}
 	return ret;
 }
+
+} // namespace backup
+} // namespace absinthe

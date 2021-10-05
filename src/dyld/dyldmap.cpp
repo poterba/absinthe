@@ -17,15 +17,20 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
+#include "dyldmap.hpp"
+
+#include "debug.hpp"
+#include "common.hpp"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "debug.hpp"
-#include "common.hpp"
-#include "dyldmap.hpp"
+namespace absinthe {
+namespace dyld {
+namespace map {
 
-dyldmap_t* dyldmap_create() {
+dyldmap_t* create() {
 	dyldmap_t* map = (dyldmap_t*) malloc(sizeof(dyldmap_t));
 	if(map) {
 		memset(map, '\0', sizeof(dyldmap_t));
@@ -33,11 +38,11 @@ dyldmap_t* dyldmap_create() {
 	return map;
 }
 
-dyldmap_t* dyldmap_parse(unsigned char* data, uint32_t offset) {
+dyldmap_t* parse(unsigned char* data, uint32_t offset) {
 	unsigned char* buffer = &data[offset];
-	dyldmap_t* map = dyldmap_create();
+	dyldmap_t* map = create();
 	if (map) {
-		map->info = dyldmap_info_parse(data, offset);
+		map->info = info_parse(data, offset);
 		if(map->info == NULL) {
 			error("Unable to allocate data for dyld map info\n");
 			return NULL;
@@ -49,7 +54,7 @@ dyldmap_t* dyldmap_parse(unsigned char* data, uint32_t offset) {
 	return map;
 }
 
-bool dyldmap_contains(dyldmap_t* map, uint64_t address) {
+bool contains(dyldmap_t* map, uint64_t address) {
 	if(address >= map->address &&
 			address < (map->address + map->size)) {
 		return true;
@@ -57,7 +62,7 @@ bool dyldmap_contains(dyldmap_t* map, uint64_t address) {
 	return false;
 }
 
-void dyldmap_free(dyldmap_t* map) {
+void free(dyldmap_t* map) {
 	if(map) {
 		if (map->info) {
 			dyldmap_info_free(map->info);
@@ -67,7 +72,7 @@ void dyldmap_free(dyldmap_t* map) {
 }
 
 
-void dyldmap_debug(dyldmap_t* map) {
+void debug(dyldmap_t* map) {
 	if(map) {
 		debug("\tMap:\n");
 		debug("\t\n");
@@ -77,7 +82,7 @@ void dyldmap_debug(dyldmap_t* map) {
 /*
  * Dyldcache Map Info Functions
  */
-dyldmap_info_t* dyldmap_info_create() {
+dyldmap_info_t* info_create() {
 	dyldmap_info_t* info = (dyldmap_info_t*) malloc(sizeof(dyldmap_info_t));
 	if(info) {
 		memset(info, '\0', sizeof(dyldmap_info_t));
@@ -85,15 +90,15 @@ dyldmap_info_t* dyldmap_info_create() {
 	return info;
 }
 
-dyldmap_info_t* dyldmap_info_parse(unsigned char* data, uint32_t offset) {
-	dyldmap_info_t* info = dyldmap_info_create();
+dyldmap_info_t* info_parse(unsigned char* data, uint32_t offset) {
+	dyldmap_info_t* info = info_create();
 	if(info) {
 		memcpy(info, &data[offset], sizeof(dyldmap_info_t));
 	}
 	return info;
 }
 
-void dyldmap_info_debug(dyldmap_info_t* info) {
+void info_debug(dyldmap_info_t* info) {
 	if(info) {
 		debug("\t\tInfo {\n");
 		debug("\t\t\t address = 0x%08x\n", (uint32_t)info->address);
@@ -105,8 +110,12 @@ void dyldmap_info_debug(dyldmap_info_t* info) {
 	}
 }
 
-void dyldmap_info_free(dyldmap_info_t* info) {
+void info_free(dyldmap_info_t* info) {
 	if(info) {
 		free(info);
 	}
 }
+
+} // namespace map
+} // namespace dyld
+} // namespace absinthe

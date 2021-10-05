@@ -72,9 +72,9 @@ typedef struct header_t {
 typedef struct dyldcache_t {
 	header_t* header;
 	architecture_t* arch;
-	dyldimage_t** images;
-	dyldmap_t** maps;
-	file_t* file;
+	image::dyldimage_t** images;
+	map::dyldmap_t** maps;
+	util::file_t* file;
 	uint32_t offset;
 	uint32_t count;
 	unsigned int size;
@@ -86,11 +86,11 @@ typedef struct dyldcache_t {
  */
 dyldcache_t* create();
 dyldcache_t* open(const char* path);
-dyldmap_t* map_image(dyldcache_t* cache, dyldimage_t* image);
-dyldmap_t* map_address(dyldcache_t* cache, uint64_t address);
-dyldimage_t* get_image(dyldcache_t* cache, const char* dylib);
-dyldimage_t* first_image(dyldcache_t* cache);
-dyldimage_t* next_image(dyldcache_t* cache, dyldimage_t* image);
+map::dyldmap_t* map_image(dyldcache_t* cache, image::dyldimage_t* image);
+map::dyldmap_t* map_address(dyldcache_t* cache, uint64_t address);
+image::dyldimage_t* get_image(dyldcache_t* cache, const char* dylib);
+image::dyldimage_t* first_image(dyldcache_t* cache);
+image::dyldimage_t* next_image(dyldcache_t* cache, image::dyldimage_t* image);
 void debug(dyldcache_t* cache);
 void free(dyldcache_t* cache);
 
@@ -113,18 +113,18 @@ void header_free(header_t* header);
 /*
  * Dyldcache Images Functions
  */
-dyldimage_t** images_create(uint32_t count);
-dyldimage_t** images_load(dyldcache_t* cache);
-void images_debug(dyldimage_t** images);
-void images_free(dyldimage_t** images);
+image::dyldimage_t** images_create(uint32_t count);
+image::dyldimage_t** images_load(dyldcache_t* cache);
+void images_debug(image::dyldimage_t** images);
+void images_free(image::dyldimage_t** images);
 
 /*
  * Dyldcache Maps Functions
  */
-dyldmap_t** maps_create(uint32_t count);
-dyldmap_t** maps_load(dyldcache_t* cache);
-void maps_debug(dyldmap_t** maps);
-void maps_free(dyldmap_t** maps);
+map::dyldmap_t** maps_create(uint32_t count);
+map::dyldmap_t** maps_load(dyldcache_t* cache);
+void maps_debug(map::dyldmap_t** maps);
+void maps_free(map::dyldmap_t** maps);
 
 } // namespace cache
 } // namespace dyld

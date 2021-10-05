@@ -1,17 +1,6 @@
 #pragma once
 
-#if __APPLE__
-#include "defines/osx.hpp"
-
-#elif __linux__
-#include "defines/linux.hpp"
-
-#elif _WIN32
-#include <pthread.h>
-typedef int uid_t;
-typedef int gid_t;
-typedef uint32_t __uint32_t;
-#endif
+#if 0
 
 typedef unsigned int __32bit_ptr;
 
@@ -62,3 +51,5 @@ struct hfs_mount_args
 	int journal_flags;
 	int journal_disable;
 };
+
+#endif

@@ -1,10 +1,18 @@
 
 #pragma once
 
+// #include <libimobiledevice/afc.h>
+// #include <libimobiledevice/sbservices.h>
+#include <libimobiledevice/file_relay.h>
+
+#include <cstdint>
+
 #define CONNECTION_NAME "jailbreak"
 #define VPN_TRIGGER_ADDRESS "127.0.0.1"
 #define AFCTMP "HackStore"
 
+namespace absinthe {
+namespace core {
 struct dev_vmaddr
 {
 	const char *product;
@@ -32,19 +40,13 @@ static struct dev_vmaddr devices_vmaddr_libcopyfile[] = {
 	{"iPod4,1", "9A405", 0x30c29000},
 	{0, 0, 0}};
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+typedef void (*status_cb_t)(const char *message, int progress);
 
-	typedef void (*status_cb_t)(const char *message, int progress);
+int jb_device_is_supported(const char *product, const char *build);
+int jb_check_consistency(const char *product, const char *build);
+void jb_device_event_cb(const idevice_event_t *event, void *user_data);
+void jb_signal_handler(int sig);
+int jailbreak(const char *uuid, status_cb_t status_cb);
 
-	int jb_device_is_supported(const char *product, const char *build);
-	int jb_check_consistency(const char *product, const char *build);
-	void jb_device_event_cb(const idevice_event_t *event, void *user_data);
-	void jb_signal_handler(int sig);
-	int jailbreak(const char *uuid, status_cb_t status_cb);
-
-#ifdef __cplusplus
-};
-#endif
+} // namespace core
+} // namespace absinthe

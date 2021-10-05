@@ -23,17 +23,13 @@
 
 #include "dyldmap.hpp"
 
-namespace absinthe {
-namespace dyld {
-namespace image {
-
-typedef struct info_t {
+typedef struct dyldimage_info_t {
 	uint64_t address;
 	uint64_t modtime;
 	uint64_t inode;
 	uint32_t offset;
 	uint32_t pad;
-} info_t;
+} dyldimage_info_t;
 
 typedef struct dyldimage_t {
 	char* name;
@@ -44,27 +40,23 @@ typedef struct dyldimage_t {
 	uint32_t offset;
 	uint64_t address;
 	map::dyldmap_t* map;
-	image::info_t* info;
+	dyldimage_info_t* info;
 } dyldimage_t;
 
 /*
  * Dyld Image Functions
  */
-dyldimage_t* create();
-dyldimage_t* parse(unsigned char* data, uint32_t offset);
-char* get_name(dyldimage_t* image);
-void save(dyldimage_t* image, const char* path);
-void free(dyldimage_t* image);
-void debug(dyldimage_t* image);
+dyldimage_t* dyldimage_create();
+dyldimage_t* dyldimage_parse(unsigned char* data, uint32_t offset);
+char* dyldimage_get_name(dyldimage_t* image);
+void dyldimage_save(dyldimage_t* image, const char* path);
+void dyldimage_free(dyldimage_t* image);
+void dyldimage_debug(dyldimage_t* image);
 
 /*
  * Dyld Image Info Functions
  */
-info_t* info_create();
-info_t* info_parse(unsigned char* data, uint32_t offset);
-void info_free (info_t* info);
-void info_debug (info_t* info);
-
-} // namespace image
-} // namespace dyld
-} // namespace absinthe
+dyldimage_info_t* dyldimage_info_create();
+dyldimage_info_t* dyldimage_info_parse(unsigned char* data, uint32_t offset);
+void dyldimage_info_free(dyldimage_info_t* info);
+void dyldimage_info_debug(dyldimage_info_t* info);

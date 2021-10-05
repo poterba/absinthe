@@ -20,16 +20,21 @@
 
 #pragma once
 
+namespace absinthe {
+namespace backup {
+namespace mbdb {
 struct mbdb_t;
+} // namespace mbdb
+namespace mbdb_record {
 
-struct mbdb_record_property_t {
+struct property_t {
 	unsigned short name_size;
 	char* name;
 	unsigned short value_size;
 	char* value;
 } __attribute__((__packed__));
 
-typedef struct mbdb_record_property_t mbdb_record_property_t;
+typedef struct property_t property_t;
 
 struct mbdb_record_t {
     unsigned short domain_size;
@@ -53,33 +58,37 @@ struct mbdb_record_t {
     unsigned long long length;	      // 0 if link or dir
     unsigned char flag;	              // 0 if link or dir
     unsigned char property_count;     // number of properties
-    mbdb_record_property_t** properties; // properties
+    property_t** properties; // properties
     unsigned int this_size; // size of this record in bytes
 } __attribute__((__packed__));
 
 typedef struct mbdb_record_t mbdb_record_t;
 
-mbdb_record_t* mbdb_record_create();
-mbdb_record_t* mbdb_record_parse(unsigned char* data);
-void mbdb_record_debug(mbdb_record_t* record);
-void mbdb_record_free(mbdb_record_t* record);
+mbdb_record_t* create();
+mbdb_record_t* parse(unsigned char* data);
+void debug(mbdb_record_t* record);
+void free(mbdb_record_t* record);
 
-void mbdb_record_init(mbdb_record_t* record);
-void mbdb_record_set_domain(mbdb_record_t* record, const char* domain);
-void mbdb_record_set_path(mbdb_record_t* record, const char* path);
-void mbdb_record_set_target(mbdb_record_t* record, const char* target);
-void mbdb_record_set_datahash(mbdb_record_t* record, const char* hash, unsigned short hash_size);
-void mbdb_record_set_unknown1(mbdb_record_t* record, const char* data, unsigned short size);
-void mbdb_record_set_mode(mbdb_record_t* record, unsigned short mode);
-void mbdb_record_set_unknown2(mbdb_record_t* record, unsigned int unknown2);
-void mbdb_record_set_inode(mbdb_record_t* record, unsigned int inode);
-void mbdb_record_set_uid(mbdb_record_t* record, unsigned int uid);
-void mbdb_record_set_gid(mbdb_record_t* record, unsigned int gid);
-void mbdb_record_set_time1(mbdb_record_t* record, unsigned int time1);
-void mbdb_record_set_time2(mbdb_record_t* record, unsigned int time2);
-void mbdb_record_set_time3(mbdb_record_t* record, unsigned int time3);
-void mbdb_record_set_length(mbdb_record_t* record, unsigned long long length);
-void mbdb_record_set_flag(mbdb_record_t* record, unsigned char flag);
-// TODO sth like mbdb_record_add_property()
+void init(mbdb_record_t* record);
+void set_domain(mbdb_record_t* record, const char* domain);
+void set_path(mbdb_record_t* record, const char* path);
+void set_target(mbdb_record_t* record, const char* target);
+void set_datahash(mbdb_record_t* record, const char* hash, unsigned short hash_size);
+void set_unknown1(mbdb_record_t* record, const char* data, unsigned short size);
+void set_mode(mbdb_record_t* record, unsigned short mode);
+void set_unknown2(mbdb_record_t* record, unsigned int unknown2);
+void set_inode(mbdb_record_t* record, unsigned int inode);
+void set_uid(mbdb_record_t* record, unsigned int uid);
+void set_gid(mbdb_record_t* record, unsigned int gid);
+void set_time1(mbdb_record_t* record, unsigned int time1);
+void set_time2(mbdb_record_t* record, unsigned int time2);
+void set_time3(mbdb_record_t* record, unsigned int time3);
+void set_length(mbdb_record_t* record, unsigned long long length);
+void set_flag(mbdb_record_t* record, unsigned char flag);
+// TODO sth like add_property()
 
-int mbdb_record_build(mbdb_record_t* record, unsigned char** data, unsigned int* size);
+int build(mbdb_record_t* record, unsigned char** data, unsigned int* size);
+
+} // namespace mbdb_record
+} // namespace backup
+} // namespace absinthe

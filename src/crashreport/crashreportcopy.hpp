@@ -19,20 +19,28 @@
 
 #pragma once
 
-#include <libimobiledevice/libimobiledevice.h>
+#include <libimobiledevice/afc.h>
 
 #include "lockdown.hpp"
 
-typedef struct crashreportcopy_t {
-	uint16_t port;
-	device_t* device;
-	afc_client_t client;
+namespace absinthe {
+namespace crash_report {
+
+class Copy final
+{
+public:
+	Copy(device_t* device);
+
+	void open(device_t* device, uint16_t port);
+
+	int close();
+	void free();
+private:
+	uint16_t _port;
+	device_t* _device;
+	afc_client_t _client;
 	idevice_connection_t connection;
-} crashreportcopy_t;
+};
 
-crashreportcopy_t* crashreportcopy_create();
-crashreportcopy_t* crashreportcopy_connect(device_t* device);
-crashreportcopy_t* crashreportcopy_open(device_t* device, uint16_t port);
-
-int crashreportcopy_close(crashreportcopy_t* copier);
-void crashreportcopy_free(crashreportcopy_t* copier);
+} // namespace crash_report
+} // namespace absinthe
