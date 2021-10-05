@@ -23,7 +23,7 @@ conan_cmake_run(
     INSTALL_FOLDER ${CMAKE_BINARY_DIR}/conan
     BASIC_SETUP
     CMAKE_TARGETS
-    QUIET
+    OUTPUT_QUIET
     BUILD missing
     SETTINGS ${settings})
 include(${CMAKE_BINARY_DIR}/conan/conan_paths.cmake)
