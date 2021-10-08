@@ -29,7 +29,7 @@ namespace util {
 class Lockdown
 {
 public:
-	Lockdown( device_t* device );
+	Lockdown( std::shared_ptr<Device> device );
 
 	int get_value(const char *domain, const char *key, plist_t *value);
 	int get_string(const char *key, char** value);
@@ -41,8 +41,8 @@ public:
 	void free();
 
 private:
-	device_t *device;
-	lockdownd_client_t client;
+	std::shared_ptr<Device> _device;
+	lockdownd_client_t _client;
 };
 
 } // namespace util

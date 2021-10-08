@@ -32,14 +32,6 @@ namespace absinthe {
 namespace dyld {
 namespace image {
 
-dyldimage_t* create() {
-	dyldimage_t* image = (dyldimage_t*) malloc(sizeof(dyldimage_t));
-	if (image) {
-		memset(image, '\0', sizeof(dyldimage_t));
-	}
-	return image;
-}
-
 dyldimage_t* parse(unsigned char* data, uint32_t offset) {
 	unsigned char* buffer = &data[offset];
 	dyldimage_t* image = create();
@@ -67,7 +59,7 @@ void free(dyldimage_t* image) {
 	}
 }
 
-void debug(dyldimage_t* image) {
+void _debug(dyldimage_t* image) {
 	if (image) {
 		debug("\t\tImage {\n");
 		if (image->info) {

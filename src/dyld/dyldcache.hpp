@@ -84,14 +84,13 @@ typedef struct dyldcache_t {
 /*
  * Dyldcache Functions
  */
-dyldcache_t* create();
 dyldcache_t* open(const char* path);
 map::dyldmap_t* map_image(dyldcache_t* cache, image::dyldimage_t* image);
 map::dyldmap_t* map_address(dyldcache_t* cache, uint64_t address);
 image::dyldimage_t* get_image(dyldcache_t* cache, const char* dylib);
 image::dyldimage_t* first_image(dyldcache_t* cache);
 image::dyldimage_t* next_image(dyldcache_t* cache, image::dyldimage_t* image);
-void debug(dyldcache_t* cache);
+void _debug(dyldcache_t* cache);
 void free(dyldcache_t* cache);
 
 /*

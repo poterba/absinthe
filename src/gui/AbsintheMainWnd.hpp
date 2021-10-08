@@ -1,5 +1,5 @@
-#ifndef __ABSINTHE_MAIN_WND_H
-#define __ABSINTHE_MAIN_WND_H
+
+#pragma once
 
 #include "version.hpp"
 
@@ -76,4 +76,3 @@ public:
 	void handleStartClicked(void* data);
 	bool onClose(void* data);
 };
-#endif

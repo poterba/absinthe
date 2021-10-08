@@ -47,10 +47,9 @@ typedef struct dyldmap_t {
 /*
  * Dyldcache Map Functions
  */
-dyldmap_t* create();
 dyldmap_t* parse(unsigned char* data, uint32_t offset);
 bool contains(dyldmap_t* map, uint64_t address);
-void debug(dyldmap_t* image);
+void _debug(dyldmap_t* image);
 void free(dyldmap_t* map);
 
 /*

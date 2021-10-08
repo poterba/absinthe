@@ -19,58 +19,59 @@
 #include "crashreportcopy.hpp"
 
 #include "debug.hpp"
-#include "debug.hpp"
 #include "lockdown.hpp"
 
 #include <libimobiledevice/libimobiledevice.h>
 
+#include <memory>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <memory>
 
-namespace absinthe {
-namespace crash_report {
-
-Copy::Copy( device_t* device )
-: _device(device)
+namespace absinthe
 {
-	const auto& lockdown = std::make_shared< util::Lockdown >(device);
+namespace crashreport
+{
 
-	int err = lockdown->start_service("com.apple.crashreportcopymobile", &_port);
-	if(err < 0)
-	{
-		error("Unable to start AFC service\n");
-	}
-	lockdown->close();
-	lockdown->free();
+Copy::Copy(std::shared_ptr<util::Device> device) : _device(device)
+{
+    {
+        const auto& lockdown = std::make_shared<util::Lockdown>(device);
 
-	open(device, _port);
+        int err = lockdown->start_service("com.apple.crashreportcopymobile", &_port);
+        if (err < 0)
+        {
+            error("Unable to start AFC service\n");
+        }
+        lockdown->close();
+    }
+
+    open(_device, _port);
 }
 
-void Copy::open(device_t* device, uint16_t port)
+void Copy::open(std::shared_ptr<util::Device> device, uint16_t port)
 {
-	int err = afc_client_new(device->client, port, &_client);
-	if(err < 0)
-	{
-		error("Unable to open connection to CrashReporter copy service\n");
-	}
+    int err = afc_client_new(device->, port, &_client);
+    if (err < 0)
+    {
+        error("Unable to open connection to CrashReporter copy service\n");
+    }
 }
 
 int Copy::close()
 {
-	afc_client_free(_client);
-	_client = NULL;
-	return 0;
+    afc_client_free(_client);
+    _client = NULL;
+    return 0;
 }
 
 void Copy::free()
 {
-	if(_client)
-	{
-		close();
-	}
+    if (_client)
+    {
+        close();
+    }
 }
 
-} // namespace crash_report
+} // namespace crashreport
 } // namespace absinthe

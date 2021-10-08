@@ -50,7 +50,7 @@ backup_file_t* create(const char* filepath)
 	if (filepath) {
 		file->filepath = strdup(filepath);
 	}
-	file->mbdb_record = mbdb_record::create();
+	file->mbdb_record = new mbdb_record::mbdb_record_t();
 	mbdb_record::init(file->mbdb_record);
 	return file;
 }
@@ -61,7 +61,7 @@ backup_file_t* backup_file_create_with_data(unsigned char* data, unsigned int si
 	if (!file) {
 		return NULL;
 	}
-	file->mbdb_record = mbdb_record::create();
+	file->mbdb_record = new mbdb_record::mbdb_record_t();
 	mbdb_record::init(file->mbdb_record);
 	assign_file_data(file, data, size, copy);
 	return file;
@@ -104,7 +104,7 @@ backup_file_t* create_from_record(mbdb_record::mbdb_record_t* record)
 		file->mbdb_record->properties = (mbdb_record::property_t**)malloc(sizeof(mbdb_record::property_t*) * record->property_count);
 		int i;
 		for (i = 0; i < record->property_count; i++) {
-			mbdb_record::property_t* prop = malloc(sizeof(mbdb_record::property_t));
+			mbdb_record::property_t* prop = new mbdb_record::property_t(); // malloc(sizeof(mbdb_record::property_t));
 			prop->name_size = record->properties[i]->name_size;
 			prop->name = (char*)malloc(prop->name_size+1);
 			memcpy(prop->name, record->properties[i]->name, prop->name_size);

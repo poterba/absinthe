@@ -35,14 +35,6 @@ namespace absinthe {
 namespace dyld {
 namespace cache {
 
-dyldcache_t* create() {
-	dyldcache_t* cache = (dyldcache_t*) malloc(sizeof(dyldcache_t));
-	if (cache) {
-		memset(cache, '\0', sizeof(dyldcache_t));
-	}
-	return cache;
-}
-
 dyldcache_t* open(const char* path) {
 	int i = 0;
 	int err = 0;
@@ -131,7 +123,7 @@ void free(dyldcache_t* cache) {
 	}
 }
 
-void debug(dyldcache_t* cache) {
+void _debug(dyldcache_t* cache) {
 	if (cache) {
 		debug("Dyldcache:\n");
 		if (cache->header) header_debug(cache->header);

@@ -31,17 +31,6 @@ namespace absinthe {
 namespace backup {
 namespace mbdb_record {
 
-mbdb_record_t* create() {
-	mbdb_record_t* record = (mbdb_record_t*) malloc(sizeof(mbdb_record_t));
-	if (record == NULL) {
-		error("Allocation Error!\n");
-		return NULL;
-	}
-	memset(record, '\0', sizeof(mbdb_record_t));
-
-	return record;
-}
-
 mbdb_record_t* parse(unsigned char* data) {
 	unsigned int offset = 0;
 	mbdb_record_t* record = create();
@@ -256,7 +245,7 @@ void free(mbdb_record_t* record) {
 	}
 }
 
-void debug(mbdb_record_t* record) {
+void _debug(mbdb_record_t* record) {
 	debug("mbdb record\n");
 	debug("\tdomain = %s\n", record->domain);
 	debug("\tpath = %s\n", record->path);
