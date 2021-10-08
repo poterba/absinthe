@@ -1,13 +1,10 @@
 
 cmake_minimum_required(VERSION 3.16)
-project(absinthe C CXX)
+
+project(absinthe LANGUAGES C CXX VERSION 2.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_PROJECT_VERSION_MAJOR 2)
-set(CMAKE_PROJECT_VERSION_MINOR 1)
-set(CMAKE_PROJECT_VERSION_PATCH 0)
 
 # Flags
 
@@ -35,6 +32,7 @@ find_package(Threads REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Filesystem REQUIRED)
+find_package(tclap REQUIRED)
 
 find_package(libimobiledevice REQUIRED)
 find_package(libplist REQUIRED)
@@ -48,6 +46,7 @@ endif()
 
 include_directories(include)
 configure_file(include/fswrapper.h.in ${absinthe_GENERATE_DIR}/include/fswrapper.h)
+configure_file(include/version.h.in ${absinthe_GENERATE_DIR}/include/version.h)
 include_directories(${absinthe_GENERATE_DIR}/include)
 
 add_subdirectory(src)

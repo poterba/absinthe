@@ -1,0 +1,3 @@
+#pragma once
+
+#define ABSINTHE_VERSION_STRING "@CMAKE_PROJECT_VERSION@"

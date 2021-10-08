@@ -19,20 +19,35 @@
 
 #pragma once
 
-#include <libimobiledevice/afc.h>
 #include "lockdown.hpp"
+#include <libimobiledevice/afc.h>
 
-typedef struct afc_t {
-	uint16_t port;
-	device_t* device;
-	afc_client_t client;
-} afc_t;
+namespace absinthe
+{
+namespace util
+{
+class Device;
+} // namespace util
+namespace crashreport
+{
 
-afc_t* afc_create();
-afc_t* afc_connect(device_t* device);
-afc_t* afc_open(device_t* device, uint16_t port);
+class AFC final
+{
+public:
+    AFC() = default;
 
-int afc_send_file(afc_t* afc, const char* local, const char* remote);
-int afc_close(afc_t* afc);
-void afc_free(afc_t* afc);
-void apparition_afc_get_file_contents(afc_t* afc, const char *filename, char **data, uint64_t *size);
+    void connect(std::shared_ptr<util::Device> device);
+    void open(std::shared_ptr<util::Device> device, uint16_t port);
+
+    int send_file(const char* local, const char* remote);
+    int close();
+    void apparition_afc_get_file_contents(const char* filename, char** data, uint64_t* size);
+
+private:
+    uint16_t port;
+    std::shared_ptr<util::Device> device;
+    afc_client_t client;
+};
+
+} // namespace crashreport
+} // namespace absinthe

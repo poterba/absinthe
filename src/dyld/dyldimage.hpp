@@ -50,12 +50,11 @@ typedef struct dyldimage_t {
 /*
  * Dyld Image Functions
  */
-dyldimage_t* create();
 dyldimage_t* parse(unsigned char* data, uint32_t offset);
 char* get_name(dyldimage_t* image);
 void save(dyldimage_t* image, const char* path);
 void free(dyldimage_t* image);
-void debug(dyldimage_t* image);
+void _debug(dyldimage_t* image);
 
 /*
  * Dyld Image Info Functions

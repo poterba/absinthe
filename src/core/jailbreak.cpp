@@ -267,11 +267,11 @@ int jb_check_consistency(const char* product, const char* build) {
 	}
 }
 
-crashreport_t* fetch_crashreport(device_t* device) {
+crashreport::crashreport_t* fetch_crashreport(util::device_t* device) {
 	// We open crashreporter so we can download the mobilebackup2 crashreport
 	//  and parse the "random" dylib addresses. Thank you ASLR for nothing. ;P
 	debug("Opening connection to CrashReporter service\n");
-	crashreporter_t* reporter = crashreporter_connect(device);
+	crashreport::crashreporter_t* reporter = crashreport::crashreporter_connect(device);
 	if (reporter == NULL ) {
 		error("Unable to open connection to crash reporter\n");
 		return NULL ;
@@ -281,12 +281,11 @@ crashreport_t* fetch_crashreport(device_t* device) {
 	//  addresses are only randomized on boot, we now have base addresses to
 	//  calculate the addresses of our ROP gadgets we need.
 	debug("Reading in crash reports from mobile backup\n");
-	crashreport_t* crash = crashreporter_last_crash(reporter);
+	crashreport::crashreport_t* crash = crashreport::crashreporter_last_crash(reporter);
 	if (crash == NULL ) {
 		error("Unable to read last crash\n");
 		return NULL ;
 	}
-	crashreporter_free(reporter);
 	return crash;
 }
 

@@ -30,14 +30,6 @@ namespace absinthe {
 namespace dyld {
 namespace map {
 
-dyldmap_t* create() {
-	dyldmap_t* map = (dyldmap_t*) malloc(sizeof(dyldmap_t));
-	if(map) {
-		memset(map, '\0', sizeof(dyldmap_t));
-	}
-	return map;
-}
-
 dyldmap_t* parse(unsigned char* data, uint32_t offset) {
 	unsigned char* buffer = &data[offset];
 	dyldmap_t* map = create();
@@ -72,7 +64,7 @@ void free(dyldmap_t* map) {
 }
 
 
-void debug(dyldmap_t* map) {
+void _debug(dyldmap_t* map) {
 	if(map) {
 		debug("\tMap:\n");
 		debug("\t\n");

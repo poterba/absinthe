@@ -21,12 +21,29 @@
 
 #include <libimobiledevice/libimobiledevice.h>
 
-typedef struct device_t {
-	idevice_t client;
-	unsigned char* udid;
-	unsigned char* ecid;
-} device_t;
+#include <string>
 
-device_t* device_create(const char* udid);
-void device_free(device_t* device);
-void device_enable_debug();
+namespace absinthe
+{
+namespace util
+{
+
+class Device final
+{
+public:
+    explicit Device(const std::string& udid);
+    ~Device();
+
+    void enable_debug();
+    const idevice_t& client() const;
+
+    const std::string& udid() const;
+
+private:
+    idevice_t _client;
+    std::string _udid;
+    std::string _ecid;
+};
+
+} // namespace util
+} // namespace absinthe

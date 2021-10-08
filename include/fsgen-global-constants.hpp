@@ -5,25 +5,17 @@
 #include <stdint.h>
 
 // offsets
-#define ROP2_ABS_ADDR		0x3eb00000
-#define VARS_ABS_ADDR_1		0x3eb20000
+#define ROP2_ABS_ADDR 0x3eb00000
+#define VARS_ABS_ADDR_1 0x3eb20000
 
 // configuration
-#define ROP_FILE_NAME		"payload"
-#define VARS_FILE_NAME		"payload-vars"
-#define VARS_MAX_SIZE		0x1000
+#define ROP_FILE_NAME "payload"
+#define VARS_FILE_NAME "payload-vars"
+#define VARS_MAX_SIZE 0x1000
 
 // constants
-#define	USELESS			0xdeadbeef
-#define	PLACE_HOLDER		0xdeadbeef
-
-
-#define SHELLCODE_ADDR 0x80000400
-#define ZFREEHOOK_ADDR (offsets->ZFREE - 1)
-#define ZFREEHOOKER_ADDR 0x80000600
-
-#define SB_EVALUATEHOOK_ADDR (offsets->SB_EVALUATE - 1)
-#define SB_EVALUATEHOOKER_ADDR 0x80000700
+#define USELESS 0xdeadbeef
+#define PLACE_HOLDER 0xdeadbeef
 
 struct constants
 {

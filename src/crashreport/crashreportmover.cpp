@@ -23,72 +23,77 @@
 
 #include <libimobiledevice/libimobiledevice.h>
 
+#include "crashreportmover.hpp"
 #include "debug.hpp"
 #include "device.hpp"
 #include "lockdown.hpp"
-#include "crashreportmover.hpp"
 
-crashreportmover_t* crashreportmover_create() {
-	crashreportmover_t* mover = (crashreportmover_t*) malloc(sizeof(crashreportmover_t));
-	if(mover != NULL) {
-		memset(mover, '\0', sizeof(mover));
-	}
-	return mover;
+namespace absinthe
+{
+namespace crashreport
+{
+
+void Mover::connect(device_t* device)
+{
+    int err = 0;
+    uint16_t port = 0;
+    crashreportmover_t* mover = NULL;
+    lockdown_t* lockdown = NULL;
+
+    lockdown = lockdown_open(device);
+    if (lockdown == NULL)
+    {
+        throw std::runtime_errpr("Unable to open connection to lockdown");
+    }
+
+    err = lockdown_start_service(lockdown, "com.apple.crashreportmover", &port);
+    if (err < 0)
+    {
+        error("Unable to start crash report mover service\n");
+        return NULL;
+    }
+
+    mover = crashreportmover_open(device, port);
+    if (mover == NULL)
+    {
+        error("Unable to open connection to crash report mover service\n");
+        return NULL;
+    }
+    lockdown_close(lockdown);
+    lockdown_free(lockdown);
+
+    return mover;
 }
 
-crashreportmover_t* crashreportmover_connect(device_t* device) {
-	int err = 0;
-	uint16_t port = 0;
-	crashreportmover_t* mover = NULL;
-	lockdown_t* lockdown = NULL;
-
-	lockdown = lockdown_open(device);
-	if(lockdown == NULL) {
-		error("Unable to open connection to lockdown\n");
-		return NULL;
-	}
-
-	err = lockdown_start_service(lockdown, "com.apple.crashreportmover", &port);
-	if(err < 0) {
-		error("Unable to start crash report mover service\n");
-		return NULL;
-	}
-
-	mover = crashreportmover_open(device, port);
-	if(mover == NULL) {
-		error("Unable to open connection to crash report mover service\n");
-		return NULL;
-	}
-	lockdown_close(lockdown);
-	lockdown_free(lockdown);
-
-	return mover;
+crashreportmover_t* crashreportmover_open(device_t* device, uint16_t port)
+{
+    crashreportmover_t* mover = crashreportmover_create();
+    if (mover != NULL)
+    {
+        int err = idevice_connect(device->client, port, &(mover->connection));
+        if (err < 0)
+        {
+            return NULL;
+        }
+    }
+    return mover;
 }
 
-crashreportmover_t* crashreportmover_open(device_t* device, uint16_t port) {
-	crashreportmover_t* mover = crashreportmover_create();
-	if(mover != NULL) {
-		int err = idevice_connect(device->client, port, &(mover->connection));
-		if(err < 0) {
-			return NULL;
-		}
-	}
-	return mover;
+int crashreportmover_close(crashreportmover_t* mover)
+{
+    if (mover->connection)
+    {
+        idevice_disconnect(mover->connection);
+        mover->connection = NULL;
+    }
+    return 0;
 }
 
-
-
-int crashreportmover_close(crashreportmover_t* mover) {
-	if (mover->connection) {
-		idevice_disconnect(mover->connection);
-		mover->connection = NULL;
-	}
-	return 0;
-}
-
-void crashreportmover_free(crashreportmover_t* mover) {
-	if(mover) {
-		crashreportmover_close(mover);
-		free(mover);
-	}
+void crashreportmover_free(crashreportmover_t* mover)
+{
+    if (mover)
+    {
+        crashreportmover_close(mover);
+        free(mover);
+    }
 }

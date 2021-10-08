@@ -19,71 +19,73 @@
 
 #include "device.hpp"
 
+#include <exception>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include <libimobiledevice/libimobiledevice.h>
 
 #ifdef WIN32
 #include <windows.h>
-#define sleep(x) Sleep(x*1000)
+#define sleep(x) Sleep(x * 1000)
 #else
 #include <unistd.h>
-#define sleep(x) usleep(x*1000*1000);
+#define sleep(x) usleep(x * 1000 * 1000);
 #endif
 
-device_t* device_create(const char* udid) {
-	idevice_error_t err = 0;
-	device_t* device = NULL;
-	device = (device_t*) malloc(sizeof(device_t));
-	if (device == NULL) {
-		return NULL;
-	}
-	memset(device, '\0', sizeof(device_t));
+namespace absinthe
+{
+namespace util
+{
 
-	if (udid == NULL) {
-		err = idevice_new(&(device->client), NULL);
-		if (err != IDEVICE_E_SUCCESS) {
-			fprintf(stderr,
-					"No device found with udid %s, is it plugged in?\n", udid);
-			return NULL;
-		}
-		idevice_get_udid(device->client, (char**)&device->udid);
+Device::Device(const std::string& udid) : _udid(udid)
+{
+    idevice_error_t err = 0;
 
-	} else {
-		int retries = 5;
-		do {
-			err = idevice_new(&(device->client), udid);
-			if (device->client) {
-				break;
-			}
-			sleep(1);
-		} while (retries-- >= 0);
-		if (err != IDEVICE_E_SUCCESS) {
-			fprintf(stderr,
-					"No device found with udid %s, is it plugged in?\n", udid);
-			return NULL;
-		}
-		device->udid = strdup(udid);
-	}
+    if (_udid == NULL)
+    {
+        err = idevice_new(&_client, NULL);
+        if (err != IDEVICE_E_SUCCESS)
+        {
+            // TODO: add udid to log
+            throw std::runtime_error("No device found with udid {}, is it plugged in?");
+        }
+        idevice_get_udid(_client, (char**)&_udid);
+    }
+    else
+    {
+        const auto retries = 5;
+        for (auto i = 0; i < retries; ++i)
+        {
+            err = idevice_new(&_client, _udid.data());
+            if (_client)
+            {
+                break;
+            }
+            sleep(1);
+        }
 
-	return device;
+        if (err != IDEVICE_E_SUCCESS)
+        {
+            // TODO: add udid to log
+            throw std::runtime_error("No device found with udid {}, is it plugged in?", );
+        }
+    }
 }
 
-void device_free(device_t* device) {
-	if (device) {
-		if(device->udid) {
-			free(device->udid);
-			device->udid = NULL;
-		}
-		if (device->client) {
-			idevice_free(device->client);
-		}
-		free(device);
-	}
+Device::~Device()
+{
+    if (_client)
+    {
+        idevice_free(_client);
+    }
 }
 
-void device_enable_debug() {
-	idevice_set_debug_level(3);
-}
+void Device::enable_debug() { idevice_set_debug_level(3); }
+
+const idevice_t& Device::client() const { return _client; }
+
+const std::string& udid() const { return _udid; }
+
+} // namespace util
+} // namespace absinthe

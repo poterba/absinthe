@@ -19,24 +19,32 @@
 
 #pragma once
 
+#include "device.hpp"
+
 #include <libimobiledevice/mobilebackup.h>
 
-#include "device.hpp"
-#include "lockdown.hpp"
+#include <memory>
 
-typedef struct mb1_t {
-	uint16_t port;
-	device_t* device;
-	mobilebackup_client_t client;
-} mb1_t;
+namespace absinthe
+{
+namespace util
+{
 
-struct mobilebackup_client_private {
-	void* parent;
+class MB1 final
+{
+public:
+    MB1() = default;
+    ~MB1();
+
+    void connect(std::shared_ptr<Device> device);
+    void open(uint16_t port);
+    int crash();
+
+private:
+    uint16_t _port{0};
+    std::shared_ptr<Device> _device;
+    mobilebackup_client_t _client;
 };
 
-mb1_t* mb1_create();
-mb1_t* mb1_connect(device_t* device);
-mb1_t* mb1_open(device_t* device, uint16_t port);
-void mb1_free(mb1_t* mb1);
-
-int mb1_crash(mb1_t* mb1);
+} // namespace util
+} // namespace absinthe

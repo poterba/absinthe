@@ -23,24 +23,30 @@
 
 #include "lockdown.hpp"
 
-namespace absinthe {
-namespace crash_report {
+namespace absinthe
+{
+namespace util
+{
+class Device;
+} // namespace util
+namespace crashreport
+{
 
 class Copy final
 {
 public:
-	Copy(device_t* device);
+    Copy(std::shared_ptr<util::Device> device);
+    void open(std::shared_ptr<util::Device> device, uint16_t port);
 
-	void open(device_t* device, uint16_t port);
+    int close();
+    void free();
 
-	int close();
-	void free();
 private:
-	uint16_t _port;
-	device_t* _device;
-	afc_client_t _client;
-	idevice_connection_t connection;
+    uint16_t _port;
+    std::shared_ptr<util::Device> _device;
+    afc_client_t _client;
+    idevice_connection_t connection;
 };
 
-} // namespace crash_report
+} // namespace crashreport
 } // namespace absinthe

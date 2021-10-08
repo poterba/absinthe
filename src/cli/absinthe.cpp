@@ -17,304 +17,245 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <getopt.h>
-#include <dirent.h>
-
-#include <signal.h>
-#include <plist/plist.h>
-
-#include <libimobiledevice/sbservices.h>
-
 #include "mb1.hpp"
 #include "rop.hpp"
-#include "debug.hpp"
+// #include "debug.hpp"
 #include "backup.hpp"
-#include "device.hpp"
-#include "jailbreak.hpp"
-#include "dictionary.hpp"
 #include "crashreporter.hpp"
+#include "device.hpp"
+#include "dictionary.hpp"
 #include "idevicebackup2.hpp"
+#include "jailbreak.hpp"
 
 #include "dyldcache.hpp"
 
 // #include "offsets.hpp"
 
+#include <dirent.h>
+#include <getopt.h>
+#include <iostream>
+#include <memory>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <unistd.h>
+
+#include <plist/plist.h>
+#include <signal.h>
+
+#include <libimobiledevice/sbservices.h>
+
+#include <tclap/CmdLine.h>
+
+#include "version.h"
+
 /////////////////////////////////////////////////////////////////////////////////////////
-/// TODO: We need to add an event handler for when devices are connected. This handler //
-///         needs to wait for iTunes to autostart and kill it before it can start the  //
-///         syncing process and mess up our connection.                                //
+/// TODO: We need to add an event handler for when devices are connected. This handler needs to wait
+/// for iTunes to autostart and kill it before it can start the syncing process and mess up our
+/// connection.
 /////////////////////////////////////////////////////////////////////////////////////////
 
-namespace {
-
-static struct option longopts[] = {
-	{ "help",        no_argument,         NULL,   'h' },
-	{ "verbose",     required_argument,   NULL,   'v' },
-	{ "udid",        required_argument,   NULL,   'u' },
-	{ "target",      required_argument,   NULL,   't' },
-	{ "pointer",     required_argument,   NULL,   'p' },
-	{ "aslr-slide",  required_argument,   NULL,   'a' },
-	{ NULL, 0, NULL, 0 }
-};
-
-} // namespace
-
-namespace absinthe {
-
-unsigned long find_aslr_slide(crashreport_t* crash, char* cache) {
-	unsigned long slide = 0;
-	if(crash == NULL || cache == NULL) {
-		error("Invalid arguments\n");
-		return 0;
-	}
-
-	dyld::cache::dyldcache_t* dyldCache = dyld::cache::open(cache);
-	if(dyldCache != NULL) {
-		dyld::cache::free(dyldCache);
-	}
-	return slide;
-}
-
-static void idevice_event_cb(const idevice_event_t *event, void *user_data)
+namespace absinthe
 {
-	/*char* udid = (char*)user_data;
-	printf("device event %d: %s\n", event->event, event->udid);
-	if (udid && strcmp(udid, event->udid)) return;
-	if (event->event == IDEVICE_DEVICE_ADD) {
-		connected = 1;
-	} else if (event->event == IDEVICE_DEVICE_REMOVE) {
-		connected = 0;
-	}*/
-	jb_device_event_cb(event, user_data);
-}
-
-static void signal_handler(int sig)
+#if 0
+unsigned long find_aslr_slide(crashreport_t* crash, char* cache)
 {
-	jb_signal_handler(sig);
-}
+    unsigned long slide = 0;
+    if (crash == NULL || cache == NULL)
+    {
+        error("Invalid arguments\n");
+        return 0;
+    }
 
-void usage(int argc, char* argv[]) {
-	char* name = strrchr(argv[0], '/');
-	printf("Usage: %s [OPTIONS]\n", (name ? name + 1 : argv[0]));
-	printf("(c) 2011-2012, Chronic-Dev LLC\n");
-	printf("Jailbreak iOS5.0 using ub3rl33t MobileBackup2 exploit.\n");
-	//printf("Discovered by Nikias Bassen, Exploited by Joshua Hill\n");
-	printf("  General\n");
-	printf("    -h, --help\t\t\tprints usage information\n");
-	printf("    -v, --verbose\t\tprints debuging info while running\n");
-	printf("    -u, --udid UDID\t\ttarget specific device by its 40-digit device UDID\n");
-	printf("\n  Payload Generation\n");
-	printf("    -t, --target ADDRESS\toffset to ROP gadget we want to execute\n");
-	printf("    -p, --pointer ADDRESS\theap address we're hoping contains our target\n");
-	printf("    -a, --aslr-slide OFFSET\tvalue of randomized dyldcache slide\n");
-	printf("\n");
+    dyld::cache::dyldcache_t* dyldCache = dyld::cache::open(cache);
+    if (dyldCache != NULL)
+    {
+        dyld::cache::free(dyldCache);
+    }
+    return slide;
 }
+#endif // 0
 
-const char* lastmsg = NULL;
-static void status_cb(const char* msg, int progress)
+void idevice_event_cb(const idevice_event_t* event, void* user_data)
 {
-	if (!msg) {
-		msg = lastmsg;
-	} else {
-		lastmsg = msg;
-	}
-	printf("[%d%%] %s\n", progress,msg);
+    // char* udid = (char*)user_data;
+    // printf("device event %d: %s\n", event->event, event->udid);
+    // if (udid && strcmp(udid, event->udid)) return;
+    // if (event->event == IDEVICE_DEVICE_ADD) {
+    //     connected = 1;
+    // } else if (event->event == IDEVICE_DEVICE_REMOVE) {
+    //     connected = 0;
+    // }
+    absinthe::core::jb_device_event_cb(event, user_data);
+}
+
+void signal_handler(int sig) { absinthe::core::jb_signal_handler(sig); }
+
+void status_cb(const char* msg, int progress)
+{
+    static std::string lastmsg{};
+    if (!msg)
+    {
+        msg = lastmsg.data();
+    }
+    else
+    {
+        lastmsg = msg;
+    }
+    printf("[%d%%] %s\n", progress, msg);
 }
 
 } // namespace absinthe
 
-int main(int argc, char* argv[]) {
-	device_t* device = NULL;
+int main(int argc, char* argv[])
+{
+    std::shared_ptr<absinthe::util::Device> device;
 
-	int opt = 0;
-	int optindex = 0;
+    char* name = strrchr(argv[0], '/');
+    if (name)
+    {
+        int nlen = strlen(argv[0]) - strlen(name);
+        char path[512];
+        memcpy(path, argv[0], nlen);
+        path[nlen] = 0;
+        std::cout << "setting working directory to " << path << std::endl;
+        if (chdir(path) != 0)
+        {
+            std::cerr << "unable to set working directory" << std::endl;
+        }
+    }
 
-	int verbose = 0;
-	unsigned long aslr_slide = 0;
-	unsigned long pointer = 0;
-	unsigned long target = 0;
-	char* udid = NULL;
-	int i = 0;
-	char* product = NULL;
-	char* build = NULL;
+    TCLAP::CmdLine cmd("(c) 2011-2012, Chronic-Dev LLC\n"
+                       "Jailbreak iOS5.0 using ub3rl33t MobileBackup2 exploit.",
+                       // "Discovered by Nikias Bassen, Exploited by Joshua Hill\n"
+                       ' ', ABSINTHE_VERSION_STRING);
+    TCLAP::SwitchArg verbose("v", "verbose", "prints debuging info while running", cmd, false);
+    TCLAP::ValueArg<std::string> udidArg(
+        "u", "udid", "target specific device by its 40-digit device UDID", false, "", "UDID");
+    TCLAP::ValueArg<unsigned long> target("t", "target", "offset to ROP gadget we want to execute",
+                                          false, 0, "ADDRESS");
+    TCLAP::ValueArg<unsigned long> pointer(
+        "p", "pointer", "heap address we're hoping contains our target", false, 0, "ADDRESS");
+    TCLAP::ValueArg<unsigned long> aslrslide(
+        "a", "aslr-slide", "value of randomized dyldcache slide", false, 0, "OFFSET");
+    cmd.add(udidArg);
+    cmd.add(target);
+    cmd.add(pointer);
+    cmd.add(aslrslide);
 
-	char* name = strrchr(argv[0], '/');
-	if (name) {
-		int nlen = strlen(argv[0])-strlen(name);
-		char path[512];
-		memcpy(path, argv[0], nlen);
-		path[nlen] = 0;
-		debug("setting working directory to %s\n", path);
-		if (chdir(path) != 0) {
-			debug("unable to set working directory\n");
-		}
-	}
+    try
+    {
+        cmd.parse(argc, argv);
+    }
+    catch (const TCLAP::ArgException& e)
+    {
+        std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
+    }
 
-	while ((opt = getopt_long(argc, argv, "hva:p:t:u:", longopts, &optindex)) > 0) {
-		switch (opt) {
-		case 'h':
-			absinthe::usage(argc, argv);
-			return 0;
-
-		case 'v':
-			verbose++;
-			break;
-
-		case 'a':
-			aslr_slide = strtoul(optarg, NULL, 0);
-			break;
-
-		case 'p':
-			pointer = strtoul(optarg, NULL, 0);
-			break;
-
-		case 't':
-			target = strtoul(optarg, NULL, 0);
-			break;
-
-		case 'u':
-			udid = strdup(optarg);
-			break;
-
-		default:
-			absinthe::usage(argc, argv);
-			return -1;
-		}
-	}
-
-	if ((argc-optind) == 0) {
-		argc -= optind;
-		argv += optind;
-
-	} else {
-		absinthe::usage(argc, argv);
-		return -1;
-	}
-
-	/* we need to exit cleanly on running backups and restores or we cause havok */
-	signal(SIGINT, absinthe::signal_handler);
-	signal(SIGTERM, absinthe::signal_handler);
-#ifndef WIN32	
-	signal(SIGQUIT, absinthe::signal_handler);
-	signal(SIGPIPE, SIG_IGN);
+    // we need to exit cleanly on running backups and restores or we cause havok
+    signal(SIGINT, absinthe::signal_handler);
+    signal(SIGTERM, absinthe::signal_handler);
+#ifndef WIN32
+    signal(SIGQUIT, absinthe::signal_handler);
+    signal(SIGPIPE, SIG_IGN);
 #endif
 
-	/********************************************************/
-	/* device detection */
-	/********************************************************/
-	if (!udid) {
-		device = device_create(NULL);
-		if (!device) {
-			error("No device found, is it plugged in?\n");
-			return -1;
-		}
-		udid = strdup(device->udid);
-	} else {
-		// Open a connection to our device
-		debug("Detecting device...\n");
-		device = device_create(udid);
-		if (device == NULL) {
-			error("Unable to connect to device\n");
-			return -1;
-		}
-	}
+    std::string udid = udidArg.getValue();
+    // device detection
+    if (udid.empty())
+    {
+        device = std::make_shared<absinthe::util::Device>(std::string{});
+        udid = device->udid();
+    }
+    else
+    {
+        // Open a connection to our device
+        std::cout << "Detecting device..." << std::endl;
+        device = std::make_shared<absinthe::util::Device>(udid);
+    }
 
-	lockdown_t* lockdown = lockdown_open(device);
-	if (lockdown == NULL) {
-		error("Lockdown connection failed\n");
-		device_free(device);
-		return -1;
-	}
+    auto lockdown = std::make_unique<absinthe::util::Lockdown>(device);
+    char *product, *build;
+    if ((lockdown->get_string("ProductType", &product) != LOCKDOWN_E_SUCCESS) ||
+        (lockdown->get_string("BuildVersion", &build) != LOCKDOWN_E_SUCCESS))
+    {
+        std::cerr << "Could not get device information" << std::endl;
+        return -1;
+    }
 
-	if ((lockdown_get_string(lockdown, "ProductType", &product) != LOCKDOWN_E_SUCCESS) || (lockdown_get_string(lockdown, "BuildVersion", &build) != LOCKDOWN_E_SUCCESS)) {
-		error("Could not get device information\n");
-		lockdown_free(lockdown);
-		device_free(device);
-		return -1;
-	}
+    if (!absinthe::core::jb_device_is_supported(product, build))
+    {
+        std::cerr << "Error: device " << product << " build " << build << " is not supported."
+                  << std::endl;
+        return -1;
+    }
 
-	if (!jb_device_is_supported(product, build)) {
-		error("Error: device %s build %s is not supported.\n", product, build);
-		free(product);
-		free(build);
-		lockdown_free(lockdown);
-		device_free(device);
-		return -1;
-	}
+    int cc = absinthe::core::jb_check_consistency(product, build);
+    if (cc == 0)
+    {
+        std::cout << "Consistency check passed" << std::endl;
+    }
+    else if (cc == -1)
+    {
+        std::cerr << "ERROR: Consistency check failed: device " << product << " build " << build
+                  << " not supported" << std::endl;
+        return -1;
+    }
+    else if (cc == -2)
+    {
+        std::cerr << "ERROR: Consistency check failed: could not find required files for device "
+                  << product << " build " << build << std::endl;
+        return -1;
+    }
+    else
+    {
+        std::cerr << "ERROR: Consistency check failed: unknown error" << std::endl;
+        return -1;
+    }
 
-	int cc = jb_check_consistency(product, build);
-	if (cc == 0) {
-		debug("Consistency check passed\n");
-	} else if (cc == -1) {
-		error("ERROR: Consistency check failed: device %s build %s not supported\n", product, build);
-		free(product);
-		free(build);
-		lockdown_free(lockdown);
-		device_free(device);
-		return -1;
-	} else if (cc == -2) {
-		error("ERROR: Consistency check failed: could not find required files for device %s build %s\n", product, build);
-		free(product);
-		free(build);
-		lockdown_free(lockdown);
-		device_free(device);
-		return -1;
-	} else {
-		error("ERROR: Consistency check failed: unknown error\n");
-		free(product);
-		free(build);
-		lockdown_free(lockdown);
-		device_free(device);
-		return -1;
-	}
+    plist_t pl = NULL;
+    lockdown->get_value(NULL, "ActivationState", &pl);
+    if (pl && plist_get_node_type(pl) == PLIST_STRING)
+    {
+        char* as = NULL;
+        plist_get_string_val(pl, &as);
+        plist_free(pl);
+        if (as)
+        {
+            if (strcmp(as, "Unactivated") == 0)
+            {
+                free(as);
+                std::cerr << "Error: The attached device is not activated. You need to activate it "
+                             "before "
+                             "it can be used with Absinthe."
+                          << std::endl;
+                return -1;
+            }
+            free(as);
+        }
+    }
 
-	plist_t pl = NULL;
-	lockdown_get_value(lockdown, NULL, "ActivationState", &pl);
-	if (pl && plist_get_node_type(pl) == PLIST_STRING) {
-		char* as = NULL;
-		plist_get_string_val(pl, &as);
-		plist_free(pl);
-		if (as) {
-			if (strcmp(as, "Unactivated") == 0) {
-				free(as);
-				error("Error: The attached device is not activated. You need to activate it before it can be used with Absinthe.\n");
-				lockdown_free(lockdown);
-				device_free(device);
-				return -1;
-			}
-			free(as);
-		}
-	}
+    pl = NULL;
+    lockdown->get_value("com.apple.mobile.backup", "WillEncrypt", &pl);
+    if (pl && plist_get_node_type(pl) == PLIST_BOOLEAN)
+    {
+        unsigned char c = 0;
+        plist_get_bool_val(pl, &c);
+        plist_free(pl);
+        if (c)
+        {
+            std::cerr
+                << "Error: You have a device backup password set. You need to disable the backup "
+                   "password in iTunes."
+                << std::endl;
+            return -1;
+        }
+    }
 
-	pl = NULL;
-	lockdown_get_value(lockdown, "com.apple.mobile.backup", "WillEncrypt", &pl);
-	if (pl && plist_get_node_type(pl) == PLIST_BOOLEAN) {
-		char c = 0;
-		plist_get_bool_val(pl, &c);
-		plist_free(pl);
-		if (c) {
-			error("Error: You have a device backup password set. You need to disable the backup password in iTunes.\n");
-			lockdown_free(lockdown);
-			device_free(device);
-			return -1;
-		}
-	}
-	lockdown_free(lockdown);
-	device_free(device);
-	device = NULL;
+    // begin the process
+    idevice_event_subscribe(absinthe::idevice_event_cb, udid.data());
+    absinthe::core::jailbreak(udid.data(), absinthe::status_cb);
+    idevice_event_unsubscribe();
 
-	/********************************************************/
-	/* begin the process */
-	/********************************************************/
-	idevice_event_subscribe(absinthe::idevice_event_cb, udid);
-	jailbreak(udid, absinthe::status_cb);
-	idevice_event_unsubscribe();
-
-	free(udid);
-
-	return 0;
+    return 0;
 }

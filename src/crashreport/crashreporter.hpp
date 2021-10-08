@@ -17,31 +17,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef CRASHREPORTER_H_
-#define CRASHREPORTER_H_
-
-#include <libimobiledevice/libimobiledevice.h>
-#include <libimobiledevice/afc.h>
-#include <plist/plist.h>
+#pragma once
 
 #include "afc.hpp"
 #include "crashreport.hpp"
 #include "crashreportcopy.hpp"
 #include "crashreportmover.hpp"
 
-typedef struct crashreporter_t {
-	//afc_t* afc;
-	uint16_t port;
-	device_t* device;
-	crashreportcopy_t* copier;
-	crashreportmover_t* mover;
-} crashreporter_t;
+#include <libimobiledevice/afc.h>
+#include <libimobiledevice/libimobiledevice.h>
+#include <plist/plist.h>
 
-crashreporter_t* crashreporter_create();
-crashreporter_t* crashreporter_connect(device_t* device);
-crashreporter_t* crashreporter_open(device_t* device, uint16_t port);
-void crashreporter_free(crashreporter_t* crashreporter);
+namespace absinthe
+{
+namespace crashreport
+{
 
-crashreport_t* crashreporter_last_crash(crashreporter_t* crashreporter);
+class Reporter final
+{
+public:
+    void connect(std::shared_ptr<util::Device> device);
+    void open(std::shared_ptr<util::Device> device, uint16_t port);
+    void last_crash();
 
-#endif
+private:
+    // afc_t* afc;
+    uint16_t port;
+    std::shared_ptr<util::Device> device;
+    crashreport::Copy* copier;
+    std::shared_ptr<Mover> mover;
+};
+
+} // namespace crashreport
+} // namespace absinthe
