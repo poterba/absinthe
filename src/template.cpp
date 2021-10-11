@@ -22,47 +22,43 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "debug.hpp"
 #include "common.hpp"
+#include "debug.hpp"
 
 /*
  * Mach-O Segment Functions
  */
-template_t* template_create() {
-	template_t* command = NULL;
-	return command;
+template_t* template_create()
+{
+    template_t* command = NULL;
+    return command;
 }
 
-template_t* template_load(unsigned char* data, unsigned int offset) {
-	template_t* command = template_create();
-	return command;
+template_t* template_load(unsigned char* data, unsigned int offset)
+{
+    template_t* command = template_create();
+    return command;
 }
 
-void template_debug(template_t* command) {
+void template_debug(template_t* command) {}
 
-}
-
-void template_free(template_t* command) {
-
-}
+void template_free(template_t* command) {}
 
 /*
  * Mach-O Segment Info Functions
  */
-template_info_t* template_info_create() {
-	template_info_t* info = NULL;
-	return info;
+template_info_t* template_info_create()
+{
+    template_info_t* info = NULL;
+    return info;
 }
 
-template_info_t* template_info_load(unsigned char* data, unsigned int offset) {
-	template_info_t* info = template_info_create();
-	return info;
+template_info_t* template_info_load(unsigned char* data, unsigned int offset)
+{
+    template_info_t* info = template_info_create();
+    return info;
 }
 
-void template_info_debug(template_info_t* info) {
+void template_info_debug(template_info_t* info) {}
 
-}
-
-void template_info_free(template_info_t* info) {
-
-}
+void template_info_free(template_info_t* info) {}

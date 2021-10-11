@@ -24,13 +24,14 @@
 #include "device.hpp"
 #include "lockdown.hpp"
 
-typedef struct mb2_t {
-	uint16_t port;
-	device_t* device;
-	mobilebackup2_client_t client;
-	unsigned char *poison;
-	size_t poison_length;
-	int poison_spilled;
+typedef struct mb2_t
+{
+    uint16_t port;
+    device_t* device;
+    mobilebackup2_client_t client;
+    unsigned char* poison;
+    size_t poison_length;
+    int poison_spilled;
 } mb2_t;
 
 #define CODE_SUCCESS 0x00
@@ -50,12 +51,12 @@ int mb2_exploit(mb2_t* mb2);
 /* Status.plist callback function prototype */
 /* NOTE: if newplist is to be replaced with a pointer to a new plist,
    use plist_free() to free it first. */
-typedef void (*mb2_status_plist_cb_t)(plist_t *newplist, void *userdata);
+typedef void (*mb2_status_plist_cb_t)(plist_t* newplist, void* userdata);
 
 /* attack string callback function prototype */
 /* NOTE: newplist will be passed as NULL */
-typedef void (*mb2_attack_plist_cb_t)(plist_t *newplist, void *userdata);
+typedef void (*mb2_attack_plist_cb_t)(plist_t* newplist, void* userdata);
 
-void mb2_set_status_plist_cb_func(mb2_status_plist_cb_t callback, void *userdata);
+void mb2_set_status_plist_cb_func(mb2_status_plist_cb_t callback, void* userdata);
 
-void mb2_set_attack_plist_cb_func(mb2_attack_plist_cb_t callback, void *userdata);
+void mb2_set_attack_plist_cb_func(mb2_attack_plist_cb_t callback, void* userdata);

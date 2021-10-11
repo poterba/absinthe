@@ -33,11 +33,8 @@ namespace crashreport
 class Mover final
 {
 public:
-    Mover() = default;
-    ~Mover();
-
-    bool connect(std::shared_ptr<util::Device> device);
-    bool open(std::shared_ptr<util::Device> device, uint16_t port);
+    Mover(std::shared_ptr<util::Device> device);
+    Mover(std::shared_ptr<util::Device> device, uint16_t port);
     int close();
 
 private:

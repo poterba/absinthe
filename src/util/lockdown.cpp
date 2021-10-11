@@ -38,7 +38,7 @@ Lockdown::Lockdown(device_t* device) : _device(device)
     if (lockdownd_client_new_with_handshake(device->client, &_client, "absinthe") !=
         LOCKDOWN_E_SUCCESS)
     {
-        error("Unable to pair with lockdownd\n");
+        throw std::runtime_error("Unable to pair with lockdownd");
         throw;
     }
 }
@@ -104,11 +104,11 @@ int Lockdown::start_service2(const char* service, uint16_t* port, int warn_on_fa
     if (p == 0)
     {
         if (warn_on_fail)
-            error("%s failed to start!\n", service);
+            throw std::runtime_error("%s failed to start!", service);
         return -1;
     }
 
-    debug("Started %s successfully on port %d!\n", service, p);
+    debug("Started %s successfully on port %d!", service, p);
     *port = p;
     return 0;
 }

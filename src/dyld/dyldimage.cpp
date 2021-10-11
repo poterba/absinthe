@@ -21,99 +21,119 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "debug.hpp"
 #include "common.hpp"
-#include "dyldmap.hpp"
+#include "debug.hpp"
 #include "dyldimage.hpp"
+#include "dyldmap.hpp"
 
 #include "file.hpp"
 
-namespace absinthe {
-namespace dyld {
-namespace image {
+namespace absinthe
+{
+namespace dyld
+{
+namespace image
+{
 
-dyldimage_t* parse(unsigned char* data, uint32_t offset) {
-	unsigned char* buffer = &data[offset];
-	dyldimage_t* image = create();
-	if (image) {
-		image->info = info_parse(data, offset);
-		if(image->info == NULL) {
-			error("Unable to allocate data for dyld image info\n");
-			return NULL;
-		}
-		image->path = &data[image->info->offset];
-		image->name = strrchr(image->path, '/')+1;
-		image->address = image->info->address;
-		image->size = 0;
-	}
-	return image;
+dyldimage_t* parse(unsigned char* data, uint32_t offset)
+{
+    unsigned char* buffer = &data[offset];
+    dyldimage_t* image = create();
+    if (image)
+    {
+        image->info = info_parse(data, offset);
+        if (image->info == NULL)
+        {
+            throw std::runtime_error("Unable to allocate data for dyld image info");
+            return NULL;
+        }
+        image->path = &data[image->info->offset];
+        image->name = strrchr(image->path, '/') + 1;
+        image->address = image->info->address;
+        image->size = 0;
+    }
+    return image;
 }
 
-void free(dyldimage_t* image) {
-	if (image) {
-		if (image->info) {
-			dyldimage_info_free(image->info);
-			image->info = NULL;
-		}
-		free(image);
-	}
+void free(dyldimage_t* image)
+{
+    if (image)
+    {
+        if (image->info)
+        {
+            dyldimage_info_free(image->info);
+            image->info = NULL;
+        }
+        free(image);
+    }
 }
 
-void _debug(dyldimage_t* image) {
-	if (image) {
-		debug("\t\tImage {\n");
-		if (image->info) {
-			dyldimage_info_debug(image->info);
-		}
-		debug("\t\t}\n");
-	}
+void _debug(dyldimage_t* image)
+{
+    if (image)
+    {
+        debug("\t\tImage {");
+        if (image->info)
+        {
+            dyldimage_info_debug(image->info);
+        }
+        debug("\t\t}");
+    }
 }
 
 /*
  * Dyld Image Info Functions
  */
 
-dyldimage_info_t* info_create() {
-	dyldimage_info_t* info = (dyldimage_info_t*) malloc(sizeof(dyldimage_info_t));
-	if(info) {
-		memset(info, '\0', sizeof(dyldimage_info_t*));
-	}
-	return info;
+dyldimage_info_t* info_create()
+{
+    dyldimage_info_t* info = (dyldimage_info_t*)malloc(sizeof(dyldimage_info_t));
+    if (info)
+    {
+        memset(info, '\0', sizeof(dyldimage_info_t*));
+    }
+    return info;
 }
 
-dyldimage_info_t* info_parse(unsigned char* data, uint32_t offset) {
-	dyldimage_info_t* info = info_create();
-	if(info) {
-		memcpy(info, &data[offset], sizeof(dyldimage_info_t));
-	}
-	return info;
+dyldimage_info_t* info_parse(unsigned char* data, uint32_t offset)
+{
+    dyldimage_info_t* info = info_create();
+    if (info)
+    {
+        memcpy(info, &data[offset], sizeof(dyldimage_info_t));
+    }
+    return info;
 }
 
-void info_free(dyldimage_info_t* info) {
-	if (info) {
-		free(info);
-	}
+void info_free(dyldimage_info_t* info)
+{
+    if (info)
+    {
+        free(info);
+    }
 }
-void info_debug(dyldimage_info_t* info) {
-	if (info) {
-		debug("\t\t\taddress = 0x%qx\n", info->address);
-		debug("\t\t\t  inode = 0x%qx\n", info->inode);
-		debug("\t\t\tmodtime = 0x%qx\n", info->modtime);
-		debug("\t\t\t offset = 0x%08x\n", info->offset);
-		debug("\t\t\t    pad = 0x%08x\n", info->pad);
-	}
-}
-
-void save(dyldimage_t* image, const char* path) {
-	if(image != NULL && image->data != NULL && image->size > 0) {
-		printf("Writing dylib to %s\n", path);
-		file_write(path, image->data, image->size);
-	}
+void info_debug(dyldimage_info_t* info)
+{
+    if (info)
+    {
+        debug("\t\t\taddress = 0x%qx", info->address);
+        debug("\t\t\t  inode = 0x%qx", info->inode);
+        debug("\t\t\tmodtime = 0x%qx", info->modtime);
+        debug("\t\t\t offset = 0x%08x", info->offset);
+        debug("\t\t\t    pad = 0x%08x", info->pad);
+    }
 }
 
-char* get_name(dyldimage_t* image) {
-	return image->name;
+void save(dyldimage_t* image, const char* path)
+{
+    if (image != NULL && image->data != NULL && image->size > 0)
+    {
+        printf("Writing dylib to %s", path);
+        file_write(path, image->data, image->size);
+    }
 }
+
+char* get_name(dyldimage_t* image) { return image->name; }
 
 } // namespace image
 } // namespace dyld

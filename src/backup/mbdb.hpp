@@ -22,7 +22,7 @@
 
 #include "mbdb_record.hpp"
 
-#define MBDB_MAGIC "\x6d\x62\x64\x62\x05\x00"
+#include <array>
 
 namespace absinthe
 {
@@ -32,25 +32,20 @@ namespace backup
 class MBDB final
 {
 public:
-    void open(unsigned char* file);
-    void parse(unsigned char* data, unsigned int size);
-    mbdb_record::mbdb_record_t* get_record(unsigned int offset);
+    MBDB(const std::string& filePath);
+    MBDB(std::vector<unsigned char> data, unsigned int size);
+
+    const MBDBRecord& get_record(unsigned int offset);
 
 private:
-    unsigned int size;
-    unsigned char* data;
+    std::vector<unsigned char> data;
 
-    struct header
-    {
-        unsigned char magic[6]; // 'mbdb\5\0'
-    };
-    header_t* header;
+    std::array<unsigned char, 6> _header; // 'mbdb\5\0'
     int num_records;
-    mbdb_record::mbdb_record_t** records;
-}
+    std::vector<MBDBRecord> records;
+};
 
 extern MBDB* apparition_mbdb;
 
-} // namespace mbdb
 } // namespace backup
 } // namespace absinthe

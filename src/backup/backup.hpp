@@ -19,37 +19,35 @@
 
 #pragma once
 
-#include "mbdb.hpp"
 #include "backup_file.hpp"
+#include "mbdb.hpp"
 
-namespace absinthe {
-namespace backup {
+namespace absinthe
+{
+namespace backup
+{
 
-typedef struct backup_t {
-    char *path;
-    mbdb::mbdb_t *mbdb;
+typedef struct backup_t
+{
+    char* path;
+    std::shared_ptr<MBDB> mbdb;
 } backup_t;
 
-backup_t *backup_open(const char *directory, const char *uuid);
-int get_file_index(backup_t * backup, const char *domain,
-                          const char *path);
-char *backup_get_file_path(backup_t * backup, backup_file::backup_file_t * bfile);
-backup_file::backup_file_t *backup_get_file(backup_t * backup, const char *domain,
-                               const char *path);
-int update_file(backup_t * backup, backup_file::backup_file_t * bfile);
-int remove_file(backup_t * backup, backup_file::backup_file_t * bfile);
-void free(backup_t * backup);
-int mkdir(backup_t * backup, char *domain, char *path, int mode, int uid,
-                 int gid, int flag);
-int symlink(backup_t * backup, char *domain, char *path, char *to,
-                   int uid, int gid, int flag);
-int add_file_from_path(backup_t * backup, char *domain, char *localpath,
-                              char *path, int mode, int uid, int gid, int flag);
-int add_file_from_data(backup_t * backup, char *domain, char *data,
-                              unsigned int size, char *path, int mode, int uid,
-                              int gid, int flag);
+backup_t* backup_open(const char* directory, const char* uuid);
+int get_file_index(backup_t* backup, const char* domain, const char* path);
+char* backup_get_file_path(backup_t* backup, backup_file::backup_file_t* bfile);
+backup_file::backup_file_t* backup_get_file(backup_t* backup, const char* domain, const char* path);
+int update_file(backup_t* backup, backup_file::backup_file_t* bfile);
+int remove_file(backup_t* backup, backup_file::backup_file_t* bfile);
+void free(backup_t* backup);
+int mkdir(backup_t* backup, char* domain, char* path, int mode, int uid, int gid, int flag);
+int symlink(backup_t* backup, char* domain, char* path, char* to, int uid, int gid, int flag);
+int add_file_from_path(backup_t* backup, char* domain, char* localpath, char* path, int mode,
+                       int uid, int gid, int flag);
+int add_file_from_data(backup_t* backup, char* domain, char* data, unsigned int size, char* path,
+                       int mode, int uid, int gid, int flag);
 
-int write_mbdb(backup_t * backup);
+int write_mbdb(backup_t* backup);
 
 } // namespace backup
 } // namespace absinthe

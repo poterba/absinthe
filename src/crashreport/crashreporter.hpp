@@ -19,11 +19,10 @@
 
 #pragma once
 
-#include "afc.hpp"
+// #include "afc.hpp"
 #include "crashreport.hpp"
 #include "crashreportcopy.hpp"
 #include "crashreportmover.hpp"
-
 #include <libimobiledevice/afc.h>
 #include <libimobiledevice/libimobiledevice.h>
 #include <plist/plist.h>
@@ -36,16 +35,16 @@ namespace crashreport
 class Reporter final
 {
 public:
-    void connect(std::shared_ptr<util::Device> device);
-    void open(std::shared_ptr<util::Device> device, uint16_t port);
-    void last_crash();
+    Reporter(std::shared_ptr<util::Device> device);
+    Reporter(std::shared_ptr<util::Device> device, uint16_t port);
+    std::unique_ptr<Report> last_crash();
 
 private:
-    // afc_t* afc;
-    uint16_t port;
-    std::shared_ptr<util::Device> device;
-    crashreport::Copy* copier;
-    std::shared_ptr<Mover> mover;
+    // std::shared_ptr< AFC > _afc;
+    uint16_t _port;
+    std::shared_ptr<util::Device> _device;
+    std::shared_ptr<Copy> _copier;
+    std::shared_ptr<Mover> _mover;
 };
 
 } // namespace crashreport

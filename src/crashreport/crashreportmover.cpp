@@ -17,23 +17,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <libimobiledevice/libimobiledevice.h>
-
 #include "crashreportmover.hpp"
 #include "debug.hpp"
 #include "device.hpp"
 #include "lockdown.hpp"
+#include <libimobiledevice/libimobiledevice.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 namespace absinthe
 {
 namespace crashreport
 {
 
-void Mover::connect(device_t* device)
+Mover::Mover(device_t* device)
 {
     int err = 0;
     uint16_t port = 0;
@@ -49,14 +47,14 @@ void Mover::connect(device_t* device)
     err = lockdown_start_service(lockdown, "com.apple.crashreportmover", &port);
     if (err < 0)
     {
-        error("Unable to start crash report mover service\n");
+        throw std::runtime_error("Unable to start crash report mover service");
         return NULL;
     }
 
     mover = crashreportmover_open(device, port);
     if (mover == NULL)
     {
-        error("Unable to open connection to crash report mover service\n");
+        throw std::runtime_error("Unable to open connection to crash report mover service");
         return NULL;
     }
     lockdown_close(lockdown);
@@ -65,18 +63,13 @@ void Mover::connect(device_t* device)
     return mover;
 }
 
-crashreportmover_t* crashreportmover_open(device_t* device, uint16_t port)
+Mover::Mover(device_t* device, uint16_t port)
 {
-    crashreportmover_t* mover = crashreportmover_create();
-    if (mover != NULL)
+    int err = idevice_connect(device->client, port, &(mover->connection));
+    if (err < 0)
     {
-        int err = idevice_connect(device->client, port, &(mover->connection));
-        if (err < 0)
-        {
-            return NULL;
-        }
+        throw std::exception();
     }
-    return mover;
 }
 
 int crashreportmover_close(crashreportmover_t* mover)

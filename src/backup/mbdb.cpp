@@ -31,85 +31,58 @@ namespace absinthe
 {
 namespace backup
 {
-
-void MBDB::parse(unsigned char* data, unsigned int size)
+namespace
 {
-    int i = 0;
-    unsigned int count = 0;
-    unsigned int offset = 0;
-
-    mbdb_t* mbdb = NULL;
-    header_t* header = NULL;
-    MBDBRecord_t* record = NULL;
-
-    header = (header_t*)data;
-    if (strncmp(header->magic, MBDB_MAGIC, 6) != 0)
-    {
-        error("Unable to identify this filetype\n");
-        return NULL;
-    }
-
-    // Copy in our header data
-    _header = (header_t*)malloc(sizeof(header_t));
-    if (_header == NULL)
-    {
-        error("Allocation error\n");
-        return NULL;
-    }
-    memset(_header, '\0', sizeof(header_t));
-    memcpy(_header, &data[offset], sizeof(header_t));
-    offset += sizeof(header_t);
-
-    _data = (unsigned char*)malloc(size);
-    if (_data == NULL)
-    {
-        error("Allocation Error!!\n");
-        return NULL;
-    }
-    memcpy(_data, data, size);
-    _size = size;
-
-    _records = (mbdb_record::mbdb_record_t**)malloc(
-        (_size / 64) * sizeof(mbdb_record::mbdb_record_t)); // should be enough
-    _num_records = 0;
-
-    while (offset < _size)
-    {
-        mbdb_record::mbdb_record_t* rec = mbdb_record::parse(&(_data)[offset]);
-        if (!rec)
-        {
-            error("Unable to parse record at offset 0x%x!\n", offset);
-            break;
-        }
-        _records[_num_records++] = rec;
-        offset += rec->this_size;
-    }
-
-    return mbdb;
+constexpr unsigned char* MBDB_MAGIC{"\x6d\x62\x64\x62\x05\x00"};
 }
 
-void MBDB::open(unsigned char* file)
+MBDB::MBDB(const std::string& filePath)
 {
-    int err = 0;
     unsigned int size = 0;
     unsigned char* data = NULL;
 
-    err = util::file_read(file, &data, &size);
+    int err = util::file_read(filePath, &data, &size);
     if (err < 0)
     {
         throw std::runtime_error("Unable to read mbdb file");
     }
 
-    mbdb = parse(data, size);
-    if (mbdb == NULL)
-    {
-        throw std::runtime_error("Unable to parse mbdb file\n");
-    }
+    MBDB(data, size);
 
     free(data);
 }
 
-mbdb_record::mbdb_record_t* get_record(mbdb_t* mbdb, unsigned int index) { return NULL; }
+MBDB::MBDB(std::vector<unsigned char> data)
+{
+    int i = 0;
+    unsigned int count = 0;
+    unsigned int offset = 0;
+
+    if (strncmp(data, MBDB_MAGIC, 6) != 0)
+    {
+        throw std::runtime_error("Unable to identify this filetype");
+    }
+
+    // Copy in our header data
+    memset(_header, '\0', sizeof(Header));
+    memcpy(_header, &data[offset], sizeof(Header));
+    offset += sizeof(Header);
+
+    _data = data;
+
+    while (offset < _size)
+    {
+        MBDBRecord mbdb_record(&(_data)[offset]);
+        if (!rec)
+        {
+            throw std::runtime_error("Unable to parse record at offset 0x%x!", offset);
+        }
+        _records[_num_records++] = rec;
+        offset += rec->this_size;
+    }
+}
+
+const MBDBRecord& get_record(mbdb_t* mbdb, unsigned int index) { return NULL; }
 
 void free(mbdb_t* mbdb)
 {

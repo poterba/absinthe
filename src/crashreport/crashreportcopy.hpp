@@ -41,6 +41,8 @@ public:
     int close();
     void free();
 
+    const afc_client_t& client() const;
+
 private:
     uint16_t _port;
     std::shared_ptr<util::Device> _device;

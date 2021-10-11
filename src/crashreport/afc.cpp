@@ -67,7 +67,7 @@ void AFC::open(std::shared_ptr<util::Device> device, uint16_t port)
         if (err != AFC_E_SUCCESS)
         {
             afc_free(afc);
-            throw std::runtime_error("Unable to create new MobileBackup2 client\n");
+            throw std::runtime_error("Unable to create new MobileBackup2 client");
         }
         _device = device;
         _port = port;
@@ -170,7 +170,7 @@ int afc_send_file(afc_t* afc, const char* local, const char* remote)
     afc_file_open(_client, remote, AFC_FOPEN_WR, &my_file);
     if (my_file)
     {
-        // char *outdatafile = strdup("THIS IS HOW WE DO IT, WHORE\n");
+        // char *outdatafile = strdup("THIS IS HOW WE DO IT, WHORE");
 
         // FIXME: right here its just sending "local/file.txt, rather than the contents of the file.
 
@@ -179,11 +179,11 @@ int afc_send_file(afc_t* afc, const char* local, const char* remote)
         afc_file_write(_client, my_file, local, strlen(local), &bytes);
         // free(outdatafile);
         if (bytes > 0)
-            printf("File transferred successfully\n");
+            printf("File transferred successfully");
         else
-            printf("File write failed!!! :(\n");
+            printf("File write failed!!! :(");
         afc_file_close(_client, my_file);
     }
 
-    printf("afc all done.\n");
+    printf("afc all done.");
 }

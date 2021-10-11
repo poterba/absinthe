@@ -63,7 +63,7 @@ unsigned long find_aslr_slide(crashreport_t* crash, char* cache)
     unsigned long slide = 0;
     if (crash == NULL || cache == NULL)
     {
-        error("Invalid arguments\n");
+        throw std::runtime_error("Invalid arguments");
         return 0;
     }
 
@@ -79,7 +79,7 @@ unsigned long find_aslr_slide(crashreport_t* crash, char* cache)
 void idevice_event_cb(const idevice_event_t* event, void* user_data)
 {
     // char* udid = (char*)user_data;
-    // printf("device event %d: %s\n", event->event, event->udid);
+    // printf("device event %d: %s", event->event, event->udid);
     // if (udid && strcmp(udid, event->udid)) return;
     // if (event->event == IDEVICE_DEVICE_ADD) {
     //     connected = 1;
@@ -102,7 +102,7 @@ void status_cb(const char* msg, int progress)
     {
         lastmsg = msg;
     }
-    printf("[%d%%] %s\n", progress, msg);
+    printf("[%d%%] %s", progress, msg);
 }
 
 } // namespace absinthe
@@ -125,9 +125,9 @@ int main(int argc, char* argv[])
         }
     }
 
-    TCLAP::CmdLine cmd("(c) 2011-2012, Chronic-Dev LLC\n"
+    TCLAP::CmdLine cmd("(c) 2011-2012, Chronic-Dev LLC"
                        "Jailbreak iOS5.0 using ub3rl33t MobileBackup2 exploit.",
-                       // "Discovered by Nikias Bassen, Exploited by Joshua Hill\n"
+                       // "Discovered by Nikias Bassen, Exploited by Joshua Hill"
                        ' ', ABSINTHE_VERSION_STRING);
     TCLAP::SwitchArg verbose("v", "verbose", "prints debuging info while running", cmd, false);
     TCLAP::ValueArg<std::string> udidArg(

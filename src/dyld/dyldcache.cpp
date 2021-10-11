@@ -23,388 +23,465 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "file.hpp"
-#include "debug.hpp"
 #include "common.hpp"
+#include "debug.hpp"
 #include "endianness.hpp"
+#include "file.hpp"
 
-#include "dyldmap.hpp"
 #include "dyldimage.hpp"
+#include "dyldmap.hpp"
 
-namespace absinthe {
-namespace dyld {
-namespace cache {
+namespace absinthe
+{
+namespace dyld
+{
+namespace cache
+{
 
-dyldcache_t* open(const char* path) {
-	int i = 0;
-	int err = 0;
-	uint32_t count = 0;
-	uint32_t offset = 0;
-	uint32_t length = 0;
-	file_t* file = NULL;
-	dyldcache_t* cache = NULL;
-	dyldimage_t* image = NULL;
-	unsigned char* data = NULL;
-	unsigned char* buffer = NULL;
+dyldcache_t* open(const char* path)
+{
+    int i = 0;
+    int err = 0;
+    uint32_t count = 0;
+    uint32_t offset = 0;
+    uint32_t length = 0;
+    file_t* file = NULL;
+    dyldcache_t* cache = NULL;
+    dyldimage_t* image = NULL;
+    unsigned char* data = NULL;
+    unsigned char* buffer = NULL;
 
-	cache = create();
-	if (cache) {
-		err = file_read(path, &buffer, &length);
-		if (err < 0) {
-			error("Unable to open file at path %s\n", path);
-			dyldcache_free(cache);
-			return NULL;
-		}
-		cache->data = buffer;
-		cache->size = length;
+    cache = create();
+    if (cache)
+    {
+        err = file_read(path, &buffer, &length);
+        if (err < 0)
+        {
+            throw std::runtime_error("Unable to open file at path %s", path);
+            dyldcache_free(cache);
+            return NULL;
+        }
+        cache->data = buffer;
+        cache->size = length;
 
-		cache->header = header_load(cache);
-		if (cache->header == NULL) {
-			error("Unable to parse dyldcache header\n");
-			dyldcache_free(cache);
-			return NULL;
-		}
-		cache->count = cache->header->images_count;
-		cache->offset = cache->header->images_offset;
+        cache->header = header_load(cache);
+        if (cache->header == NULL)
+        {
+            throw std::runtime_error("Unable to parse dyldcache header");
+            dyldcache_free(cache);
+            return NULL;
+        }
+        cache->count = cache->header->images_count;
+        cache->offset = cache->header->images_offset;
 
-		cache->arch = architecture_load(cache);
-		if (cache->arch == NULL) {
-			error("Unable to parse architecture from dyldcache header\n");
-			dyldcache_free(cache);
-			return NULL;
-		}
+        cache->arch = architecture_load(cache);
+        if (cache->arch == NULL)
+        {
+            throw std::runtime_error("Unable to parse architecture from dyldcache header");
+            dyldcache_free(cache);
+            return NULL;
+        }
 
-		cache->maps = maps_load(cache);
-		if (cache->maps == NULL) {
-			error("Unable to load maps from dyldcache\n");
-			dyldcache_free(cache);
-			return NULL;
-		}
+        cache->maps = maps_load(cache);
+        if (cache->maps == NULL)
+        {
+            throw std::runtime_error("Unable to load maps from dyldcache");
+            dyldcache_free(cache);
+            return NULL;
+        }
 
-		cache->images = images_load(cache);
-		if (cache->images == NULL) {
-			error("Unable to load images from dyldcache\n");
-			dyldcache_free(cache);
-			return NULL;
-		}
+        cache->images = images_load(cache);
+        if (cache->images == NULL)
+        {
+            throw std::runtime_error("Unable to load images from dyldcache");
+            dyldcache_free(cache);
+            return NULL;
+        }
 
-		//dyldcache_debug(cache);
-	}
-	return cache;
+        // dyldcache_debug(cache);
+    }
+    return cache;
 }
 
-void free(dyldcache_t* cache) {
-	if (cache) {
-		if (cache->header) {
-			dyldcache_header_free(cache->header);
-			cache->header = NULL;
-		}
-		if (cache->maps) {
-			dyldcache_maps_free(cache->maps);
-			cache->maps = NULL;
-		}
-		if (cache->images) {
-			dyldcache_images_free(cache->images);
-			cache->images = NULL;
-		}
-		if (cache->arch) {
-			dyldcache_architecture_free(cache->arch);
-			cache->arch = NULL;
-		}
-		if (cache->data) {
-			free(cache->data);
-			cache->data = NULL;
-		}
-		if(cache->file) {
-			file_free(cache->file);
-			cache->file = NULL;
-		}
-		free(cache);
-	}
+void free(dyldcache_t* cache)
+{
+    if (cache)
+    {
+        if (cache->header)
+        {
+            dyldcache_header_free(cache->header);
+            cache->header = NULL;
+        }
+        if (cache->maps)
+        {
+            dyldcache_maps_free(cache->maps);
+            cache->maps = NULL;
+        }
+        if (cache->images)
+        {
+            dyldcache_images_free(cache->images);
+            cache->images = NULL;
+        }
+        if (cache->arch)
+        {
+            dyldcache_architecture_free(cache->arch);
+            cache->arch = NULL;
+        }
+        if (cache->data)
+        {
+            free(cache->data);
+            cache->data = NULL;
+        }
+        if (cache->file)
+        {
+            file_free(cache->file);
+            cache->file = NULL;
+        }
+        free(cache);
+    }
 }
 
-void _debug(dyldcache_t* cache) {
-	if (cache) {
-		debug("Dyldcache:\n");
-		if (cache->header) header_debug(cache->header);
-		if (cache->images) images_debug(cache->images);
-		if (cache->maps) maps_debug(cache->maps);
-	}
+void _debug(dyldcache_t* cache)
+{
+    if (cache)
+    {
+        debug("Dyldcache:");
+        if (cache->header)
+            header_debug(cache->header);
+        if (cache->images)
+            images_debug(cache->images);
+        if (cache->maps)
+            maps_debug(cache->maps);
+    }
 }
 
 /*
  * Dyldcache Architecture Functions
  */
-architecture_t* architecture_create() {
-	architecture_t* arch = (architecture_t*) malloc(sizeof(architecture_t));
-	if (arch) {
-		memset(arch, '\0', sizeof(architecture_t*));
-	}
-	return arch;
+architecture_t* architecture_create()
+{
+    architecture_t* arch = (architecture_t*)malloc(sizeof(architecture_t));
+    if (arch)
+    {
+        memset(arch, '\0', sizeof(architecture_t*));
+    }
+    return arch;
 }
 
-architecture_t* architecture_load(dyldcache_t* cache) {
-	unsigned char* found = NULL;
-	architecture_t* arch = architecture_create();
-	if (arch) {
-		found = strstr(cache->data, DYLDARCH_ARMV6);
-		if (found) {
-			arch->name = DYLDARCH_ARMV6;
-			arch->cpu_type = kArmType;
-			arch->cpu_subtype = kArmv6;
-			arch->cpu_endian = kLittleEndian;
-			return arch;
-		}
+architecture_t* architecture_load(dyldcache_t* cache)
+{
+    unsigned char* found = NULL;
+    architecture_t* arch = architecture_create();
+    if (arch)
+    {
+        found = strstr(cache->data, DYLDARCH_ARMV6);
+        if (found)
+        {
+            arch->name = DYLDARCH_ARMV6;
+            arch->cpu_type = kArmType;
+            arch->cpu_subtype = kArmv6;
+            arch->cpu_endian = kLittleEndian;
+            return arch;
+        }
 
-		found = strstr(cache->data, DYLDARCH_ARMV7);
-		if (found) {
-			arch->name = DYLDARCH_ARMV7;
-			arch->cpu_type = kArmType;
-			arch->cpu_subtype = kArmv7;
-			arch->cpu_endian = kLittleEndian;
-			return arch;
-		}
+        found = strstr(cache->data, DYLDARCH_ARMV7);
+        if (found)
+        {
+            arch->name = DYLDARCH_ARMV7;
+            arch->cpu_type = kArmType;
+            arch->cpu_subtype = kArmv7;
+            arch->cpu_endian = kLittleEndian;
+            return arch;
+        }
 
-		// TODO: Add other architectures in here. We only need iPhone for now.
-	}
+        // TODO: Add other architectures in here. We only need iPhone for now.
+    }
 
-	if (found == NULL) {
-		error("Unknown architechure encountered! %s\n", cache->data);
-	}
+    if (found == NULL)
+    {
+        throw std::runtime_error("Unknown architechure encountered! %s", cache->data);
+    }
 
-	return arch;
+    return arch;
 }
 
-void architecture_debug(architecture_t* arch) {
-	debug("\tArchitecture:\n");
-	debug("\t\tname = %s\n", arch->name);
-	debug("\t\tcpu_id = %d\n", arch->cpu_type);
-	debug("\t\tcpu_sub_id = %d\n", arch->cpu_subtype);
-	debug("\t\tcpu_endian = %s\n", arch->cpu_endian == kLittleEndian ? "little endian" : "big endian");
-	debug("\n");
+void architecture_debug(architecture_t* arch)
+{
+    debug("\tArchitecture:");
+    debug("\t\tname = %s", arch->name);
+    debug("\t\tcpu_id = %d", arch->cpu_type);
+    debug("\t\tcpu_sub_id = %d", arch->cpu_subtype);
+    debug("\t\tcpu_endian = %s",
+          arch->cpu_endian == kLittleEndian ? "little endian" : "big endian");
+    debug("");
 }
 
-void architecture_free(architecture_t* arch) {
-	if (arch) {
-		free(arch);
-	}
+void architecture_free(architecture_t* arch)
+{
+    if (arch)
+    {
+        free(arch);
+    }
 }
 
 /*
  * Dyldcache Header Functions
  */
-dyldcache_header_t* header_create() {
-	dyldcache_header_t* header = (dyldcache_header_t*) malloc(sizeof(dyldcache_header_t));
-	if (header) {
-		memset(header, '\0', sizeof(dyldcache_header_t));
-	}
-	return header;
+dyldcache_header_t* header_create()
+{
+    dyldcache_header_t* header = (dyldcache_header_t*)malloc(sizeof(dyldcache_header_t));
+    if (header)
+    {
+        memset(header, '\0', sizeof(dyldcache_header_t));
+    }
+    return header;
 }
 
-void header_free(dyldcache_header_t* header) {
-	if (header) {
-		free(header);
-	}
+void header_free(dyldcache_header_t* header)
+{
+    if (header)
+    {
+        free(header);
+    }
 }
 
-dyldcache_header_t* header_load(dyldcache_t* cache) {
-	dyldcache_header_t* header = header_create();
-	if (header) {
-		memcpy(header, cache->data, sizeof(dyldcache_header_t));
-	}
-	return header;
+dyldcache_header_t* header_load(dyldcache_t* cache)
+{
+    dyldcache_header_t* header = header_create();
+    if (header)
+    {
+        memcpy(header, cache->data, sizeof(dyldcache_header_t));
+    }
+    return header;
 }
 
-void header_debug(dyldcache_header_t* header) {
-	debug("\tHeader:\n");
-	debug("\t\tmagic = %s\n", header->magic);
-	debug("\t\tmapping_offset = %u\n", header->mapping_offset);
-	debug("\t\tmapping_count = %u\n", header->mapping_count);
-	debug("\t\timages_offset = %u\n", header->images_offset);
-	debug("\t\timages_count = %u\n", header->images_count);
-	debug("\t\tbase_address = 0x%qX\n", header->base_address);
-	debug("\t\tcodesign_offset = 0x%qX\n", header->codesign_offset);
-	debug("\t\tcodesign_size = %llu\n", header->codesign_size);
-	debug("\n");
+void header_debug(dyldcache_header_t* header)
+{
+    debug("\tHeader:");
+    debug("\t\tmagic = %s", header->magic);
+    debug("\t\tmapping_offset = %u", header->mapping_offset);
+    debug("\t\tmapping_count = %u", header->mapping_count);
+    debug("\t\timages_offset = %u", header->images_offset);
+    debug("\t\timages_count = %u", header->images_count);
+    debug("\t\tbase_address = 0x%qX", header->base_address);
+    debug("\t\tcodesign_offset = 0x%qX", header->codesign_offset);
+    debug("\t\tcodesign_size = %llu", header->codesign_size);
+    debug("");
 }
 
 /*
  * Dyldcache Images Functions
  */
-dyldimage_t** images_create(uint32_t count) {
-	uint32_t size = (count+1) * sizeof(dyldimage_t*);
-	dyldimage_t** images = (dyldimage_t**) malloc(size);
-	if (images) {
-		memset(images, '\0', size);
-	}
-	return images;
+dyldimage_t** images_create(uint32_t count)
+{
+    uint32_t size = (count + 1) * sizeof(dyldimage_t*);
+    dyldimage_t** images = (dyldimage_t**)malloc(size);
+    if (images)
+    {
+        memset(images, '\0', size);
+    }
+    return images;
 }
 
-dyldimage_t** images_load(dyldcache_t* cache) {
-	uint32_t i = 0;
-	uint32_t count = 0;
-	uint32_t offset = 0;
-	uint8_t* buffer = NULL;
-	dyldimage_t* image = NULL;
-	dyldimage_t** images = NULL;
+dyldimage_t** images_load(dyldcache_t* cache)
+{
+    uint32_t i = 0;
+    uint32_t count = 0;
+    uint32_t offset = 0;
+    uint8_t* buffer = NULL;
+    dyldimage_t* image = NULL;
+    dyldimage_t** images = NULL;
 
-	if (cache) {
-		count = cache->header->images_count;
-		images = images_create(count);
-		if (images == NULL) {
-			error("Unable to allocate memory for dyld images\n");
-			return NULL;
-		}
+    if (cache)
+    {
+        count = cache->header->images_count;
+        images = images_create(count);
+        if (images == NULL)
+        {
+            throw std::runtime_error("Unable to allocate memory for dyld images");
+            return NULL;
+        }
 
-		for (i = 0; i < count; i++) {
-			image = dyldimage_parse(cache->data, cache->header->images_offset + i*sizeof(dyldimage_info_t));
-			if (image == NULL) {
-				error("Unable to parse dyld image from cache\n");
-				return NULL;
-			}
-			image->map = map_address(cache, image->address);
-			image->offset = image->address - image->map->address;
-			image->data = &cache->data[image->offset];
-			image->size = *(uint32_t*)(image->data + 0x38);
-			images[i] = image;
-		}
-		//dyldcache_images_debug(maps);
-	}
-	return images;
+        for (i = 0; i < count; i++)
+        {
+            image = dyldimage_parse(cache->data,
+                                    cache->header->images_offset + i * sizeof(dyldimage_info_t));
+            if (image == NULL)
+            {
+                throw std::runtime_error("Unable to parse dyld image from cache");
+                return NULL;
+            }
+            image->map = map_address(cache, image->address);
+            image->offset = image->address - image->map->address;
+            image->data = &cache->data[image->offset];
+            image->size = *(uint32_t*)(image->data + 0x38);
+            images[i] = image;
+        }
+        // dyldcache_images_debug(maps);
+    }
+    return images;
 }
 
-void images_debug(dyldimage_t** images) {
-	if (images) {
-		debug("\tImages:\n");
-		int i = 0;
-		while (images[i]) {
-			dyldimage_debug(images[i]);
-			i++;
-		}
-		debug("\n");
-	}
+void images_debug(dyldimage_t** images)
+{
+    if (images)
+    {
+        debug("\tImages:");
+        int i = 0;
+        while (images[i])
+        {
+            dyldimage_debug(images[i]);
+            i++;
+        }
+        debug("");
+    }
 }
 
-void images_free(dyldimage_t** images) {
-	if (images) {
-		// Loop through each image and free it
-		int i = 0;
-		while (images[i]) {
-			dyldimage_free(images[i]);
-			i++;
-		}
-		free(images);
-		images = NULL;
-	}
+void images_free(dyldimage_t** images)
+{
+    if (images)
+    {
+        // Loop through each image and free it
+        int i = 0;
+        while (images[i])
+        {
+            dyldimage_free(images[i]);
+            i++;
+        }
+        free(images);
+        images = NULL;
+    }
 }
 
 /*
  * Dyldcache Maps Functions
  */
-map::dyldmap_t** maps_create(uint32_t count) {
-	uint32_t size = (count+1) * sizeof(map::dyldmap_t*);
-	map::dyldmap_t** maps = (map::dyldmap_t**) malloc(size);
-	if (maps) {
-		memset(maps, '\0', size);
-	}
-	return maps;
+map::dyldmap_t** maps_create(uint32_t count)
+{
+    uint32_t size = (count + 1) * sizeof(map::dyldmap_t*);
+    map::dyldmap_t** maps = (map::dyldmap_t**)malloc(size);
+    if (maps)
+    {
+        memset(maps, '\0', size);
+    }
+    return maps;
 }
 
-map::dyldmap_t** maps_load(dyldcache_t* cache) {
-	int i = 0;
-	uint32_t count = 0;
-	map::dyldmap_t** maps = NULL;
-	if (cache) {
-		count = cache->header->mapping_count;
-		maps = maps_create(count);
-		if (maps == NULL) {
-			error("Unable to allocate memory for dyld maps\n");
-			return NULL;
-		}
+map::dyldmap_t** maps_load(dyldcache_t* cache)
+{
+    int i = 0;
+    uint32_t count = 0;
+    map::dyldmap_t** maps = NULL;
+    if (cache)
+    {
+        count = cache->header->mapping_count;
+        maps = maps_create(count);
+        if (maps == NULL)
+        {
+            throw std::runtime_error("Unable to allocate memory for dyld maps");
+            return NULL;
+        }
 
-		for (i = 0; i < count; i++) {
-			maps[i] = dyldmap_parse(cache->data, cache->header->mapping_offset + i*sizeof(dyldmap_info_t));
-			if (maps[i] == NULL) {
-				error("Unable to parse dyld map from cache\n");
-				return NULL;
-			}
-			cache->count++;
-		}
-		//dyldcache_maps_debug(maps);
-	}
-	return maps;
+        for (i = 0; i < count; i++)
+        {
+            maps[i] = dyldmap_parse(cache->data,
+                                    cache->header->mapping_offset + i * sizeof(dyldmap_info_t));
+            if (maps[i] == NULL)
+            {
+                throw std::runtime_error("Unable to parse dyld map from cache");
+                return NULL;
+            }
+            cache->count++;
+        }
+        // dyldcache_maps_debug(maps);
+    }
+    return maps;
 }
 
-void maps_debug(map::dyldmap_t** maps) {
-	if (maps) {
-		debug("\tMaps:\n");
-		int i = 0;
-		while (maps[i]) {
-			dyldmap_info_debug(maps[i]->info);
-			i++;
-		}
-		debug("\n");
-	}
+void maps_debug(map::dyldmap_t** maps)
+{
+    if (maps)
+    {
+        debug("\tMaps:");
+        int i = 0;
+        while (maps[i])
+        {
+            dyldmap_info_debug(maps[i]->info);
+            i++;
+        }
+        debug("");
+    }
 }
 
-void maps_free(map::dyldmap_t** maps) {
-	if (maps) {
-		int i = 0;
-		// Loop through each map and free it
-		while (maps[i]) {
-			dyldmap_free(maps[i]);
-			i++;
-		}
-		free(maps);
-	}
+void maps_free(map::dyldmap_t** maps)
+{
+    if (maps)
+    {
+        int i = 0;
+        // Loop through each map and free it
+        while (maps[i])
+        {
+            dyldmap_free(maps[i]);
+            i++;
+        }
+        free(maps);
+    }
 }
 
-map::dyldmap_t* map_image(dyldcache_t* cache, dyldimage_t* image) {
-	return map_address(cache, image->address);
+map::dyldmap_t* map_image(dyldcache_t* cache, dyldimage_t* image)
+{
+    return map_address(cache, image->address);
 }
 
-map::dyldmap_t* map_address(dyldcache_t* cache, uint64_t address) {
-	int i = 0;
-	map::dyldmap_t* map = NULL;
-	for(i = 0; i < cache->header->mapping_count; i++) {
-		map = cache->maps[i];
-		if(dyldmap_contains(map, address)) {
-			return map;
-		}
-	}
-	return NULL;
+map::dyldmap_t* map_address(dyldcache_t* cache, uint64_t address)
+{
+    int i = 0;
+    map::dyldmap_t* map = NULL;
+    for (i = 0; i < cache->header->mapping_count; i++)
+    {
+        map = cache->maps[i];
+        if (dyldmap_contains(map, address))
+        {
+            return map;
+        }
+    }
+    return NULL;
 }
 
-
-dyldimage_t* get_image(dyldcache_t* cache, const char* dylib) {
-	int i = 0;
-	dyldimage_t* image = NULL;
-	for(i = 0; i < cache->count; i++) {
-		image = cache->images[i];
-		if(image != NULL) {
-			printf("Found %s\n", image->name);
-			if(!strcmp(image->name, dylib)) {
-				return image;
-			}
-		}
-	}
-	return NULL;
+dyldimage_t* get_image(dyldcache_t* cache, const char* dylib)
+{
+    int i = 0;
+    dyldimage_t* image = NULL;
+    for (i = 0; i < cache->count; i++)
+    {
+        image = cache->images[i];
+        if (image != NULL)
+        {
+            printf("Found %s", image->name);
+            if (!strcmp(image->name, dylib))
+            {
+                return image;
+            }
+        }
+    }
+    return NULL;
 }
 
-dyldimage_t* first_image(dyldcache_t* cache) {
-	return cache->images[0];
-}
+dyldimage_t* first_image(dyldcache_t* cache) { return cache->images[0]; }
 
-dyldimage_t* next_image(dyldcache_t* cache, dyldimage_t* image) {
-	int i = 0;
-	dyldimage_t* next = NULL;
-	for(i = 0; i < cache->count; i++) {
-		if(cache->images[i] == image) {
-			next = cache->images[i+1];
-			break;
-		}
-	}
-	return next;
+dyldimage_t* next_image(dyldcache_t* cache, dyldimage_t* image)
+{
+    int i = 0;
+    dyldimage_t* next = NULL;
+    for (i = 0; i < cache->count; i++)
+    {
+        if (cache->images[i] == image)
+        {
+            next = cache->images[i + 1];
+            break;
+        }
+    }
+    return next;
 }
 
 } // namespace cache

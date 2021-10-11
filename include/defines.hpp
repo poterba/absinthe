@@ -26,8 +26,25 @@
 #define VARS_MAX_SIZE 0x1000
 
 // constants
-#define	USELESS 0xdeadbeef
-#define	PLACE_HOLDER 0xdeadbeef
+#define USELESS 0xdeadbeef
+#define PLACE_HOLDER 0xdeadbeef
+
+typedef enum
+{
+    vncontrol_readwrite_io_e = 0
+} vncontrol_t;
+
+typedef unsigned int __32bit_ptr;
+
+struct vn_ioctl
+{
+    __32bit_ptr vn_file; /* pathname of file to mount */
+    int vn_size;         /* (returned) size of disk */
+    int vn_control;      /* this is vncontrol_t, but we need to ensure 32 bit size */
+};
+
+#define VNIOCATTACH _IOWR('F', 0, struct vn_ioctl) /* attach file */
+#define VNIOCDETACH _IOWR('F', 1, struct vn_ioctl)
 
 struct offsets
 {
@@ -130,4 +147,28 @@ struct offsets
     uint32_t FLUSH_DCACHE_ALL;
     uint32_t INVALIDATE_ICACHE_ALL;
     uint32_t SB_EVALUATE;
+};
+
+#define LOG_WARNING 4
+
+#define SHELLCODE_ADDR 0x80000400
+#define ZFREEHOOK_ADDR (offsets->ZFREE - 1)
+#define ZFREEHOOKER_ADDR 0x80000600
+
+#define SB_EVALUATEHOOK_ADDR (offsets->SB_EVALUATE - 1)
+#define SB_EVALUATEHOOKER_ADDR 0x80000700
+
+enum
+{
+    iPad1_1,
+    iPhone2_1,
+    iPhone3_1,
+    iPhone3_3,
+    iPhone4_1,
+    iPad2_1,
+    iPad2_2,
+    iPad2_3,
+    iPod3_1,
+    iPod4_1,
+    MAX_DEVICE
 };

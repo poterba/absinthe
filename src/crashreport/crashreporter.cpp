@@ -17,128 +17,49 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include "crashreporter.hpp"
 #include "crashreport.hpp"
 #include "crashreportcopy.hpp"
-#include "crashreporter.hpp"
 #include "crashreportmover.hpp"
 #include "debug.hpp"
 #include "file.hpp"
 #include "lockdown.hpp"
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 namespace absinthe
 {
 namespace crashreport
 {
 
-void connect(std::shared_ptr<util::Device> device);
-void open(std::shared_ptr<util::Device> device, uint16_t port);
-void last_crash();
-// class Reporter final
-
-void Reporter::connect(std::shared_ptr<util::Device> device)
+Reporter::Reporter(std::shared_ptr<util::Device> device)
+    : _device(device), _mover(std::make_shared<Mover>(device)),
+      _copier(std::make_shared<Copy>(device))
 {
-    int err = 0;
-    uint16_t port = 0;
-    crashreporter_t* crashreporter = crashreporter_create();
-    if (crashreporter != NULL)
-    {
-        crashreporter->mover = crashreportmover_connect(device);
-        if (crashreporter->mover == NULL)
-        {
-            error("Unable to connect to CrashReporter's mover service\n");
-            return NULL;
-        }
-
-        crashreporter->copier = crashreportcopy_connect(device);
-        if (crashreporter->copier == NULL)
-        {
-            error("Unable to connect to CrashReporter's copier service\n");
-            return NULL;
-        }
-    }
-
-    return crashreporter;
 }
 
-void Reporter::open(device_t* device, uint16_t port)
+Reporter::Reporter(std::shared_ptr<util::Device> device, uint16_t port)
+    : _device(device), _mover(std::make_shared<Mover>(device, port)),
+      _copier(std::make_shared<Copy>(device, port))
 {
-    crashreporter_t* crashreporter = crashreporter_create();
-    if (crashreporter == NULL)
-    {
-        error("Unable to create CrashReporter client\n");
-        return NULL;
-    }
-    // Startup crashreportmover service to move our crashes to the proper place ???
-    crashreportmover_t* mover = crashreportmover_open(device, port);
-    if (mover == NULL)
-    {
-
-        printf("failed to open crashreportermover_open!\n");
-
-        return NULL;
-    }
-
-    // Startup crashreporter copy to copy them to mobile root??
-    crashreportcopy_t* copier = crashreportcopy_open(device, port);
-    if (copier == NULL)
-    {
-        // crashreportmover_free(mover);
-        return NULL;
-    }
-
-    _mover = mover;
-    _copier = copier;
-    _device = device;
-
-    return crashreporter;
 }
 
-int crashreporter_close(crashreporter_t* crashreporter) { return -1; }
-
-void crashreporter_free(crashreporter_t* crashreporter)
-{
-    if (crashreporter)
-    {
-        if (crashreporter->mover)
-        {
-            crashreportmover_free(crashreporter->mover);
-        }
-        if (crashreporter->copier)
-        {
-            crashreportcopy_free(crashreporter->copier);
-        }
-        free(crashreporter);
-    }
-}
-
-void Reporter::last_crash(crashreporter_t* crashreporter)
+std::unique_ptr<Report> Reporter::last_crash()
 {
     char** list = NULL;
     afc_error_t err = AFC_E_SUCCESS;
-    if (crashreporter == NULL)
+
+    if (!_mover || !_copier)
     {
-        return NULL;
+        return {};
     }
 
-    if (crashreporter->mover == NULL)
-    {
-        return NULL;
-    }
-
-    if (crashreporter->copier == NULL)
-    {
-        return NULL;
-    }
-
-    err = afc_read_directory(crashreporter->copier->client, "/", &list);
+    err = afc_read_directory(_copier->client(), "/", &list);
     if (err != AFC_E_SUCCESS)
     {
-        return NULL;
+        return {};
     }
 
     char* lastItem = NULL;
@@ -154,7 +75,7 @@ void Reporter::last_crash(crashreporter_t* crashreporter)
             continue;
 
         char** info = NULL;
-        if (afc_get_file_info(crashreporter->copier->client, list[i], &info) != AFC_E_SUCCESS)
+        if (afc_get_file_info(_copier->client(), list[i], &info) != AFC_E_SUCCESS)
             continue;
         if (!info)
             continue;
@@ -176,7 +97,7 @@ void Reporter::last_crash(crashreporter_t* crashreporter)
         }
     }
 
-    printf("Copying '%s'\n", lastItem);
+    printf("Copying '%s'", lastItem);
     if (lastItem)
     {
         lastItem = strdup(lastItem);
@@ -188,70 +109,70 @@ void Reporter::last_crash(crashreporter_t* crashreporter)
     free(list);
     if (!lastItem)
     {
-        printf("hmm.. could not get last item\n");
-        return NULL;
+        printf("hmm.. could not get last item");
+        return {};
     }
 
     uint64_t handle;
     char data[0x1000];
 
-    err = afc_file_open(crashreporter->copier->client, lastItem, AFC_FOPEN_RDONLY, &handle);
+    err = afc_file_open(_copier->client(), lastItem, AFC_FOPEN_RDONLY, &handle);
     if (err != AFC_E_SUCCESS)
     {
-        printf("Unable to open %s\n", lastItem);
+        printf("Unable to open %s", lastItem);
         free(lastItem);
-        return NULL;
+        return {};
     }
 
     char crash_file[1024];
-    tmpnam(crash_file);
+    mkstemp(crash_file);
 
     FILE* output = fopen(crash_file, "wb");
     if (output == NULL)
     {
-        printf("Unable to open local file %s\n", crash_file);
+        printf("Unable to open local file %s", crash_file);
         free(lastItem);
-        afc_file_close(crashreporter->copier->client, handle);
-        return NULL;
+        afc_file_close(_copier->client(), handle);
+        return {};
     }
 
-    int bytes_read = 0;
-    err = afc_file_read(crashreporter->copier->client, handle, data, 0x1000, &bytes_read);
+    uint32_t bytes_read = 0;
+    err = afc_file_read(_copier->client(), handle, data, 0x1000, &bytes_read);
     while (err == AFC_E_SUCCESS && bytes_read > 0)
     {
         fwrite(data, 1, bytes_read, output);
-        err = afc_file_read(crashreporter->copier->client, handle, data, 0x1000, &bytes_read);
+        err = afc_file_read(_copier->client(), handle, data, 0x1000, &bytes_read);
     }
-    afc_file_close(crashreporter->copier->client, handle);
+    afc_file_close(_copier->client(), handle);
     fclose(output);
 
-    afc_remove_path(crashreporter->copier->client, lastItem);
+    afc_remove_path(_copier->client(), lastItem);
 
     uint32_t size = 0;
     plist_t plist = NULL;
     int ferr = 0;
     unsigned char* datas = NULL;
-    ferr = file_read(crash_file, &datas, &size);
+    ferr = util::file_read(crash_file, &datas, &size);
     if (ferr < 0)
     {
-        fprintf(stderr, "Unable to open %s\n", crash_file);
+        fprintf(stderr, "Unable to open %s", crash_file);
         free(lastItem);
-        return NULL;
+        return {};
     }
 
-    plist_from_xml(datas, size, &plist);
+    plist_from_xml(static_cast<const char*>(datas), size, &plist);
     free(datas);
 
-    crashreport_t* report = NULL;
+    std::unique_ptr<Report> report = NULL;
     if (plist)
     {
-        report = crashreport_parse_plist(plist);
+        report = std::make_unique<Report>(plist);
         plist_free(plist);
         remove(crash_file);
     }
     else
     {
-        error("Reading crash report as plist failed\n");
+        throw std::runtime_error("Reading crash report as plist failed");
     }
     free(lastItem);
     return report;

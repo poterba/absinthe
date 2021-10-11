@@ -20,46 +20,61 @@
 #pragma once
 
 #include <plist/plist.h>
+#include <string>
+#include <vector>
 
- typedef struct dylib_info {
-	char* name;
-	uint32_t offset;
-} dylib_info_t;
-
-typedef struct arm_state_t {
-	uint32_t r0;
-	uint32_t r1;
-	uint32_t r2;
-	uint32_t r3;
-	uint32_t r4;
-	uint32_t r5;
-	uint32_t r6;
-	uint32_t r7;
-	uint32_t r8;
-	uint32_t r9;
-	uint32_t r10;
-	uint32_t r11;
-	uint32_t ip;
-	uint32_t sp;
-	uint32_t lr;
-	uint32_t pc;
-	uint32_t cpsr;
-} arm_state_t;
+namespace absinthe
+{
+namespace crashreport
+{
 
 /* The actual crashreport object containing it's data */
-typedef struct crashreport_t {
-	char *name;
-	unsigned int pid;
-	arm_state_t* state;
-	dylib_info_t** dylibs;
-} crashreport_t;
+class Report final
+{
+public:
+    struct dylib_info final
+    {
+        char* name;
+        uint32_t offset;
+    };
 
-crashreport_t* crashreport_create();
-void crashreport_free(crashreport_t* report);
-void crashreport_debug(crashreport_t* report);
+    struct arm_state final
+    {
+        uint32_t r0;
+        uint32_t r1;
+        uint32_t r2;
+        uint32_t r3;
+        uint32_t r4;
+        uint32_t r5;
+        uint32_t r6;
+        uint32_t r7;
+        uint32_t r8;
+        uint32_t r9;
+        uint32_t r10;
+        uint32_t r11;
+        uint32_t ip;
+        uint32_t sp;
+        uint32_t lr;
+        uint32_t pc;
+        uint32_t cpsr;
+    };
 
-crashreport_t* crashreport_parse_plist(plist_t crash);
-char* crashreport_parse_name(const char* description);
-unsigned int crashreport_parse_pid(const char* description);
-arm_state_t* crashreport_parse_state(const char* description);
-dylib_info_t** crashreport_parse_dylibs(const char* description);
+public:
+    Report() = default;
+    Report(plist_t crash);
+    void _debug();
+
+    std::string parse_name(const std::string& description);
+    unsigned int parse_pid(const std::string& description);
+    std::unique_ptr<arm_state> parse_state(const std::string& description);
+    std::vector<dylib_info> parse_dylibs(const std::string& description);
+
+private:
+    std::string _name;
+    unsigned int _pid;
+    std::shared_ptr<arm_state> _state;
+    std::vector<dylib_info> _dylibs;
+};
+
+} // namespace crashreport
+} // namespace absinthe

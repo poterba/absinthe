@@ -23,8 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <libimobiledevice/libimobiledevice.h>
-
 #ifdef WIN32
 #include <windows.h>
 #define sleep(x) Sleep(x * 1000)

@@ -21,101 +21,126 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "debug.hpp"
 #include "common.hpp"
+#include "debug.hpp"
 #include "macho_symtab.hpp"
 
 /*
  * Mach-O Symtab Functions
  */
-macho_symtab_t* macho_symtab_create() {
-	macho_symtab_t* symtab = malloc(sizeof(macho_symtab_t));
-	if (symtab) {
-		memset(symtab, '\0', sizeof(macho_symtab_t));
-	}
-	return symtab;
+macho_symtab_t* macho_symtab_create()
+{
+    macho_symtab_t* symtab = malloc(sizeof(macho_symtab_t));
+    if (symtab)
+    {
+        memset(symtab, '\0', sizeof(macho_symtab_t));
+    }
+    return symtab;
 }
 
-macho_symtab_t* macho_symtab_load(unsigned char* cmd, unsigned char* data) {
-	macho_symtab_t* symtab = macho_symtab_create();
-	if (symtab) {
-		symtab->cmd = macho_symtab_cmd_load(cmd);
-		if (!symtab->cmd) {
-			macho_symtab_free(symtab);
-			return NULL;
-		}
-		symtab->nsyms = symtab->cmd->nsyms;
-		symtab->symbols = (struct nlist*)(data+symtab->cmd->symoff);
-		int i;
-		for (i = 0; i < symtab->nsyms; i++) {
-			uint32_t off = symtab->symbols[i].n_un.n_strx;
-			if (off >= symtab->cmd->strsize) {
-				symtab->symbols[i].n_un.n_name = NULL;
-			} else {
-				symtab->symbols[i].n_un.n_name = (char*)(data+symtab->cmd->stroff + off);
-			}
-		}
-		//macho_symtab_debug(symtab);
-	}
-	return symtab;
+macho_symtab_t* macho_symtab_load(unsigned char* cmd, unsigned char* data)
+{
+    macho_symtab_t* symtab = macho_symtab_create();
+    if (symtab)
+    {
+        symtab->cmd = macho_symtab_cmd_load(cmd);
+        if (!symtab->cmd)
+        {
+            macho_symtab_free(symtab);
+            return NULL;
+        }
+        symtab->nsyms = symtab->cmd->nsyms;
+        symtab->symbols = (struct nlist*)(data + symtab->cmd->symoff);
+        int i;
+        for (i = 0; i < symtab->nsyms; i++)
+        {
+            uint32_t off = symtab->symbols[i].n_un.n_strx;
+            if (off >= symtab->cmd->strsize)
+            {
+                symtab->symbols[i].n_un.n_name = NULL;
+            }
+            else
+            {
+                symtab->symbols[i].n_un.n_name = (char*)(data + symtab->cmd->stroff + off);
+            }
+        }
+        // macho_symtab_debug(symtab);
+    }
+    return symtab;
 }
 
-void macho_symtab_debug(macho_symtab_t* symtab) {
-	debug("\tSymtab:\n");
-	debug("\t\tnsyms: 0x%08x\n", symtab->nsyms);
-	int i;
-	for (i = 0; i < symtab->nsyms; i++) {
-		struct nlist sym = symtab->symbols[i];
-		if (sym.n_un.n_name) {
-			debug("\t\t0x%x\tname=%s\n", i, sym.n_un.n_name);
-		} else {
-			debug("\t\t0x%x\tname=(no name)\n", i);
-		}
-		debug("\t\t\tn_type=0x%02x,n_sect=0x%02x,n_desc=0x%04x,n_value=0x%08x\n", sym.n_type, sym.n_sect, sym.n_desc, sym.n_value);
-	}
+void macho_symtab_debug(macho_symtab_t* symtab)
+{
+    debug("\tSymtab:");
+    debug("\t\tnsyms: 0x%08x", symtab->nsyms);
+    int i;
+    for (i = 0; i < symtab->nsyms; i++)
+    {
+        struct nlist sym = symtab->symbols[i];
+        if (sym.n_un.n_name)
+        {
+            debug("\t\t0x%x\tname=%s", i, sym.n_un.n_name);
+        }
+        else
+        {
+            debug("\t\t0x%x\tname=(no name)", i);
+        }
+        debug("\t\t\tn_type=0x%02x,n_sect=0x%02x,n_desc=0x%04x,n_value=0x%08x", sym.n_type,
+              sym.n_sect, sym.n_desc, sym.n_value);
+    }
 }
 
-void macho_symtab_free(macho_symtab_t* symtab) {
-	if (symtab) {
-		if (symtab->cmd) {
-			macho_symtab_cmd_free(symtab->cmd);
-		}
-		free(symtab);
-	}
+void macho_symtab_free(macho_symtab_t* symtab)
+{
+    if (symtab)
+    {
+        if (symtab->cmd)
+        {
+            macho_symtab_cmd_free(symtab->cmd);
+        }
+        free(symtab);
+    }
 }
 
 /*
  * Mach-O Symtab Info Functions
  */
-macho_symtab_cmd_t* macho_symtab_cmd_create() {
-	macho_symtab_cmd_t* info = malloc(sizeof(macho_symtab_cmd_t));
-	if (info) {
-		memset(info, '\0', sizeof(macho_symtab_cmd_t));
-	}
-	return info;
+macho_symtab_cmd_t* macho_symtab_cmd_create()
+{
+    macho_symtab_cmd_t* info = malloc(sizeof(macho_symtab_cmd_t));
+    if (info)
+    {
+        memset(info, '\0', sizeof(macho_symtab_cmd_t));
+    }
+    return info;
 }
 
-macho_symtab_cmd_t* macho_symtab_cmd_load(unsigned char* data) {
-	macho_symtab_cmd_t* cmd = macho_symtab_cmd_create();
-	if (cmd) {
-		memcpy(cmd, data, sizeof(macho_symtab_cmd_t));
-		//macho_symtab_cmd_debug(cmd);
-	}
-	return cmd;
+macho_symtab_cmd_t* macho_symtab_cmd_load(unsigned char* data)
+{
+    macho_symtab_cmd_t* cmd = macho_symtab_cmd_create();
+    if (cmd)
+    {
+        memcpy(cmd, data, sizeof(macho_symtab_cmd_t));
+        // macho_symtab_cmd_debug(cmd);
+    }
+    return cmd;
 }
 
-void macho_symtab_cmd_debug(macho_symtab_cmd_t* cmd) {
-	debug("\tSymtab Command:\n");
-	debug("\t\t     cmd = 0x%x\n", cmd->cmd);
-	debug("\t\t cmdsize = 0x%x\n", cmd->cmdsize);
-	debug("\t\t  symoff = 0x%x\n", cmd->symoff);
-	debug("\t\t   nsyms = 0x%x\n", cmd->nsyms);
-	debug("\t\t  stroff = 0x%x\n", cmd->stroff);
-	debug("\t\t strsize = 0x%x\n", cmd->strsize);
+void macho_symtab_cmd_debug(macho_symtab_cmd_t* cmd)
+{
+    debug("\tSymtab Command:");
+    debug("\t\t     cmd = 0x%x", cmd->cmd);
+    debug("\t\t cmdsize = 0x%x", cmd->cmdsize);
+    debug("\t\t  symoff = 0x%x", cmd->symoff);
+    debug("\t\t   nsyms = 0x%x", cmd->nsyms);
+    debug("\t\t  stroff = 0x%x", cmd->stroff);
+    debug("\t\t strsize = 0x%x", cmd->strsize);
 }
 
-void macho_symtab_cmd_free(macho_symtab_cmd_t* cmd) {
-	if (cmd) {
-		free(cmd);
-	}
+void macho_symtab_cmd_free(macho_symtab_cmd_t* cmd)
+{
+    if (cmd)
+    {
+        free(cmd);
+    }
 }

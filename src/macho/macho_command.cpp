@@ -21,19 +21,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "debug.hpp"
 #include "common.hpp"
+#include "debug.hpp"
 #include "macho_command.hpp"
 
 /*
  * Mach-O Command Functions
  */
-macho_command_t* macho_command_create() {
-	macho_command_t* command = (macho_command_t*) malloc(sizeof(macho_command_t));
-	if (command) {
-		memset(command, '\0', sizeof(macho_command_t));
-	}
-	return command;
+macho_command_t* macho_command_create()
+{
+    macho_command_t* command = (macho_command_t*)malloc(sizeof(macho_command_t));
+    if (command)
+    {
+        memset(command, '\0', sizeof(macho_command_t));
+    }
+    return command;
 }
 /*
 #define	MACHO_CMD_SEGMENT          0x1  // segment of this file to be mapped
@@ -60,70 +62,87 @@ macho_command_t* macho_command_create() {
 #define	MACHO_CMD_TWOLEVEL_HINTS   0x16 // two-level namespace lookup hints
 #define	MACHO_CMD_PREBIND_CKSUM    0x17 // prebind checksum
 */
-macho_command_t* macho_command_load(unsigned char* data, unsigned int offset) {
-	unsigned int size = 0;
-	macho_command_t* command = macho_command_create();
-	macho_command_info_t* info = macho_command_info_load(data, offset); //(macho_command_info_t*) &data[offset];
-	if (info) {
-		command->info = info;
-		command->size = command->info->cmdsize;
-		command->offset = offset;
-	}
-	return command;
+macho_command_t* macho_command_load(unsigned char* data, unsigned int offset)
+{
+    unsigned int size = 0;
+    macho_command_t* command = macho_command_create();
+    macho_command_info_t* info =
+        macho_command_info_load(data, offset); //(macho_command_info_t*) &data[offset];
+    if (info)
+    {
+        command->info = info;
+        command->size = command->info->cmdsize;
+        command->offset = offset;
+    }
+    return command;
 }
 
-void macho_command_debug(macho_command_t* command) {
-	if (command) {
-		debug("\tCommand:\n");
-		if(command->info) {
-			macho_command_info_debug(command->info);
-		}
-		debug("\t\n");
-	}
+void macho_command_debug(macho_command_t* command)
+{
+    if (command)
+    {
+        debug("\tCommand:");
+        if (command->info)
+        {
+            macho_command_info_debug(command->info);
+        }
+        debug("\t");
+    }
 }
 
-void macho_command_free(macho_command_t* command) {
-	if(command) {
-		if(command->info) {
-			macho_command_info_free(command->info);
-			command->info = NULL;
-		}
-		free(command);
-	}
+void macho_command_free(macho_command_t* command)
+{
+    if (command)
+    {
+        if (command->info)
+        {
+            macho_command_info_free(command->info);
+            command->info = NULL;
+        }
+        free(command);
+    }
 }
 
 /*
  * Mach-O Command Info Functions
  */
-macho_command_info_t* macho_command_info_create() {
-	macho_command_info_t* info = (macho_command_info_t*) malloc(sizeof(macho_command_info_t));
-	if (info) {
-		//debug("Mach-O Command Info Created\n");
-		memset(info, '\0', sizeof(macho_command_info_t));
-	}
-	return info;
+macho_command_info_t* macho_command_info_create()
+{
+    macho_command_info_t* info = (macho_command_info_t*)malloc(sizeof(macho_command_info_t));
+    if (info)
+    {
+        // debug("Mach-O Command Info Created");
+        memset(info, '\0', sizeof(macho_command_info_t));
+    }
+    return info;
 }
 
-macho_command_info_t* macho_command_info_load(unsigned char* data, unsigned int offset) {
-	macho_command_info_t* info = (macho_command_info_t*)macho_command_info_create();
-	if (info) {
-		//debug("Mach-O Command Info Loaded\n");
-		memcpy(info, data+offset, sizeof(macho_command_info_t));
-	}
-	return info;
+macho_command_info_t* macho_command_info_load(unsigned char* data, unsigned int offset)
+{
+    macho_command_info_t* info = (macho_command_info_t*)macho_command_info_create();
+    if (info)
+    {
+        // debug("Mach-O Command Info Loaded");
+        memcpy(info, data + offset, sizeof(macho_command_info_t));
+    }
+    return info;
 }
 
-void macho_command_info_debug(macho_command_info_t* info) {
-	if (info) {
-		debug("\tInfo:\n");
-		debug("\t\t    cmd = %d\n", info->cmd);
-		debug("\t\tcmdsize = %d\n", info->cmdsize);
-		debug("\t\n");
-	}
+void macho_command_info_debug(macho_command_info_t* info)
+{
+    if (info)
+    {
+        debug("\tInfo:");
+        debug("\t\t    cmd = %d", info->cmd);
+        debug("\t\tcmdsize = %d", info->cmdsize);
+        debug("\t");
+    }
 }
 
-void macho_command_info_free(macho_command_info_t* info) {
-	if (info) {
-		free(info);
-	}
+void macho_command_info_free(macho_command_info_t* info)
+{
+    if (info)
+    {
+        free(info);
+    }
 }

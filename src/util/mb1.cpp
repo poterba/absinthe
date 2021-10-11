@@ -19,11 +19,11 @@
 
 #include "mb1.hpp"
 
-#include "lockdown.hpp"
 #include "common.hpp"
 #include "debug.hpp"
 #include "dictionary.hpp"
 #include "endianness.hpp"
+#include "lockdown.hpp"
 #include "plist_extras.hpp"
 
 #include <stdio.h>
@@ -49,7 +49,8 @@ namespace absinthe
 {
 namespace util
 {
-namespace {
+namespace
+{
 
 struct mobilebackup_client_private
 {
@@ -67,22 +68,21 @@ MB1::connect(std::shared_ptr<Device> device)
 
     if (device == NULL)
     {
-        error("Invalid arguments\n");
+        throw std::runtime_error("Invalid arguments");
         return NULL;
     }
 
-	lockdown::
-    lockdown = lockdown_open(device);
+    lockdown::lockdown = lockdown_open(device);
     if (lockdown == NULL)
     {
-        error("Unable to open connection to lockdownd\n");
+        throw std::runtime_error("Unable to open connection to lockdownd");
         return NULL;
     }
 
     err = lockdown_start_service(lockdown, "com.apple.mobilebackup", &port);
     if (err < 0)
     {
-        error("Unable to start MobileBackup service\n");
+        throw std::runtime_error("Unable to start MobileBackup service");
         return NULL;
     }
     lockdown_close(lockdown);
@@ -91,7 +91,7 @@ MB1::connect(std::shared_ptr<Device> device)
     mb1 = mb1_open(device, port);
     if (mb1 == NULL)
     {
-        error("Unable to open connection to MobileBackup service\n");
+        throw std::runtime_error("Unable to open connection to MobileBackup service");
         return NULL;
     }
 
@@ -107,7 +107,7 @@ mb1_t* mb1_open(device_t* device, uint16_t port)
         err = mobilebackup_client_new(device->client, port, &(mb1->client));
         if (err != MOBILEBACKUP_E_SUCCESS)
         {
-            error("Unable to create new MobileBackup client\n");
+            throw std::runtime_error("Unable to create new MobileBackup client");
             mb1_free(mb1);
             return NULL;
         }

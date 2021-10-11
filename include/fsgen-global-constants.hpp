@@ -29,21 +29,6 @@ struct constants
 
 enum
 {
-    iPad1_1,
-    iPhone2_1,
-    iPhone3_1,
-    iPhone3_3,
-    iPhone4_1,
-    iPad2_1,
-    iPad2_2,
-    iPad2_3,
-    iPod3_1,
-    iPod4_1,
-    MAX_DEVICE
-};
-
-enum
-{
     FW9A334,
     FW9A405,
     FW9A406,

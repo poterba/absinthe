@@ -19,12 +19,14 @@
 
 #pragma once
 
-typedef struct macho_header_t {
-	uint32_t magic;
+typedef struct macho_header_t
+{
+    uint32_t magic;
 } template_info_t;
 
-typedef struct template_t {
-	template_info_t* info;
+typedef struct template_t
+{
+    template_info_t* info;
 } template_t;
 
 /*
