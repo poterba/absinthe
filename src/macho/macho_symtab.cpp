@@ -31,8 +31,7 @@
 macho_symtab_t* macho_symtab_create()
 {
     macho_symtab_t* symtab = malloc(sizeof(macho_symtab_t));
-    if (symtab)
-    {
+    if (symtab) {
         memset(symtab, '\0', sizeof(macho_symtab_t));
     }
     return symtab;
@@ -41,27 +40,21 @@ macho_symtab_t* macho_symtab_create()
 macho_symtab_t* macho_symtab_load(unsigned char* cmd, unsigned char* data)
 {
     macho_symtab_t* symtab = macho_symtab_create();
-    if (symtab)
-    {
+    if (symtab) {
         symtab->cmd = macho_symtab_cmd_load(cmd);
-        if (!symtab->cmd)
-        {
+        if (!symtab->cmd) {
             macho_symtab_free(symtab);
             return NULL;
         }
         symtab->nsyms = symtab->cmd->nsyms;
-        symtab->symbols = (struct nlist*)(data + symtab->cmd->symoff);
+        symtab->symbols = (struct nlist*) (data + symtab->cmd->symoff);
         int i;
-        for (i = 0; i < symtab->nsyms; i++)
-        {
+        for (i = 0; i < symtab->nsyms; i++) {
             uint32_t off = symtab->symbols[i].n_un.n_strx;
-            if (off >= symtab->cmd->strsize)
-            {
+            if (off >= symtab->cmd->strsize) {
                 symtab->symbols[i].n_un.n_name = NULL;
-            }
-            else
-            {
-                symtab->symbols[i].n_un.n_name = (char*)(data + symtab->cmd->stroff + off);
+            } else {
+                symtab->symbols[i].n_un.n_name = (char*) (data + symtab->cmd->stroff + off);
             }
         }
         // macho_symtab_debug(symtab);
@@ -74,28 +67,23 @@ void macho_symtab_debug(macho_symtab_t* symtab)
     debug("\tSymtab:");
     debug("\t\tnsyms: 0x%08x", symtab->nsyms);
     int i;
-    for (i = 0; i < symtab->nsyms; i++)
-    {
+    for (i = 0; i < symtab->nsyms; i++) {
         struct nlist sym = symtab->symbols[i];
-        if (sym.n_un.n_name)
-        {
+        if (sym.n_un.n_name) {
             debug("\t\t0x%x\tname=%s", i, sym.n_un.n_name);
-        }
-        else
-        {
+        } else {
             debug("\t\t0x%x\tname=(no name)", i);
         }
-        debug("\t\t\tn_type=0x%02x,n_sect=0x%02x,n_desc=0x%04x,n_value=0x%08x", sym.n_type,
-              sym.n_sect, sym.n_desc, sym.n_value);
+        debug(
+            "\t\t\tn_type=0x%02x,n_sect=0x%02x,n_desc=0x%04x,n_value=0x%08x", sym.n_type,
+            sym.n_sect, sym.n_desc, sym.n_value);
     }
 }
 
 void macho_symtab_free(macho_symtab_t* symtab)
 {
-    if (symtab)
-    {
-        if (symtab->cmd)
-        {
+    if (symtab) {
+        if (symtab->cmd) {
             macho_symtab_cmd_free(symtab->cmd);
         }
         free(symtab);
@@ -108,8 +96,7 @@ void macho_symtab_free(macho_symtab_t* symtab)
 macho_symtab_cmd_t* macho_symtab_cmd_create()
 {
     macho_symtab_cmd_t* info = malloc(sizeof(macho_symtab_cmd_t));
-    if (info)
-    {
+    if (info) {
         memset(info, '\0', sizeof(macho_symtab_cmd_t));
     }
     return info;
@@ -118,8 +105,7 @@ macho_symtab_cmd_t* macho_symtab_cmd_create()
 macho_symtab_cmd_t* macho_symtab_cmd_load(unsigned char* data)
 {
     macho_symtab_cmd_t* cmd = macho_symtab_cmd_create();
-    if (cmd)
-    {
+    if (cmd) {
         memcpy(cmd, data, sizeof(macho_symtab_cmd_t));
         // macho_symtab_cmd_debug(cmd);
     }
@@ -139,8 +125,7 @@ void macho_symtab_cmd_debug(macho_symtab_cmd_t* cmd)
 
 void macho_symtab_cmd_free(macho_symtab_cmd_t* cmd)
 {
-    if (cmd)
-    {
+    if (cmd) {
         free(cmd);
     }
 }

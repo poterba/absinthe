@@ -21,12 +21,14 @@
 
 #include "common.hpp"
 
-typedef struct macho_section_info_t {
-	uint32_t magic;
+typedef struct macho_section_info_t
+{
+    uint32_t magic;
 } macho_section_info_t;
 
-typedef struct macho_section_t {
-	macho_section_info_t* info;
+typedef struct macho_section_t
+{
+    macho_section_info_t* info;
 } macho_section_t;
 
 /*

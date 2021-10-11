@@ -76,5 +76,5 @@ bpatch_header_t* bpatch_header_load(uint8_t* data, int64_t size);
 void bpatch_header_free(bpatch_header_t* header);
 void bpatch_header_debug(bpatch_header_t* header);
 
-unsigned int bpatch_decompress(char* input, unsigned int in_size, char* output,
-                               unsigned int* out_size);
+unsigned int
+bpatch_decompress(char* input, unsigned int in_size, char* output, unsigned int* out_size);

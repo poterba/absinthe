@@ -17,31 +17,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include "dyldmap.hpp"
-
 #include "common.hpp"
 #include "debug.hpp"
+#include "dyldmap.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-namespace absinthe
-{
-namespace dyld
-{
-namespace map
-{
+namespace absinthe {
+namespace dyld {
+namespace map {
 
 dyldmap_t* parse(unsigned char* data, uint32_t offset)
 {
     unsigned char* buffer = &data[offset];
     dyldmap_t* map = create();
-    if (map)
-    {
+    if (map) {
         map->info = info_parse(data, offset);
-        if (map->info == NULL)
-        {
+        if (map->info == NULL) {
             throw std::runtime_error("Unable to allocate data for dyld map info");
             return NULL;
         }
@@ -54,8 +48,7 @@ dyldmap_t* parse(unsigned char* data, uint32_t offset)
 
 bool contains(dyldmap_t* map, uint64_t address)
 {
-    if (address >= map->address && address < (map->address + map->size))
-    {
+    if (address >= map->address && address < (map->address + map->size)) {
         return true;
     }
     return false;
@@ -63,10 +56,8 @@ bool contains(dyldmap_t* map, uint64_t address)
 
 void free(dyldmap_t* map)
 {
-    if (map)
-    {
-        if (map->info)
-        {
+    if (map) {
+        if (map->info) {
             dyldmap_info_free(map->info);
         }
         free(map);
@@ -75,8 +66,7 @@ void free(dyldmap_t* map)
 
 void _debug(dyldmap_t* map)
 {
-    if (map)
-    {
+    if (map) {
         debug("\tMap:");
         debug("\t");
     }
@@ -87,9 +77,8 @@ void _debug(dyldmap_t* map)
  */
 dyldmap_info_t* info_create()
 {
-    dyldmap_info_t* info = (dyldmap_info_t*)malloc(sizeof(dyldmap_info_t));
-    if (info)
-    {
+    dyldmap_info_t* info = (dyldmap_info_t*) malloc(sizeof(dyldmap_info_t));
+    if (info) {
         memset(info, '\0', sizeof(dyldmap_info_t));
     }
     return info;
@@ -98,8 +87,7 @@ dyldmap_info_t* info_create()
 dyldmap_info_t* info_parse(unsigned char* data, uint32_t offset)
 {
     dyldmap_info_t* info = info_create();
-    if (info)
-    {
+    if (info) {
         memcpy(info, &data[offset], sizeof(dyldmap_info_t));
     }
     return info;
@@ -107,12 +95,11 @@ dyldmap_info_t* info_parse(unsigned char* data, uint32_t offset)
 
 void info_debug(dyldmap_info_t* info)
 {
-    if (info)
-    {
+    if (info) {
         debug("\t\tInfo {");
-        debug("\t\t\t address = 0x%08x", (uint32_t)info->address);
-        debug("\t\t\t    size = 0x%08x", (uint32_t)info->size);
-        debug("\t\t\t  offset = 0x%08x", (uint32_t)info->offset);
+        debug("\t\t\t address = 0x%08x", (uint32_t) info->address);
+        debug("\t\t\t    size = 0x%08x", (uint32_t) info->size);
+        debug("\t\t\t  offset = 0x%08x", (uint32_t) info->offset);
         debug("\t\t\t maxProt = %s", prot2str(info->maxProt));
         debug("\t\t\tinitProt = %s", prot2str(info->initProt));
         debug("\t\t}");
@@ -121,8 +108,7 @@ void info_debug(dyldmap_info_t* info)
 
 void info_free(dyldmap_info_t* info)
 {
-    if (info)
-    {
+    if (info) {
         free(info);
     }
 }

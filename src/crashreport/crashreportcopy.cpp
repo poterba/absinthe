@@ -28,10 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-namespace absinthe
-{
-namespace crashreport
-{
+namespace absinthe {
+namespace crashreport {
 
 Copy::Copy(std::shared_ptr<util::Device> device) : _device(device)
 {
@@ -39,36 +37,29 @@ Copy::Copy(std::shared_ptr<util::Device> device) : _device(device)
         const auto& lockdown = std::make_shared<util::Lockdown>(device);
 
         int err = lockdown->start_service("com.apple.crashreportcopymobile", &_port);
-        if (err < 0)
-        {
+        if (err < 0) {
             throw std::runtime_error("Unable to start AFC service");
         }
         lockdown->close();
     }
 
-    open(_device, _port);
+    Copy(_device, _port);
 }
 
-void Copy::open(std::shared_ptr<util::Device> device, uint16_t port)
+Copy::Copy(std::shared_ptr<util::Device> device, uint16_t port)
 {
-    int err = afc_client_new(device->client(), _port, &_client);
-    if (err < 0)
-    {
+    lockdownd_service_descriptor desc{port, false};
+    int err = afc_client_new(device->client(), &desc, &_client);
+    if (err < 0) {
         throw std::runtime_error("Unable to open connection to CrashReporter copy service");
     }
 }
 
-int Copy::close()
+Copy::~Copy()
 {
-    afc_client_free(_client);
-    _client = NULL;
-}
-
-void Copy::free()
-{
-    if (_client)
-    {
-        close();
+    if (_client) {
+        afc_client_free(_client);
+        _client = NULL;
     }
 }
 

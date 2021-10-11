@@ -29,164 +29,141 @@
 // #include <stdlib.h>
 // #include <string.h>
 
-namespace absinthe
-{
-namespace backup
-{
+namespace absinthe {
+namespace backup {
 
 MBDBRecord::MBDBRecord(unsigned char* data)
 {
     unsigned int offset = 0;
 
     // Parse Domain
-    unsigned short strsize = be16toh(*((unsigned short*)&data[offset]));
-    if (strsize > 0 && strsize < 0xFFFF)
-    {
-        domain = (char*)malloc(strsize + 1);
-        if (domain == NULL)
-        {
+    unsigned short strsize = be16toh(*((unsigned short*) &data[offset]));
+    if (strsize > 0 && strsize < 0xFFFF) {
+        domain = (char*) malloc(strsize + 1);
+        if (domain == NULL) {
             throw std::runtime_error("Allocation Error!");
         }
         offset += 2;
         memcpy(domain, &data[offset], strsize);
         domain[strsize] = 0;
         offset += strsize;
-    }
-    else
-    {
+    } else {
         domain = NULL;
         offset += 2;
     }
     domain_size = strsize;
 
     // Parse Path
-    strsize = be16toh(*((unsigned short*)&data[offset]));
-    if (strsize > 0 && strsize < 0xFFFF)
-    {
-        path = (char*)malloc(strsize + 1);
-        if (path == NULL)
-        {
+    strsize = be16toh(*((unsigned short*) &data[offset]));
+    if (strsize > 0 && strsize < 0xFFFF) {
+        path = (char*) malloc(strsize + 1);
+        if (path == NULL) {
             throw std::runtime_error("Allocation Error!");
         }
         offset += 2;
         memcpy(path, &data[offset], strsize);
         path[strsize] = 0;
         offset += strsize;
-    }
-    else
-    {
+    } else {
         path = NULL;
         offset += 2;
     }
     path_size = strsize;
 
     // Parse Target
-    strsize = be16toh(*((unsigned short*)&data[offset]));
-    if (strsize > 0 && strsize < 0xFFFF)
-    {
-        target = (char*)malloc(strsize + 1);
-        if (target == NULL)
-        {
+    strsize = be16toh(*((unsigned short*) &data[offset]));
+    if (strsize > 0 && strsize < 0xFFFF) {
+        target = (char*) malloc(strsize + 1);
+        if (target == NULL) {
             throw std::runtime_error("Allocation Error!");
         }
         offset += 2;
         memcpy(target, &data[offset], strsize);
         target[strsize] = 0;
         offset += strsize;
-    }
-    else
-    {
+    } else {
         target = NULL;
         offset += 2;
     }
     target_size = strsize;
 
     // parse DataHash
-    strsize = be16toh(*((unsigned short*)&data[offset]));
-    if (strsize > 0 && strsize < 0xFFFF)
-    {
-        datahash = (char*)malloc(strsize);
-        if (datahash == NULL)
-        {
+    strsize = be16toh(*((unsigned short*) &data[offset]));
+    if (strsize > 0 && strsize < 0xFFFF) {
+        datahash = (char*) malloc(strsize);
+        if (datahash == NULL) {
             throw std::runtime_error("Allocation Error!");
         }
         offset += 2;
         memcpy(datahash, &data[offset], strsize);
         offset += strsize;
-    }
-    else
-    {
+    } else {
         datahash = NULL;
         offset += 2;
     }
     datahash_size = strsize;
 
     // parse unknown1
-    strsize = be16toh(*((unsigned short*)&data[offset]));
-    if (strsize > 0 && strsize < 0xFFFF)
-    {
-        unknown1 = (char*)malloc(strsize + 1);
-        if (unknown1 == NULL)
-        {
+    strsize = be16toh(*((unsigned short*) &data[offset]));
+    if (strsize > 0 && strsize < 0xFFFF) {
+        unknown1 = (char*) malloc(strsize + 1);
+        if (unknown1 == NULL) {
             throw std::runtime_error("Allocation Error!");
         }
         offset += 2;
         memcpy(unknown1, &data[offset], strsize);
         unknown1[strsize] = 0;
         offset += strsize;
-    }
-    else
-    {
+    } else {
         unknown1 = NULL;
         offset += 2;
     }
     unknown1_size = strsize;
 
-    mode = be16toh(*((unsigned short*)&data[offset]));
+    mode = be16toh(*((unsigned short*) &data[offset]));
     offset += 2;
 
-    unknown2 = be32toh(*((unsigned int*)&data[offset]));
+    unknown2 = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    inode = be32toh(*((unsigned int*)&data[offset]));
+    inode = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    uid = be32toh(*((unsigned int*)&data[offset]));
+    uid = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    gid = be32toh(*((unsigned int*)&data[offset]));
+    gid = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    time1 = be32toh(*((unsigned int*)&data[offset]));
+    time1 = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    time2 = be32toh(*((unsigned int*)&data[offset]));
+    time2 = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    time3 = be32toh(*((unsigned int*)&data[offset]));
+    time3 = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    length = be64toh(*((unsigned long long*)&data[offset]));
+    length = be64toh(*((unsigned long long*) &data[offset]));
     offset += 8;
 
-    flag = *((unsigned char*)&data[offset]);
+    flag = *((unsigned char*) &data[offset]);
     offset += 1;
 
-    property_count = *((unsigned char*)&data[offset]);
+    property_count = *((unsigned char*) &data[offset]);
     offset += 1;
 
-    for (int i = 0; i < property_count; i++)
-    {
+    for (int i = 0; i < property_count; i++) {
         Property prop; // = malloc(sizeof(property_t));
-        prop.name_size = be16toh(*((unsigned short*)&data[offset]));
-        prop.name = (char*)malloc(prop.name_size + 1);
+        prop.name_size = be16toh(*((unsigned short*) &data[offset]));
+        prop.name = (char*) malloc(prop.name_size + 1);
         offset += 2;
         memcpy(prop.name.data(), &data[offset], prop.name_size);
         prop.name[prop.name_size] = 0;
         offset += prop.name_size;
 
-        prop.value_size = be16toh(*((unsigned short*)&data[offset]));
-        prop.value = (char*)malloc(prop.value_size + 1);
+        prop.value_size = be16toh(*((unsigned short*) &data[offset]));
+        prop.value = (char*) malloc(prop.value_size + 1);
         offset += 2;
         memcpy(prop.value.data(), &data[offset], prop.value_size);
         prop.value[prop.value_size] = 0;
@@ -252,18 +229,14 @@ void MBDBRecord::init()
 void MBDBRecord::set_domain(const char* domain)
 {
     unsigned short old_size = domain_size;
-    if (domain_size > 0 && domain_size < 0xFFFF)
-    {
+    if (domain_size > 0 && domain_size < 0xFFFF) {
         this_size -= domain_size;
     }
-    if (domain && (strlen(domain) > 0))
-    {
+    if (domain && (strlen(domain) > 0)) {
         domain_size = strlen(domain);
         domain = strdup(domain);
         this_size += domain_size;
-    }
-    else
-    {
+    } else {
         domain_size = 0;
     }
 }
@@ -272,18 +245,14 @@ void MBDBRecord::set_path(const char* path)
 {
     unsigned short old_size = path_size;
     path = {};
-    if (path_size > 0 && path_size < 0xFFFF)
-    {
+    if (path_size > 0 && path_size < 0xFFFF) {
         this_size -= path_size;
     }
-    if (path && (strlen(path) > 0))
-    {
+    if (path && (strlen(path) > 0)) {
         path_size = strlen(path);
         path = strdup(path);
         this_size += path_size;
-    }
-    else
-    {
+    } else {
         path_size = 0;
     }
 }
@@ -292,18 +261,14 @@ void MBDBRecord::set_target(const char* target)
 {
     unsigned short old_size = target_size;
     target = {};
-    if (target_size > 0 && target_size < 0xFFFF)
-    {
+    if (target_size > 0 && target_size < 0xFFFF) {
         this_size -= target_size;
     }
-    if (target && (strlen(target) > 0))
-    {
+    if (target && (strlen(target) > 0)) {
         target_size = strlen(target);
         target = strdup(target);
         this_size += target_size;
-    }
-    else
-    {
+    } else {
         target_size = 0xFFFF;
     }
 }
@@ -312,19 +277,15 @@ void MBDBRecord::set_datahash(const char* hash, unsigned short hash_size)
 {
     unsigned short old_size = datahash_size;
     datahash = {};
-    if (datahash_size > 0 && datahash_size < 0xFFFF)
-    {
+    if (datahash_size > 0 && datahash_size < 0xFFFF) {
         this_size -= datahash_size;
     }
-    if (hash && (hash_size > 0))
-    {
+    if (hash && (hash_size > 0)) {
         datahash_size = hash_size;
-        datahash = (char*)malloc(hash_size);
+        datahash = (char*) malloc(hash_size);
         memcpy(datahash, hash, hash_size);
         this_size += datahash_size;
-    }
-    else
-    {
+    } else {
         datahash_size = 0xFFFF;
     }
 }
@@ -333,19 +294,15 @@ void MBDBRecord::set_unknown1(const char* data, unsigned short size)
 {
     unsigned short old_size = unknown1_size;
     unknown1 = {};
-    if (unknown1_size > 0 && unknown1_size < 0xFFFF)
-    {
+    if (unknown1_size > 0 && unknown1_size < 0xFFFF) {
         this_size -= unknown1_size;
     }
-    if (data && (size > 0))
-    {
+    if (data && (size > 0)) {
         unknown1_size = size;
-        unknown1 = (char*)malloc(size);
+        unknown1 = (char*) malloc(size);
         memcpy(unknown1, data, size);
         this_size += unknown1_size;
-    }
-    else
-    {
+    } else {
         unknown1_size = 0xFFFF;
     }
 }
@@ -375,9 +332,8 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     unsigned int offset = 0;
     unsigned char* data_buf = NULL;
 
-    data_buf = (unsigned char*)malloc(this_size);
-    if (!data_buf)
-    {
+    data_buf = (unsigned char*) malloc(this_size);
+    if (!data_buf) {
         throw std::runtime_error("Allocation Error!");
         return -1;
     }
@@ -388,8 +344,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     strsize = htobe16(domain_size);
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
-    if (domain != NULL)
-    {
+    if (domain != NULL) {
         memcpy(&data_buf[offset], domain, domain_size);
         offset += domain_size;
     }
@@ -398,8 +353,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     strsize = htobe16(path_size);
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
-    if (path != NULL)
-    {
+    if (path != NULL) {
         memcpy(&data_buf[offset], path, path_size);
         offset += path_size;
     }
@@ -408,8 +362,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     strsize = htobe16(target_size);
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
-    if (target != NULL)
-    {
+    if (target != NULL) {
         memcpy(&data_buf[offset], target, target_size);
         offset += target_size;
     }
@@ -418,8 +371,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     strsize = htobe16(datahash_size);
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
-    if (datahash != NULL)
-    {
+    if (datahash != NULL) {
         memcpy(&data_buf[offset], datahash, datahash_size);
         offset += datahash_size;
     }
@@ -428,8 +380,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     strsize = htobe16(unknown1_size);
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
-    if (unknown1 != NULL)
-    {
+    if (unknown1 != NULL) {
         memcpy(&data_buf[offset], unknown1, unknown1_size);
         offset += unknown1_size;
     }
@@ -480,8 +431,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
 
     // add properties
     int i;
-    for (const auto& property : properties)
-    {
+    for (const auto& property : properties) {
         unsigned short pnsize = htobe16(property.name_size);
         memcpy(&data_buf[offset], &pnsize, 2);
         offset += 2;
@@ -495,8 +445,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
         offset += property.value_size;
     }
 
-    if (this_size != offset)
-    {
+    if (this_size != offset) {
         *data = NULL;
         *size = 0;
         throw std::runtime_error("ERROR: inconsistent record size");

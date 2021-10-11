@@ -21,30 +21,34 @@
 
 #include "common.hpp"
 
-typedef struct macho_symtab_cmd_t {
-	uint32_t cmd;		/* LC_SYMTAB */
-	uint32_t cmdsize;	/* sizeof(struct macho_symtab_cmd_t) */
-	uint32_t symoff;	/* symbol table offset */
-	uint32_t nsyms;		/* number of symbol table entries */
-	uint32_t stroff;	/* string table offset */
-	uint32_t strsize;	/* string table size in bytes */
+typedef struct macho_symtab_cmd_t
+{
+    uint32_t cmd;     /* LC_SYMTAB */
+    uint32_t cmdsize; /* sizeof(struct macho_symtab_cmd_t) */
+    uint32_t symoff;  /* symbol table offset */
+    uint32_t nsyms;   /* number of symbol table entries */
+    uint32_t stroff;  /* string table offset */
+    uint32_t strsize; /* string table size in bytes */
 } macho_symtab_cmd_t;
 
-typedef struct nlist {
-	union {
-		char *n_name; /* resolved symbol name */
-		int32_t n_strx; /* index into the string table */
-	} n_un;
-	uint8_t n_type; /* type flag, see below */
-	uint8_t n_sect; /* section number or NO_SECT */
-	int16_t n_desc; /* see <mach-o/stab.h> */
-	uint32_t n_value; /* value of this symbol (or stab offset) */
+typedef struct nlist
+{
+    union
+    {
+        char* n_name;   /* resolved symbol name */
+        int32_t n_strx; /* index into the string table */
+    } n_un;
+    uint8_t n_type;   /* type flag, see below */
+    uint8_t n_sect;   /* section number or NO_SECT */
+    int16_t n_desc;   /* see <mach-o/stab.h> */
+    uint32_t n_value; /* value of this symbol (or stab offset) */
 } nlist;
 
-typedef struct macho_symtab_t {
-	uint32_t nsyms;
-	struct nlist* symbols;
-	macho_symtab_cmd_t* cmd;
+typedef struct macho_symtab_t
+{
+    uint32_t nsyms;
+    struct nlist* symbols;
+    macho_symtab_cmd_t* cmd;
 } macho_symtab_t;
 
 /*

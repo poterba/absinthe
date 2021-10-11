@@ -23,15 +23,13 @@
 #include <string>
 #include <vector>
 
-namespace absinthe
-{
-namespace crashreport
-{
+namespace absinthe {
+namespace crashreport {
 
 /* The actual crashreport object containing it's data */
 class Report final
 {
-public:
+  public:
     struct dylib_info final
     {
         char* name;
@@ -59,7 +57,7 @@ public:
         uint32_t cpsr;
     };
 
-public:
+  public:
     Report() = default;
     Report(plist_t crash);
     void _debug();
@@ -69,7 +67,7 @@ public:
     std::unique_ptr<arm_state> parse_state(const std::string& description);
     std::vector<dylib_info> parse_dylibs(const std::string& description);
 
-private:
+  private:
     std::string _name;
     unsigned int _pid;
     std::shared_ptr<arm_state> _state;

@@ -20,34 +20,36 @@
 #pragma once
 
 #include "common.hpp"
-#include "macho_symtab.hpp"
-#include "macho_segment.hpp"
-#include "macho_section.hpp"
-#include "macho_command.hpp"
 #include "dyldcache.hpp"
+#include "macho_command.hpp"
+#include "macho_section.hpp"
+#include "macho_segment.hpp"
+#include "macho_symtab.hpp"
 
-typedef struct macho_header_t {
-	uint32_t magic;
-	uint32_t cputype;
-	uint32_t cpusubtype;
-	uint32_t filetype;
-	uint32_t ncmds;
-	uint32_t sizeofcmds;
-	uint32_t flags;
+typedef struct macho_header_t
+{
+    uint32_t magic;
+    uint32_t cputype;
+    uint32_t cpusubtype;
+    uint32_t filetype;
+    uint32_t ncmds;
+    uint32_t sizeofcmds;
+    uint32_t flags;
 } macho_header_t;
 
-typedef struct macho_t {
-	uint8_t* data;
-	uint32_t size;
-	uint32_t offset;
-	uint32_t command_count;
-	uint32_t segment_count;
-	uint32_t symtab_count;
-	macho_header_t* header;
-	macho_command_t** commands;
-	macho_segment_t** segments;
-	macho_symtab_t** symtabs;
-	dyldcache_t* cache;
+typedef struct macho_t
+{
+    uint8_t* data;
+    uint32_t size;
+    uint32_t offset;
+    uint32_t command_count;
+    uint32_t segment_count;
+    uint32_t symtab_count;
+    macho_header_t* header;
+    macho_command_t** commands;
+    macho_segment_t** segments;
+    macho_symtab_t** symtabs;
+    dyldcache_t* cache;
 } macho_t;
 
 /*
@@ -57,7 +59,10 @@ macho_t* macho_create();
 macho_t* macho_open(const char* path);
 macho_t* macho_load(unsigned char* data, unsigned int size, dyldcache_t* cache);
 uint32_t macho_lookup(macho_t* macho, const char* sym);
-void macho_list_symbols(macho_t* macho, void (*print_func)(const char*, uint32_t, void*), void* userdata);
+void macho_list_symbols(
+    macho_t* macho,
+    void (*print_func)(const char*, uint32_t, void*),
+    void* userdata);
 void macho_debug(macho_t* macho);
 void macho_free(macho_t* macho);
 

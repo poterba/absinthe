@@ -31,40 +31,31 @@
 #define sleep(x) usleep(x * 1000 * 1000);
 #endif
 
-namespace absinthe
-{
-namespace util
-{
+namespace absinthe {
+namespace util {
 
 Device::Device(const std::string& udid) : _udid(udid)
 {
     idevice_error_t err = 0;
 
-    if (_udid == NULL)
-    {
+    if (_udid == NULL) {
         err = idevice_new(&_client, NULL);
-        if (err != IDEVICE_E_SUCCESS)
-        {
+        if (err != IDEVICE_E_SUCCESS) {
             // TODO: add udid to log
             throw std::runtime_error("No device found with udid {}, is it plugged in?");
         }
-        idevice_get_udid(_client, (char**)&_udid);
-    }
-    else
-    {
+        idevice_get_udid(_client, (char**) &_udid);
+    } else {
         const auto retries = 5;
-        for (auto i = 0; i < retries; ++i)
-        {
+        for (auto i = 0; i < retries; ++i) {
             err = idevice_new(&_client, _udid.data());
-            if (_client)
-            {
+            if (_client) {
                 break;
             }
             sleep(1);
         }
 
-        if (err != IDEVICE_E_SUCCESS)
-        {
+        if (err != IDEVICE_E_SUCCESS) {
             // TODO: add udid to log
             throw std::runtime_error("No device found with udid {}, is it plugged in?", );
         }
@@ -73,8 +64,7 @@ Device::Device(const std::string& udid) : _udid(udid)
 
 Device::~Device()
 {
-    if (_client)
-    {
+    if (_client) {
         idevice_free(_client);
     }
 }

@@ -41,16 +41,17 @@ extern unsigned char vars[VARS_MAX_SIZE];
 extern Addr varsBaseAddr;
 extern unsigned int varsWritten;
 
-struct trojan_msg {
-    mach_msg_header_t          header;
-    uint32_t                   r8;
-    uint32_t                   r10;
-    uint32_t                   r4;
-    uint32_t                   r5;
-    uint32_t                   r6;
-    uint32_t                   r7;
-    uint32_t                   pc;
-    uint32_t                   crap[7];
+struct trojan_msg
+{
+    mach_msg_header_t header;
+    uint32_t r8;
+    uint32_t r10;
+    uint32_t r4;
+    uint32_t r5;
+    uint32_t r6;
+    uint32_t r7;
+    uint32_t pc;
+    uint32_t crap[7];
 };
 
 int ropMain(int dscs);
@@ -64,9 +65,9 @@ void ropCall4Reg(Addr addr);
 
 typedef unsigned int RopArg;
 
-void ropCall7(Addr, RopArg, RopArg, RopArg, RopArg, RopArg, RopArg, RopArg );
-void ropCall6(Addr, RopArg, RopArg, RopArg, RopArg, RopArg, RopArg );
-void ropCall5(Addr, RopArg, RopArg, RopArg, RopArg, RopArg );
+void ropCall7(Addr, RopArg, RopArg, RopArg, RopArg, RopArg, RopArg, RopArg);
+void ropCall6(Addr, RopArg, RopArg, RopArg, RopArg, RopArg, RopArg);
+void ropCall5(Addr, RopArg, RopArg, RopArg, RopArg, RopArg);
 void ropCall4(Addr, RopArg, RopArg, RopArg, RopArg);
 void ropCall3(Addr, RopArg, RopArg, RopArg);
 void ropCall2(Addr, RopArg, RopArg);
@@ -83,8 +84,14 @@ void ropAddReg0Const(unsigned int value);
 void ropSubReg0Const(unsigned int value);
 void ropDerefReg0();
 
-void ropStoreValueAtOffsetFromVariableAddress(Addr address, unsigned int offset, unsigned int value);
-void ropStoreVariableValueAtOffsetFromVariableAddress(Addr address, unsigned int offset, Addr value);
+void ropStoreValueAtOffsetFromVariableAddress(
+    Addr address,
+    unsigned int offset,
+    unsigned int value);
+void ropStoreVariableValueAtOffsetFromVariableAddress(
+    Addr address,
+    unsigned int offset,
+    Addr value);
 
 Addr newBinary(void* data, size_t size);
 Addr newBuffer(unsigned int size);

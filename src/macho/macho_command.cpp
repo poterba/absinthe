@@ -17,22 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "common.hpp"
 #include "debug.hpp"
 #include "macho_command.hpp"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*
  * Mach-O Command Functions
  */
 macho_command_t* macho_command_create()
 {
-    macho_command_t* command = (macho_command_t*)malloc(sizeof(macho_command_t));
-    if (command)
-    {
+    macho_command_t* command = (macho_command_t*) malloc(sizeof(macho_command_t));
+    if (command) {
         memset(command, '\0', sizeof(macho_command_t));
     }
     return command;
@@ -68,8 +66,7 @@ macho_command_t* macho_command_load(unsigned char* data, unsigned int offset)
     macho_command_t* command = macho_command_create();
     macho_command_info_t* info =
         macho_command_info_load(data, offset); //(macho_command_info_t*) &data[offset];
-    if (info)
-    {
+    if (info) {
         command->info = info;
         command->size = command->info->cmdsize;
         command->offset = offset;
@@ -79,11 +76,9 @@ macho_command_t* macho_command_load(unsigned char* data, unsigned int offset)
 
 void macho_command_debug(macho_command_t* command)
 {
-    if (command)
-    {
+    if (command) {
         debug("\tCommand:");
-        if (command->info)
-        {
+        if (command->info) {
             macho_command_info_debug(command->info);
         }
         debug("\t");
@@ -92,10 +87,8 @@ void macho_command_debug(macho_command_t* command)
 
 void macho_command_free(macho_command_t* command)
 {
-    if (command)
-    {
-        if (command->info)
-        {
+    if (command) {
+        if (command->info) {
             macho_command_info_free(command->info);
             command->info = NULL;
         }
@@ -108,9 +101,8 @@ void macho_command_free(macho_command_t* command)
  */
 macho_command_info_t* macho_command_info_create()
 {
-    macho_command_info_t* info = (macho_command_info_t*)malloc(sizeof(macho_command_info_t));
-    if (info)
-    {
+    macho_command_info_t* info = (macho_command_info_t*) malloc(sizeof(macho_command_info_t));
+    if (info) {
         // debug("Mach-O Command Info Created");
         memset(info, '\0', sizeof(macho_command_info_t));
     }
@@ -119,9 +111,8 @@ macho_command_info_t* macho_command_info_create()
 
 macho_command_info_t* macho_command_info_load(unsigned char* data, unsigned int offset)
 {
-    macho_command_info_t* info = (macho_command_info_t*)macho_command_info_create();
-    if (info)
-    {
+    macho_command_info_t* info = (macho_command_info_t*) macho_command_info_create();
+    if (info) {
         // debug("Mach-O Command Info Loaded");
         memcpy(info, data + offset, sizeof(macho_command_info_t));
     }
@@ -130,8 +121,7 @@ macho_command_info_t* macho_command_info_load(unsigned char* data, unsigned int 
 
 void macho_command_info_debug(macho_command_info_t* info)
 {
-    if (info)
-    {
+    if (info) {
         debug("\tInfo:");
         debug("\t\t    cmd = %d", info->cmd);
         debug("\t\tcmdsize = %d", info->cmdsize);
@@ -141,8 +131,7 @@ void macho_command_info_debug(macho_command_info_t* info)
 
 void macho_command_info_free(macho_command_info_t* info)
 {
-    if (info)
-    {
+    if (info) {
         free(info);
     }
 }

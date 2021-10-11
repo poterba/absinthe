@@ -22,17 +22,14 @@
 #include "device.hpp"
 
 #include <libimobiledevice/mobilebackup.h>
-
 #include <memory>
 
-namespace absinthe
-{
-namespace util
-{
+namespace absinthe {
+namespace util {
 
 class MB1 final
 {
-public:
+  public:
     MB1() = default;
     ~MB1();
 
@@ -40,7 +37,7 @@ public:
     void open(uint16_t port);
     int crash();
 
-private:
+  private:
     uint16_t _port{0};
     std::shared_ptr<Device> _device;
     mobilebackup_client_t _client;

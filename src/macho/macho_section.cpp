@@ -17,52 +17,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
+#include "common.hpp"
+#include "debug.hpp"
+#include "macho_section.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "debug.hpp"
-#include "common.hpp"
-#include "macho_section.hpp"
-
 /*
  * Mach-O Segment Functions
  */
-macho_section_t* macho_section_create() {
-	macho_section_t* section = NULL;
-	return section;
+macho_section_t* macho_section_create()
+{
+    macho_section_t* section = NULL;
+    return section;
 }
 
-macho_section_t* macho_section_load(unsigned char* data, unsigned int offset) {
-	macho_section_t* section = macho_section_create();
-	return section;
+macho_section_t* macho_section_load(unsigned char* data, unsigned int offset)
+{
+    macho_section_t* section = macho_section_create();
+    return section;
 }
 
-void macho_section_debug(macho_section_t* section) {
+void macho_section_debug(macho_section_t* section) {}
 
-}
-
-void macho_section_free(macho_section_t* section) {
-
-}
+void macho_section_free(macho_section_t* section) {}
 
 /*
  * Mach-O Segment Info Functions
  */
-macho_section_info_t* macho_section_info_create() {
-	macho_section_info_t* info = NULL;
-	return info;
+macho_section_info_t* macho_section_info_create()
+{
+    macho_section_info_t* info = NULL;
+    return info;
 }
 
-macho_section_info_t* macho_section_info_load(unsigned char* data, unsigned int offset) {
-	macho_section_info_t* info = macho_section_info_create();
-	return info;
+macho_section_info_t* macho_section_info_load(unsigned char* data, unsigned int offset)
+{
+    macho_section_info_t* info = macho_section_info_create();
+    return info;
 }
 
-void macho_section_info_debug(macho_section_info_t* info) {
+void macho_section_info_debug(macho_section_info_t* info) {}
 
-}
-
-void macho_section_info_free(macho_section_info_t* info) {
-
-}
+void macho_section_info_free(macho_section_info_t* info) {}

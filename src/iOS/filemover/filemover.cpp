@@ -31,39 +31,30 @@ static int GetBSDProcessList(kinfo_proc** procList, size_t* procCount) /*{{{*/
 
     result = NULL;
     done = false;
-    do
-    {
+    do {
         assert(result == NULL);
 
         length = 0;
-        err = sysctl((int*)name, (sizeof(name) / sizeof(*name)) - 1, NULL, &length, NULL, 0);
-        if (err == -1)
-        {
+        err = sysctl((int*) name, (sizeof(name) / sizeof(*name)) - 1, NULL, &length, NULL, 0);
+        if (err == -1) {
             err = errno;
         }
 
-        if (err == 0)
-        {
+        if (err == 0) {
             result = malloc(length);
-            if (result == NULL)
-            {
+            if (result == NULL) {
                 err = ENOMEM;
             }
         }
 
-        if (err == 0)
-        {
-            err = sysctl((int*)name, (sizeof(name) / sizeof(*name)) - 1, result, &length, NULL, 0);
-            if (err == -1)
-            {
+        if (err == 0) {
+            err = sysctl((int*) name, (sizeof(name) / sizeof(*name)) - 1, result, &length, NULL, 0);
+            if (err == -1) {
                 err = errno;
             }
-            if (err == 0)
-            {
+            if (err == 0) {
                 done = true;
-            }
-            else if (err == ENOMEM)
-            {
+            } else if (err == ENOMEM) {
                 assert(result != NULL);
                 free(result);
                 result = NULL;
@@ -72,14 +63,12 @@ static int GetBSDProcessList(kinfo_proc** procList, size_t* procCount) /*{{{*/
         }
     } while (err == 0 && !done);
 
-    if (err != 0 && result != NULL)
-    {
+    if (err != 0 && result != NULL) {
         free(result);
         result = NULL;
     }
     *procList = result;
-    if (err == 0)
-    {
+    if (err == 0) {
         *procCount = length / sizeof(kinfo_proc);
     }
 
@@ -91,37 +80,29 @@ static int GetBSDProcessList(kinfo_proc** procList, size_t* procCount) /*{{{*/
 /* recursively remove path, including path */
 static void rmdir_recursive(const char* path) /*{{{*/
 {
-    if (!path)
-    {
+    if (!path) {
         return;
     }
     DIR* cur_dir = opendir(path);
-    if (cur_dir)
-    {
+    if (cur_dir) {
         struct dirent* ep;
-        while ((ep = readdir(cur_dir)))
-        {
-            if ((strcmp(ep->d_name, ".") == 0) || (strcmp(ep->d_name, "..") == 0))
-            {
+        while ((ep = readdir(cur_dir))) {
+            if ((strcmp(ep->d_name, ".") == 0) || (strcmp(ep->d_name, "..") == 0)) {
                 continue;
             }
-            char* fpath = (char*)malloc(strlen(path) + 1 + strlen(ep->d_name) + 1);
-            if (fpath)
-            {
+            char* fpath = (char*) malloc(strlen(path) + 1 + strlen(ep->d_name) + 1);
+            if (fpath) {
                 struct stat st;
                 strcpy(fpath, path);
                 strcat(fpath, "/");
                 strcat(fpath, ep->d_name);
 
-                if ((stat(fpath, &st) == 0) && S_ISDIR(st.st_mode))
-                {
+                if ((stat(fpath, &st) == 0) && S_ISDIR(st.st_mode)) {
                     rmdir_recursive(fpath);
-                }
-                else
-                {
-                    if (remove(fpath) != 0)
-                    {
-                        // syslog(LOG_NOTICE, "could not remove %s: %s", fpath, strerror(errno));
+                } else {
+                    if (remove(fpath) != 0) {
+                        // syslog(LOG_NOTICE, "could not remove %s: %s", fpath,
+                        // strerror(errno));
                     }
                 }
                 free(fpath);
@@ -129,8 +110,7 @@ static void rmdir_recursive(const char* path) /*{{{*/
         }
         closedir(cur_dir);
     }
-    if (rmdir(path) != 0)
-    {
+    if (rmdir(path) != 0) {
         // syslog(LOG_NOTICE, "could not remove %s: %s", path, strerror(errno));
     }
 } /*}}}*/
@@ -148,21 +128,17 @@ void executeCommand(uid_t uid, gid_t gid, char* const argv[])
     signal(SIGCHLD, &sig_chld_ignore);
 
     pid_t fork_pid;
-    if ((fork_pid = fork()) != 0)
-    {
+    if ((fork_pid = fork()) != 0) {
         while (waitpid(fork_pid, NULL, WNOHANG) <= 0)
             usleep(300);
-    }
-    else
-    {
+    } else {
         if (uid == 501)
             chdir("/private/var/mobile");
 
         setuid(uid);
         setgid(gid);
 
-        if (execv(argv[0], argv) != 0)
-        {
+        if (execv(argv[0], argv) != 0) {
             perror("execv");
             fflush(stderr);
             fflush(stdout);
@@ -176,22 +152,18 @@ static void start()
 {
     syslog(LOG_NOTICE, "waiting for springboard to launch...");
     int found = 0;
-    while (1)
-    {
+    while (1) {
         size_t proc_count = 0;
         kinfo_proc* proc_list = NULL;
         GetBSDProcessList(&proc_list, &proc_count);
         int i;
-        for (i = 0; i < proc_count; i++)
-        {
-            if (!strcmp((&proc_list[i])->kp_proc.p_comm, "SpringBoard"))
-            {
+        for (i = 0; i < proc_count; i++) {
+            if (!strcmp((&proc_list[i])->kp_proc.p_comm, "SpringBoard")) {
                 found = 1;
             }
         }
         free(proc_list);
-        if (found)
-        {
+        if (found) {
             break;
         }
         sleep(3);
@@ -199,21 +171,19 @@ static void start()
     syslog(LOG_NOTICE, "Springboard started. Moving back files...");
 
     DIR* dir = opendir(MOVE_DIR);
-    if (dir)
-    {
+    if (dir) {
         struct dirent* ep = NULL;
-        while ((ep = readdir(dir)))
-        {
+        while ((ep = readdir(dir))) {
             if (!ep->d_name)
                 continue;
             if (!strcmp(ep->d_name, ".") || !strcmp(ep->d_name, ".."))
                 continue;
-            char* oldname = (char*)malloc(strlen(MOVE_DIR) + 1 + strlen(ep->d_name) + 1);
+            char* oldname = (char*) malloc(strlen(MOVE_DIR) + 1 + strlen(ep->d_name) + 1);
             strcpy(oldname, MOVE_DIR);
             strcat(oldname, "/");
             strcat(oldname, ep->d_name);
 
-            char* newname = (char*)malloc(strlen(ORIG_DIR) + 1 + strlen(ep->d_name) + 1);
+            char* newname = (char*) malloc(strlen(ORIG_DIR) + 1 + strlen(ep->d_name) + 1);
             strcpy(newname, ORIG_DIR);
             strcat(newname, "/");
             strcat(newname, ep->d_name);
@@ -231,12 +201,12 @@ static void start()
         closedir(dir);
         remove(MOVE_DIR);
         dir = opendir(MOVE_DIR);
-        if (dir)
-        {
+        if (dir) {
             closedir(dir);
-            syslog(LOG_ERR, "WARNING: the folder '" MOVE_DIR
-                            "' is still present in the user's Media folder. You have to check "
-                            "yourself for any leftovers and move them back if required!");
+            syslog(
+                LOG_ERR, "WARNING: the folder '" MOVE_DIR
+                         "' is still present in the user's Media folder. You have to check "
+                         "yourself for any leftovers and move them back if required!");
         }
     }
 
@@ -255,18 +225,15 @@ static void start()
 int main(int argc, char** argv)
 {
     pid_t pid = fork();
-    if (pid < 0)
-    {
+    if (pid < 0) {
         exit(EXIT_FAILURE);
     }
-    if (pid > 0)
-    {
+    if (pid > 0) {
         exit(EXIT_SUCCESS);
     }
 
     pid_t sid = setsid();
-    if (sid < 0)
-    {
+    if (sid < 0) {
         exit(EXIT_FAILURE);
     }
     close(STDIN_FILENO);

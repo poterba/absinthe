@@ -13,7 +13,7 @@ typedef unsigned int mach_msg_id_t;
 typedef unsigned int mach_port_name_t;
 typedef mach_port_name_t mach_port_t;
 
-#define MACH_PORT_RIGHT_RECEIVE ((mach_port_right_t)1)
+#define MACH_PORT_RIGHT_RECEIVE ((mach_port_right_t) 1)
 #define MACH_PORT_NULL 0 /* intentional loose typing */
 
 typedef struct
@@ -151,4 +151,4 @@ struct hfs_mount_args
 
 #define SM_SHARED 4
 
-#define RTLD_DEFAULT ((__32bit_ptr)-2) /* Use default search algorithm. */
+#define RTLD_DEFAULT ((__32bit_ptr) -2) /* Use default search algorithm. */

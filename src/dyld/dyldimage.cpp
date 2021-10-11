@@ -17,33 +17,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "common.hpp"
 #include "debug.hpp"
 #include "dyldimage.hpp"
 #include "dyldmap.hpp"
-
 #include "file.hpp"
 
-namespace absinthe
-{
-namespace dyld
-{
-namespace image
-{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+namespace absinthe {
+namespace dyld {
 
 dyldimage_t* parse(unsigned char* data, uint32_t offset)
 {
     unsigned char* buffer = &data[offset];
     dyldimage_t* image = create();
-    if (image)
-    {
+    if (image) {
         image->info = info_parse(data, offset);
-        if (image->info == NULL)
-        {
+        if (image->info == NULL) {
             throw std::runtime_error("Unable to allocate data for dyld image info");
             return NULL;
         }
@@ -57,10 +50,8 @@ dyldimage_t* parse(unsigned char* data, uint32_t offset)
 
 void free(dyldimage_t* image)
 {
-    if (image)
-    {
-        if (image->info)
-        {
+    if (image) {
+        if (image->info) {
             dyldimage_info_free(image->info);
             image->info = NULL;
         }
@@ -70,11 +61,9 @@ void free(dyldimage_t* image)
 
 void _debug(dyldimage_t* image)
 {
-    if (image)
-    {
+    if (image) {
         debug("\t\tImage {");
-        if (image->info)
-        {
+        if (image->info) {
             dyldimage_info_debug(image->info);
         }
         debug("\t\t}");
@@ -87,9 +76,8 @@ void _debug(dyldimage_t* image)
 
 dyldimage_info_t* info_create()
 {
-    dyldimage_info_t* info = (dyldimage_info_t*)malloc(sizeof(dyldimage_info_t));
-    if (info)
-    {
+    dyldimage_info_t* info = (dyldimage_info_t*) malloc(sizeof(dyldimage_info_t));
+    if (info) {
         memset(info, '\0', sizeof(dyldimage_info_t*));
     }
     return info;
@@ -98,8 +86,7 @@ dyldimage_info_t* info_create()
 dyldimage_info_t* info_parse(unsigned char* data, uint32_t offset)
 {
     dyldimage_info_t* info = info_create();
-    if (info)
-    {
+    if (info) {
         memcpy(info, &data[offset], sizeof(dyldimage_info_t));
     }
     return info;
@@ -107,15 +94,13 @@ dyldimage_info_t* info_parse(unsigned char* data, uint32_t offset)
 
 void info_free(dyldimage_info_t* info)
 {
-    if (info)
-    {
+    if (info) {
         free(info);
     }
 }
 void info_debug(dyldimage_info_t* info)
 {
-    if (info)
-    {
+    if (info) {
         debug("\t\t\taddress = 0x%qx", info->address);
         debug("\t\t\t  inode = 0x%qx", info->inode);
         debug("\t\t\tmodtime = 0x%qx", info->modtime);
@@ -126,8 +111,7 @@ void info_debug(dyldimage_info_t* info)
 
 void save(dyldimage_t* image, const char* path)
 {
-    if (image != NULL && image->data != NULL && image->size > 0)
-    {
+    if (image != NULL && image->data != NULL && image->size > 0) {
         printf("Writing dylib to %s", path);
         file_write(path, image->data, image->size);
     }
@@ -135,6 +119,5 @@ void save(dyldimage_t* image, const char* path)
 
 char* get_name(dyldimage_t* image) { return image->name; }
 
-} // namespace image
 } // namespace dyld
 } // namespace absinthe

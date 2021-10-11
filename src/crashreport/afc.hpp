@@ -22,31 +22,26 @@
 #include "lockdown.hpp"
 #include <libimobiledevice/afc.h>
 
-namespace absinthe
-{
-namespace util
-{
+namespace absinthe {
+namespace util {
 class Device;
 } // namespace util
-namespace crashreport
-{
+namespace crashreport {
 
 class AFC final
 {
-public:
-    AFC() = default;
-
-    void connect(std::shared_ptr<util::Device> device);
-    void open(std::shared_ptr<util::Device> device, uint16_t port);
+  public:
+    AFC(std::shared_ptr<util::Device> device);
+    AFC(std::shared_ptr<util::Device> device, uint16_t port);
 
     int send_file(const char* local, const char* remote);
     int close();
     void apparition_afc_get_file_contents(const char* filename, char** data, uint64_t* size);
 
-private:
-    uint16_t port;
-    std::shared_ptr<util::Device> device;
-    afc_client_t client;
+  private:
+    uint16_t _port;
+    std::shared_ptr<util::Device> _device;
+    afc_client_t _client;
 };
 
 } // namespace crashreport

@@ -9,14 +9,10 @@ int main(int argc, char* argv[])
 {
     debug("Opening device");
     device_t* device = device_create(NULL);
-    if (device != NULL)
-    {
-
+    if (device != NULL) {
         debug("Closing device");
         device_free(device);
-    }
-    else
-    {
+    } else {
         throw std::runtime_error("Unable to open device");
     }
 

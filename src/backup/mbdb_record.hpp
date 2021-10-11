@@ -23,16 +23,14 @@
 #include <string>
 #include <vector>
 
-namespace absinthe
-{
-namespace backup
-{
+namespace absinthe {
+namespace backup {
 
 class MBDB;
 
 class MBDBRecord final
 {
-public:
+  public:
     struct Property final
     {
         unsigned short name_size;
@@ -45,7 +43,7 @@ public:
     {
     } __attribute__((__packed__));
 
-public:
+  public:
     MBDBRecord(unsigned char* data);
 
     void _debug();
@@ -71,7 +69,7 @@ public:
 
     int build(unsigned char** data, unsigned int* size);
 
-private:
+  private:
     unsigned short domain_size;
     char* domain;
     unsigned short path_size;

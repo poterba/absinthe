@@ -28,16 +28,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-namespace absinthe
-{
-namespace util
-{
+namespace absinthe {
+namespace util {
 
 Lockdown::Lockdown(device_t* device) : _device(device)
 {
     if (lockdownd_client_new_with_handshake(device->client, &_client, "absinthe") !=
-        LOCKDOWN_E_SUCCESS)
-    {
+        LOCKDOWN_E_SUCCESS) {
         throw std::runtime_error("Unable to pair with lockdownd");
         throw;
     }
@@ -45,47 +42,38 @@ Lockdown::Lockdown(device_t* device) : _device(device)
 
 int Lockdown::get_value(const char* domain, const char* key, plist_t* value)
 {
-    if (!lockdown || !lockdown->client)
-    {
+    if (!lockdown || !lockdown->client) {
         return -1;
     }
 
     lockdownd_error_t err = lockdownd_get_value(lockdown->client, domain, key, value);
-    if (err == LOCKDOWN_E_SUCCESS)
-    {
+    if (err == LOCKDOWN_E_SUCCESS) {
         return 0;
-    }
-    else
-    {
+    } else {
         return -1;
     }
 }
 
 int Lockdown::get_string(const char* key, char** value)
 {
-    if (!lockdown || !lockdown->client)
-    {
+    if (!lockdown || !lockdown->client) {
         return -1;
     }
 
     char* str = NULL;
     plist_t pl = NULL;
     lockdownd_error_t err = lockdownd_get_value(lockdown->client, NULL, key, &pl);
-    if (err == LOCKDOWN_E_SUCCESS)
-    {
-        if (pl != NULL && plist_get_node_type(pl) == PLIST_STRING)
-        {
+    if (err == LOCKDOWN_E_SUCCESS) {
+        if (pl != NULL && plist_get_node_type(pl) == PLIST_STRING) {
             plist_get_string_val(pl, &str);
             plist_free(pl);
-            if (str != NULL)
-            {
+            if (str != NULL) {
                 *value = str;
                 return 0;
             }
         }
     }
-    if (pl)
-    {
+    if (pl) {
         plist_free(pl);
     }
     return -1;
@@ -101,8 +89,7 @@ int Lockdown::start_service2(const char* service, uint16_t* port, int warn_on_fa
     uint16_t p = 0;
     lockdownd_start_service(lockdown->client, service, &p);
 
-    if (p == 0)
-    {
+    if (p == 0) {
         if (warn_on_fail)
             throw std::runtime_error("%s failed to start!", service);
         return -1;
@@ -128,10 +115,8 @@ int Lockdown::close(lockdown_t* lockdown)
 
 void Lockdown::free(lockdown_t* lockdown)
 {
-    if (lockdown)
-    {
-        if (lockdown->client)
-        {
+    if (lockdown) {
+        if (lockdown->client) {
             lockdown_close(lockdown);
         }
         free(lockdown);

@@ -22,10 +22,8 @@
 #include "backup_file.hpp"
 #include "mbdb.hpp"
 
-namespace absinthe
-{
-namespace backup
-{
+namespace absinthe {
+namespace backup {
 
 typedef struct backup_t
 {
@@ -42,10 +40,25 @@ int remove_file(backup_t* backup, backup_file::backup_file_t* bfile);
 void free(backup_t* backup);
 int mkdir(backup_t* backup, char* domain, char* path, int mode, int uid, int gid, int flag);
 int symlink(backup_t* backup, char* domain, char* path, char* to, int uid, int gid, int flag);
-int add_file_from_path(backup_t* backup, char* domain, char* localpath, char* path, int mode,
-                       int uid, int gid, int flag);
-int add_file_from_data(backup_t* backup, char* domain, char* data, unsigned int size, char* path,
-                       int mode, int uid, int gid, int flag);
+int add_file_from_path(
+    backup_t* backup,
+    char* domain,
+    char* localpath,
+    char* path,
+    int mode,
+    int uid,
+    int gid,
+    int flag);
+int add_file_from_data(
+    backup_t* backup,
+    char* domain,
+    char* data,
+    unsigned int size,
+    char* path,
+    int mode,
+    int uid,
+    int gid,
+    int flag);
 
 int write_mbdb(backup_t* backup);
 

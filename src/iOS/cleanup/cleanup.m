@@ -10,13 +10,13 @@
 
 NSMutableDictionary* dict_access_by_path(NSMutableDictionary* dict, int length, ...)
 {
-	NSMutableDictionary* current = dict;
-	va_list args;
-	va_start(args, length);
-	int i;
-	for (i = 0; i < length && current; i++) {
-		const char* key = va_arg(args, const char*);
-        	current = [current objectForKey:[NSString stringWithUTF8String:key]];
+    NSMutableDictionary* current = dict;
+    va_list args;
+    va_start(args, length);
+    int i;
+    for (i = 0; i < length && current; i++) {
+        const char* key = va_arg(args, const char*);
+        current = [current objectForKey:[NSString stringWithUTF8String:key]];
 	}
 	va_end(args);
 	return current;

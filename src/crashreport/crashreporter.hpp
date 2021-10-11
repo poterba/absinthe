@@ -27,19 +27,17 @@
 #include <libimobiledevice/libimobiledevice.h>
 #include <plist/plist.h>
 
-namespace absinthe
-{
-namespace crashreport
-{
+namespace absinthe {
+namespace crashreport {
 
 class Reporter final
 {
-public:
+  public:
     Reporter(std::shared_ptr<util::Device> device);
     Reporter(std::shared_ptr<util::Device> device, uint16_t port);
     std::unique_ptr<Report> last_crash();
 
-private:
+  private:
     // std::shared_ptr< AFC > _afc;
     uint16_t _port;
     std::shared_ptr<util::Device> _device;

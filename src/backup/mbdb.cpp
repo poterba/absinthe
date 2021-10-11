@@ -27,12 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-namespace absinthe
-{
-namespace backup
-{
-namespace
-{
+namespace absinthe {
+namespace backup {
+namespace {
 constexpr unsigned char* MBDB_MAGIC{"\x6d\x62\x64\x62\x05\x00"};
 }
 
@@ -42,8 +39,7 @@ MBDB::MBDB(const std::string& filePath)
     unsigned char* data = NULL;
 
     int err = util::file_read(filePath, &data, &size);
-    if (err < 0)
-    {
+    if (err < 0) {
         throw std::runtime_error("Unable to read mbdb file");
     }
 
@@ -58,8 +54,7 @@ MBDB::MBDB(std::vector<unsigned char> data)
     unsigned int count = 0;
     unsigned int offset = 0;
 
-    if (strncmp(data, MBDB_MAGIC, 6) != 0)
-    {
+    if (strncmp(data, MBDB_MAGIC, 6) != 0) {
         throw std::runtime_error("Unable to identify this filetype");
     }
 
@@ -70,11 +65,9 @@ MBDB::MBDB(std::vector<unsigned char> data)
 
     _data = data;
 
-    while (offset < _size)
-    {
+    while (offset < _size) {
         MBDBRecord mbdb_record(&(_data)[offset]);
-        if (!rec)
-        {
+        if (!rec) {
             throw std::runtime_error("Unable to parse record at offset 0x%x!", offset);
         }
         _records[_num_records++] = rec;
@@ -86,24 +79,19 @@ const MBDBRecord& get_record(mbdb_t* mbdb, unsigned int index) { return NULL; }
 
 void free(mbdb_t* mbdb)
 {
-    if (mbdb)
-    {
-        if (_header)
-        {
+    if (mbdb) {
+        if (_header) {
             free(_header);
             _header = NULL;
         }
-        if (_records)
-        {
+        if (_records) {
             int i;
-            for (i = 0; i < _num_records; i++)
-            {
+            for (i = 0; i < _num_records; i++) {
                 mbdb_record::free(_records[i]);
             }
             free(_records);
         }
-        if (_data)
-        {
+        if (_data) {
             free(_data);
         }
         free(mbdb);

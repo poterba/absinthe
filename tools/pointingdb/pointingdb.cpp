@@ -35,39 +35,32 @@ int main(int argc, char* argv)
 
     uint32_t value = 0;
     uint32_t address = 0;
-    uint32_t base = (uint32_t)0x3F300000;
+    uint32_t base = (uint32_t) 0x3F300000;
 
     // debug("Reading in pointer database");
     file_read("target.mem", &data, &size);
-    if (data && size)
-    {
+    if (data && size) {
         // debug("Database read, reconstructing addresses and filtering ASCII");
-        for (i = 0; i < size; i += 4)
-        {
-            value = *((uint32_t*)&data[i]);
+        for (i = 0; i < size; i += 4) {
+            value = *((uint32_t*) &data[i]);
             if ((value == 0) || ((value & 0xFF000000) == 0))
                 continue;
             address = base + i;
             // debug("Read pointer 0x%08x at offset 0x%x", address, i);
             // debug("Checking if string is ASCII safe");
-            if (check_ascii_pointer(address))
-            {
+            if (check_ascii_pointer(address)) {
                 // debug("Safe ASCII pointer contains 0x%08x", value);
                 debug("0x%08x, 0x%08x", address, value);
                 // printf("print 0x%08x", value);
                 // printf("print *+$");
                 // printf("print *+$");
                 // file_append("pointer.db", &address, 4);
-            }
-            else
-            {
-                // throw std::runtime_error("Error!! This pointer will not get past the ASCII
-                // filter");
+            } else {
+                // throw std::runtime_error("Error!! This pointer will not get past the
+                // ASCII filter");
             }
         }
-    }
-    else
-    {
+    } else {
         throw std::runtime_error("Unable to read in file, returned %p and %d", data, size);
     }
     return 0;

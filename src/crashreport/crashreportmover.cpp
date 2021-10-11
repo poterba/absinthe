@@ -26,10 +26,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-namespace absinthe
-{
-namespace crashreport
-{
+namespace absinthe {
+namespace crashreport {
 
 Mover::Mover(device_t* device)
 {
@@ -39,21 +37,18 @@ Mover::Mover(device_t* device)
     lockdown_t* lockdown = NULL;
 
     lockdown = lockdown_open(device);
-    if (lockdown == NULL)
-    {
+    if (lockdown == NULL) {
         throw std::runtime_errpr("Unable to open connection to lockdown");
     }
 
     err = lockdown_start_service(lockdown, "com.apple.crashreportmover", &port);
-    if (err < 0)
-    {
+    if (err < 0) {
         throw std::runtime_error("Unable to start crash report mover service");
         return NULL;
     }
 
     mover = crashreportmover_open(device, port);
-    if (mover == NULL)
-    {
+    if (mover == NULL) {
         throw std::runtime_error("Unable to open connection to crash report mover service");
         return NULL;
     }
@@ -66,16 +61,14 @@ Mover::Mover(device_t* device)
 Mover::Mover(device_t* device, uint16_t port)
 {
     int err = idevice_connect(device->client, port, &(mover->connection));
-    if (err < 0)
-    {
+    if (err < 0) {
         throw std::exception();
     }
 }
 
 int crashreportmover_close(crashreportmover_t* mover)
 {
-    if (mover->connection)
-    {
+    if (mover->connection) {
         idevice_disconnect(mover->connection);
         mover->connection = NULL;
     }
@@ -84,8 +77,7 @@ int crashreportmover_close(crashreportmover_t* mover)
 
 void crashreportmover_free(crashreportmover_t* mover)
 {
-    if (mover)
-    {
+    if (mover) {
         crashreportmover_close(mover);
         free(mover);
     }

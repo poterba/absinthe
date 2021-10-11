@@ -22,28 +22,30 @@
 #include "common.hpp"
 #include "macho_section.hpp"
 
-typedef struct macho_segment_cmd_t {
-	uint32_t cmd;
-	uint32_t cmdsize;
-	char segname[16];
-	uint32_t vmaddr;
-	uint32_t vmsize;
-	uint32_t fileoff;
-	uint32_t filesize;
-	uint32_t maxprot;
-	uint32_t initprot;
-	uint32_t nsects;
-	uint32_t flags;
+typedef struct macho_segment_cmd_t
+{
+    uint32_t cmd;
+    uint32_t cmdsize;
+    char segname[16];
+    uint32_t vmaddr;
+    uint32_t vmsize;
+    uint32_t fileoff;
+    uint32_t filesize;
+    uint32_t maxprot;
+    uint32_t initprot;
+    uint32_t nsects;
+    uint32_t flags;
 } macho_segment_cmd_t;
 
-typedef struct macho_segment_t {
-	char* name;
-	uint32_t size;
-	uint32_t offset;
-	uint32_t address;
-	unsigned char* data;
-	macho_segment_cmd_t* command;
-	macho_section_t** sections;
+typedef struct macho_segment_t
+{
+    char* name;
+    uint32_t size;
+    uint32_t offset;
+    uint32_t address;
+    unsigned char* data;
+    macho_segment_cmd_t* command;
+    macho_section_t** sections;
 } macho_segment_t;
 
 /*

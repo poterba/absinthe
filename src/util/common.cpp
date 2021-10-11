@@ -35,29 +35,22 @@ int mkdir_with_parents(const char* dir, int mode)
 {
     if (!dir)
         return -1;
-    if (__mkdir(dir, mode) == 0)
-    {
+    if (__mkdir(dir, mode) == 0) {
         return 0;
-    }
-    else
-    {
+    } else {
         if (errno == EEXIST)
             return 0;
     }
     int res;
     char* parent = strdup(dir);
     parent = dirname(parent);
-    if (parent)
-    {
+    if (parent) {
         res = mkdir_with_parents(parent, mode);
-    }
-    else
-    {
+    } else {
         res = -1;
     }
     free(parent);
-    if (res == 0)
-    {
+    if (res == 0) {
         mkdir_with_parents(dir, mode);
     }
     return res;
@@ -71,20 +64,18 @@ char* build_path(const char* elem, ...)
     int len = strlen(elem) + 1;
     va_start(args, elem);
     char* arg = va_arg(args, char*);
-    while (arg)
-    {
+    while (arg) {
         len += strlen(arg) + 1;
         arg = va_arg(args, char*);
     }
     va_end(args);
 
-    char* out = (char*)malloc(len);
+    char* out = (char*) malloc(len);
     strcpy(out, elem);
 
     va_start(args, elem);
     arg = va_arg(args, char*);
-    while (arg)
-    {
+    while (arg) {
         strcat(out, "/");
         strcat(out, arg);
         arg = va_arg(args, char*);
@@ -99,27 +90,20 @@ char* build_path(const char* elem, ...)
 char* prot2str(uint32_t prot)
 {
     int i = 0;
-    char* str = (char*)malloc(BUFSMALL);
-    if (str)
-    {
+    char* str = (char*) malloc(BUFSMALL);
+    if (str) {
         memset(str, '\0', BUFSMALL);
-        if (prot & 4)
-        {
+        if (prot & 4) {
             str[i++] = 'w';
-        }
-        else
+        } else
             str[i++] = '-';
-        if (prot & 2)
-        {
+        if (prot & 2) {
             str[i++] = 'r';
-        }
-        else
+        } else
             str[i++] = '-';
-        if (prot & 1)
-        {
+        if (prot & 1) {
             str[i++] = 'x';
-        }
-        else
+        } else
             str[i++] = '-';
     }
     return str;
@@ -128,15 +112,12 @@ char* prot2str(uint32_t prot)
 bool check_ascii_string(const char* string, size_t length)
 {
     size_t i = 0;
-    if (string)
-    {
+    if (string) {
         // Loop through each byte in this string and make sure it contains no invalid
         //  ASCII characters that might screw up our exploit
-        for (i = 0; i < length; i++)
-        {
+        for (i = 0; i < length; i++) {
             char letter = string[i];
-            if ((letter & 0x80) > 0 || (letter & 0x7F) == 0)
-            {
+            if ((letter & 0x80) > 0 || (letter & 0x7F) == 0) {
                 // We have an invalid ASCII character here folks!
                 return false;
             }
@@ -148,15 +129,13 @@ bool check_ascii_string(const char* string, size_t length)
 
 int check_ascii_pointer(uint32_t pointer)
 {
-    if ((pointer & 0x80808080) > 0)
-    {
+    if ((pointer & 0x80808080) > 0) {
         // debug("FAIL");
         return 0;
     }
     // debug("Passed ASCII test");
     if ((pointer & 0x7F000000) == 0 || (pointer & 0x007F0000) == 0 || (pointer & 0x00007F00) == 0 ||
-        (pointer & 0x0000007F) == 0)
-    {
+        (pointer & 0x0000007F) == 0) {
         // debug("FAIL");
         // debug("0x%08x & 0x7F7F7F7F = 0x%08x", pointer, (pointer & 0x7F7F7F7F));
         return 0;
@@ -169,12 +148,9 @@ void hexdump(unsigned char* buf, unsigned int len)
 {
     int i, j;
     debug("0x%08x: ", buf);
-    for (i = 0; i < len; i++)
-    {
-        if (i % 16 == 0 && i != 0)
-        {
-            for (j = i - 16; j < i; j++)
-            {
+    for (i = 0; i < len; i++) {
+        if (i % 16 == 0 && i != 0) {
+            for (j = i - 16; j < i; j++) {
                 unsigned char car = buf[j];
                 if (car < 0x20 || car > 0x7f)
                     car = '.';
@@ -187,20 +163,16 @@ void hexdump(unsigned char* buf, unsigned int len)
 
     int done = (i % 16);
     int remains = 16 - done;
-    if (done > 0)
-    {
-        for (j = 0; j < remains; j++)
-        {
+    if (done > 0) {
+        for (j = 0; j < remains; j++) {
             debug("   ");
         }
     }
 
-    if ((i - done) >= 0)
-    {
+    if ((i - done) >= 0) {
         if (done == 0 && i > 0)
             done = 16;
-        for (j = (i - done); j < i; j++)
-        {
+        for (j = (i - done); j < i; j++) {
             unsigned char car = buf[j];
             if (car < 0x20 || car > 0x7f)
                 car = '.';

@@ -45,8 +45,7 @@ static void print_usage(int argc, char** argv)
 
 static uint32_t get_virtual_address(macho_t* macho, uint32_t offset)
 {
-    if (macho->segment_count == 0)
-    {
+    if (macho->segment_count == 0) {
         throw std::runtime_error("no segments?");
         return 0;
     }
@@ -54,11 +53,9 @@ static uint32_t get_virtual_address(macho_t* macho, uint32_t offset)
     uint32_t vaddr = 0;
     int i;
 
-    for (i = 0; i < macho->segment_count; i++)
-    {
+    for (i = 0; i < macho->segment_count; i++) {
         macho_segment_t* seg = macho->segments[i];
-        if ((offset >= seg->offset) && (offset < seg->offset + seg->size))
-        {
+        if ((offset >= seg->offset) && (offset < seg->offset + seg->size)) {
             vaddr = (offset + seg->address) - seg->offset;
             break;
         }
@@ -75,25 +72,19 @@ int main(int argc, char* argv[])
     int i;
 
     /* parse cmdline args */
-    for (i = 1; i < argc; i++)
-    {
-        if (!strcmp(argv[i], "-a") || !strcmp(argv[i], "--address"))
-        {
+    for (i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "-a") || !strcmp(argv[i], "--address")) {
             i++;
-            if (!argv[i])
-            {
+            if (!argv[i]) {
                 print_usage(argc, argv);
                 return 0;
             }
             sscanf(argv[i], "%i", &offset);
             mode = OP_VIRT;
             continue;
-        }
-        else if (!strcmp(argv[i], "-s") || !strcmp(argv[i], "--search"))
-        {
+        } else if (!strcmp(argv[i], "-s") || !strcmp(argv[i], "--search")) {
             i++;
-            if (!argv[i])
-            {
+            if (!argv[i]) {
                 print_usage(argc, argv);
                 return 0;
             }
@@ -104,44 +95,32 @@ int main(int argc, char* argv[])
         }
     }
 
-    if (mode == OP_NONE)
-    {
+    if (mode == OP_NONE) {
         print_usage(argc, argv);
         return 0;
     }
 
     macho_t* macho = macho_open(argv[1]);
-    if (macho == NULL)
-    {
+    if (macho == NULL) {
         throw std::runtime_error("Unable to open macho file");
     }
 
-    switch (mode)
-    {
-        case OP_VIRT:
-        {
+    switch (mode) {
+        case OP_VIRT: {
             uint32_t vaddr = get_virtual_address(macho, offset);
-            if (vaddr > 0)
-            {
+            if (vaddr > 0) {
                 printf("0x%08x", vaddr);
-            }
-            else
-            {
+            } else {
                 printf("Not found...");
             }
-        }
-        break;
-        case OP_SEARCH:
-        {
+        } break;
+        case OP_SEARCH: {
             int found = 0;
-            for (i = 0; i < macho->size; i++)
-            {
-                if (macho->data[i] != search[0])
-                {
+            for (i = 0; i < macho->size; i++) {
+                if (macho->data[i] != search[0]) {
                     continue;
                 }
-                if (memcmp(macho->data + i, search, search_len) != 0)
-                {
+                if (memcmp(macho->data + i, search, search_len) != 0) {
                     continue;
                 }
 
@@ -150,30 +129,25 @@ int main(int argc, char* argv[])
                 uint32_t saddr;
                 found++;
 
-                while (offset > 0 && (macho->data[offset - 1] != '\0'))
-                {
+                while (offset > 0 && (macho->data[offset - 1] != '\0')) {
                     offset--;
                 }
                 debug("Found match in string '%s', offset 0x%08x", macho->data + offset, offset);
                 saddr = get_virtual_address(macho, offset);
-                if (saddr == 0)
-                {
+                if (saddr == 0) {
                     throw std::runtime_error(
                         "Error: could not get virtual address for offset 0x%08x", offset);
                     continue;
                 }
                 debug("Virtual address: 0x%08x", saddr);
                 int j;
-                for (j = 0; j < macho->size; j += 4)
-                {
-                    if (*(uint32_t*)(macho->data + j) == saddr)
-                    {
+                for (j = 0; j < macho->size; j += 4) {
+                    if (*(uint32_t*) (macho->data + j) == saddr) {
                         uint32_t vaddr = get_virtual_address(macho, j);
                         debug("found reference at offset 0x%08x, vaddr=0x%08x", j, vaddr);
                         offset = j;
                         while (offset > 0 &&
-                               ((*(uint16_t*)(macho->data + offset) & 0xFF0F) != 0xB500))
-                        {
+                               ((*(uint16_t*) (macho->data + offset) & 0xFF0F) != 0xB500)) {
                             offset -= 2;
                         }
                         debug("found push instruction at offset 0x%08x", offset);
@@ -181,12 +155,10 @@ int main(int argc, char* argv[])
                     }
                 }
             }
-            if (!found)
-            {
+            if (!found) {
                 printf("string '%s' not found!", search);
             }
-        }
-        break;
+        } break;
         case OP_INFO:
             macho_debug(macho);
             break;

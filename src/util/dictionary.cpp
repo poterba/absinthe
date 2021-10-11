@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include "dictionary.hpp"
 #include "debug.hpp"
+#include "dictionary.hpp"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,9 +26,8 @@
 
 dictionary_t* dictionary_create()
 {
-    dictionary_t* dict = (dictionary_t*)malloc(sizeof(dictionary_t));
-    if (dict)
-    {
+    dictionary_t* dict = (dictionary_t*) malloc(sizeof(dictionary_t));
+    if (dict) {
         memset(dict, '\0', sizeof(dictionary_t));
     }
     return dict;
@@ -36,8 +35,7 @@ dictionary_t* dictionary_create()
 
 void dictionary_free(dictionary_t* dict)
 {
-    if (dict)
-    {
+    if (dict) {
         free(dict);
     }
 }
@@ -47,8 +45,7 @@ int randomize_string(unsigned char* buffer, unsigned int size, int times)
     int i = 0;
     int bits = size * 8;
     memset(buffer, '\1', size);
-    for (i = 0; i < times; i++)
-    {
+    for (i = 0; i < times; i++) {
         // Here we're going to flip some bits and record the type of crash we get
         int bit = rand() % bits; // returns a number 0x0 to size * 8
         // debug("Bit = %d", bit);
@@ -73,7 +70,7 @@ int dictionary_make_attack(uint32_t address, uint32_t salt, char** data, int* le
     int count = 20;
     int bits = 0x10 * 8;
     unsigned int size = 0x48;
-    unsigned char* buffer = (unsigned char*)malloc(size);
+    unsigned char* buffer = (unsigned char*) malloc(size);
     memset(buffer, '\1', size);
     randomize_string(buffer, 0x10, 0x10);
     randomize_string(&buffer[0x10], 0x10, 0x10);
@@ -272,94 +269,94 @@ void dictionary_debug(dictionary_t* dict)
 
 dictionary_value_t* dictionary_get_values(dictionary_t* dict)
 {
-    return (dictionary_value_t*)dict->pointers[0];
+    return (dictionary_value_t*) dict->pointers[0];
 }
 
 void dictionary_set_values(dictionary_t* dict, dictionary_value_t* ptr)
 {
-    dict->pointers[0] = (uint32_t)ptr;
+    dict->pointers[0] = (uint32_t) ptr;
 }
 
 dictionary_value_t* dictionary_get_values2(dictionary_t* dict)
 {
     if (0 == dict->bits.values2_offset)
         throw std::runtime_error("Unable to get values2 in dictionary");
-    return (dictionary_value_t*)dict->pointers[dict->bits.values2_offset];
+    return (dictionary_value_t*) dict->pointers[dict->bits.values2_offset];
 }
 
 void dictionary_set_values2(dictionary_t* dict, dictionary_value_t* ptr)
 {
     if (0 == dict->bits.values2_offset)
         throw std::runtime_error("Unable to set values2 in dictionary");
-    dict->pointers[dict->bits.values2_offset] = (uint32_t)ptr;
+    dict->pointers[dict->bits.values2_offset] = (uint32_t) ptr;
 }
 
 dictionary_value_t* dictionary_get_keys(dictionary_t* dict)
 {
     if (0 == dict->bits.keys_offset)
         throw std::runtime_error("Unable to get keys in dictionary");
-    return (dictionary_value_t*)dict->pointers[dict->bits.keys_offset];
+    return (dictionary_value_t*) dict->pointers[dict->bits.keys_offset];
 }
 
 void dictionary_set_keys(dictionary_t* dict, dictionary_value_t* ptr)
 {
     if (0 == dict->bits.keys_offset)
         throw std::runtime_error("Unable to set keys in dictionary");
-    dict->pointers[dict->bits.keys_offset] = (uint32_t)ptr;
+    dict->pointers[dict->bits.keys_offset] = (uint32_t) ptr;
 }
 
 dictionary_value_t* dictionary_get_keys2(dictionary_t* dict)
 {
     if (0 == dict->bits.keys2_offset)
         throw std::runtime_error("Unable to get keys2 in dictionary");
-    return (dictionary_value_t*)dict->pointers[dict->bits.keys2_offset];
+    return (dictionary_value_t*) dict->pointers[dict->bits.keys2_offset];
 }
 
 void dictionary_set_keys2(dictionary_t* dict, dictionary_value_t* ptr)
 {
     if (0 == dict->bits.keys2_offset)
         throw std::runtime_error("Unable to set keys2 in dictionary");
-    dict->pointers[dict->bits.keys2_offset] = (uint32_t)ptr;
+    dict->pointers[dict->bits.keys2_offset] = (uint32_t) ptr;
 }
 
 uintptr_t* dictionary_get_counts(dictionary_t* dict)
 {
     if (0 == dict->bits.counts_offset)
         throw std::runtime_error("Unable to get counts in dictionary");
-    return (uintptr_t*)dict->pointers[dict->bits.counts_offset];
+    return (uintptr_t*) dict->pointers[dict->bits.counts_offset];
 }
 
 void dictionary_set_counts(dictionary_t* dict, uintptr_t* ptr)
 {
     if (0 == dict->bits.counts_offset)
         throw std::runtime_error("Unable to set counts in dictionary");
-    dict->pointers[dict->bits.counts_offset] = (uint32_t)ptr;
+    dict->pointers[dict->bits.counts_offset] = (uint32_t) ptr;
 }
 
 uintptr_t* dictionary_get_orders(dictionary_t* dict)
 {
     if (0 == dict->bits.orders_offset)
         throw std::runtime_error("Unable to get orders in dictionary");
-    return (uintptr_t*)dict->pointers[dict->bits.orders_offset];
+    return (uintptr_t*) dict->pointers[dict->bits.orders_offset];
 }
 
 void dictionary_set_orders(dictionary_t* dict, uintptr_t* ptr)
 {
     if (0 == dict->bits.orders_offset)
         throw std::runtime_error("Unable to set orders in dictionary");
-    dict->pointers[dict->bits.orders_offset] = (uint32_t)ptr;
+    dict->pointers[dict->bits.orders_offset] = (uint32_t) ptr;
 }
 
 uintptr_t* dictionary_get_hashes(dictionary_t* dict)
 {
     if (0 == dict->bits.hashes_offset)
         throw std::runtime_error("Unable to get hashes in dictionary");
-    return (uintptr_t*)dict->pointers[dict->bits.hashes_offset];
+    return (uintptr_t*) dict->pointers[dict->bits.hashes_offset];
 }
 
 void dictionary_set_hashes(dictionary_t* dict, uintptr_t* ptr)
 {
     if (0 == dict->bits.hashes_offset)
         throw std::runtime_error("Unable to set hashes in dictionary");
-    dict->pointers[dict->bits.hashes_offset] = (uint32_t)ptr;
+    dict->pointers[dict->bits.hashes_offset] = (uint32_t) ptr;
 }

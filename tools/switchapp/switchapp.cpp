@@ -18,8 +18,7 @@ int main(int argc, char* argv[])
 {
     debug("Preparing to open device");
     device_t* device = device_create(NULL);
-    if (device == NULL)
-    {
+    if (device == NULL) {
         throw std::runtime_error("Unable to open device");
         return -1;
     }
@@ -32,8 +31,7 @@ int main(int argc, char* argv[])
     debug("Create device backup");
 
     backup_t* backup = backup_open(".", device->udid);
-    if (!backup)
-    {
+    if (!backup) {
         throw std::runtime_error("Unable to open backup");
         device_free(device);
         return -1;

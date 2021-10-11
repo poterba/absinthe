@@ -58,10 +58,8 @@
 
 #define AFCTMP "HackStore"
 
-namespace absinthe
-{
-namespace core
-{
+namespace absinthe {
+namespace core {
 
 typedef struct _compatibility
 {
@@ -92,40 +90,34 @@ compatibility_t compatible_devices[] = {{"N92AP", "9B176"}, {"N90AP", "9B176"}, 
 
 static int cpio_get_file_name_length(void* cpio)
 {
-    if (cpio)
-    {
+    if (cpio) {
         char buffer[7];
         int val;
 
         memset(buffer, '\0', 7);
 
-        memcpy(&buffer, (void*)(cpio + 59), 6); /* File Name Length */
+        memcpy(&buffer, (void*) (cpio + 59), 6); /* File Name Length */
 
         val = strtoul(buffer, NULL, 8);
         return val;
-    }
-    else
-    {
+    } else {
         return 0;
     }
 }
 
 static int cpio_get_file_length(void* cpio)
 {
-    if (cpio)
-    {
+    if (cpio) {
         char buffer[12];
         int val;
 
         memset(buffer, '\0', 12);
 
-        memcpy(&buffer, (void*)(cpio + 65), 11); /* File Length */
+        memcpy(&buffer, (void*) (cpio + 65), 11); /* File Length */
 
         val = strtoul(buffer, NULL, 8);
         return val;
-    }
-    else
-    {
+    } else {
         return 0;
     }
 }
@@ -134,16 +126,13 @@ static int connected = 0;
 
 void jb_device_event_cb(const idevice_event_t* event, void* user_data)
 {
-    char* uuid = (char*)user_data;
+    char* uuid = (char*) user_data;
     debug("device event %d: %s", event->event, event->udid);
     if (uuid && strcmp(uuid, event->udid))
         return;
-    if (event->event == IDEVICE_DEVICE_ADD)
-    {
+    if (event->event == IDEVICE_DEVICE_ADD) {
         connected = 1;
-    }
-    else if (event->event == IDEVICE_DEVICE_REMOVE)
-    {
+    } else if (event->event == IDEVICE_DEVICE_REMOVE) {
         connected = 0;
     }
 }
@@ -169,8 +158,7 @@ int check_consistency(char* product, char* build)
     // Verify main directory exists
     snprintf(prodstr, 32, "payload/%s_%s", build, product);
 
-    if (stat(prodstr, &buf) == -1)
-    {
+    if (stat(prodstr, &buf) == -1) {
         throw std::runtime_error("Failed to open directory \"payload/{}\""); // prodstr
     }
     // Seems legit.
@@ -180,8 +168,7 @@ int check_consistency(char* product, char* build)
 int verify_product(char* product, char* build)
 {
     compatibility_t* curcompat = &compatible_devices[0];
-    while ((curcompat) && (curcompat->product != NULL))
-    {
+    while ((curcompat) && (curcompat->product != NULL)) {
         if (!strcmp(curcompat->product, product) && !strcmp(curcompat->build, build))
             return 0;
         curcompat++;
@@ -196,11 +183,9 @@ static uint32_t get_libcopyfile_vmaddr(const char* product, const char* build)
     // find product type and build version
     int i = 0;
     uint32_t vmaddr = 0;
-    while (devices_vmaddr_libcopyfile[i].product)
-    {
+    while (devices_vmaddr_libcopyfile[i].product) {
         if (!strcmp(product, devices_vmaddr_libcopyfile[i].product) &&
-            !strcmp(build, devices_vmaddr_libcopyfile[i].build))
-        {
+            !strcmp(build, devices_vmaddr_libcopyfile[i].build)) {
             vmaddr = devices_vmaddr_libcopyfile[i].vmaddr;
             break;
         }
@@ -212,15 +197,12 @@ static uint32_t get_libcopyfile_vmaddr(const char* product, const char* build)
 int jb_device_is_supported(const char* product, const char* build)
 {
     if ((strcmp(build, "9B176") == 0) || (strcmp(build, "9B206") == 0) ||
-        (strcmp(build, "9B208") == 0) || (strcmp(build, "11A501")))
-    {
+        (strcmp(build, "9B208") == 0) || (strcmp(build, "11A501"))) {
         char testfn[512];
         struct stat fst;
         snprintf(testfn, sizeof(testfn), "data/%s/%s/rocky-racoon/boot.conf", build, product);
         return (stat(testfn, &fst) == 0);
-    }
-    else
-    {
+    } else {
         uint32_t vmaddr = get_libcopyfile_vmaddr(product, build);
         return (vmaddr != 0);
     }
@@ -231,39 +213,32 @@ int jb_check_consistency(const char* product, const char* build)
     if ((strcmp(build, "11A501") == 0))
         return 0;
     if ((strcmp(build, "9B176") == 0) || (strcmp(build, "9B206") == 0) ||
-        (strcmp(build, "9B208") == 0))
-    {
+        (strcmp(build, "9B208") == 0)) {
         char testfn[512];
         struct stat fst;
 
         snprintf(testfn, sizeof(testfn), "data/%s/%s/rocky-racoon/boot.conf", build, product);
-        if (stat(testfn, &fst) != 0)
-        {
+        if (stat(testfn, &fst) != 0) {
             fprintf(stderr, "ERROR: missing file '%s'", testfn);
             return -2;
         }
 
         snprintf(testfn, sizeof(testfn), "data/%s/%s/rocky-racoon/install.conf", build, product);
-        if (stat(testfn, &fst) != 0)
-        {
+        if (stat(testfn, &fst) != 0) {
             fprintf(stderr, "ERROR: missing file '%s'", testfn);
             return -2;
         }
 
         int i = 0;
-        for (i = 0; i < 256; i++)
-        {
+        for (i = 0; i < 256; i++) {
             snprintf(testfn, sizeof(testfn), "data/%s/%s/rocky-racoon/%02x", build, product, i);
-            if (stat(testfn, &fst) != 0)
-            {
+            if (stat(testfn, &fst) != 0) {
                 fprintf(stderr, "ERROR: missing file '%s'", testfn);
                 return -2;
             }
         }
         return 0;
-    }
-    else
-    {
+    } else {
         return fsgen_check_consistency(build, product);
     }
 }
@@ -274,8 +249,7 @@ crashreport::crashreport_t* fetch_crashreport(std::shared_ptr<util::Device> devi
     //  and parse the "random" dylib addresses. Thank you ASLR for nothing. ;P
     debug("Opening connection to CrashReporter service");
     crashreport::crashreporter_t* reporter = crashreport::Reporter(device);
-    if (reporter == NULL)
-    {
+    if (reporter == NULL) {
         throw std::runtime_error("Unable to open connection to crash reporter");
         return NULL;
     }
@@ -285,8 +259,7 @@ crashreport::crashreport_t* fetch_crashreport(std::shared_ptr<util::Device> devi
     //  calculate the addresses of our ROP gadgets we need.
     debug("Reading in crash reports from mobile backup");
     crashreport::crashreport_t* crash = crashreport::crashreporter_last_crash(reporter);
-    if (crash == NULL)
-    {
+    if (crash == NULL) {
         throw std::runtime_error("Unable to read last crash");
         return NULL;
     }
@@ -297,17 +270,14 @@ crashreport_t* crash_mobilebackup(device_t* device)
 {
     crashreport_t* crash = NULL;
     mb1_t* mb1 = mb1_connect(device);
-    if (mb1)
-    {
-        if (mb1_crash(mb1))
-        {
-            fprintf(stderr, "successfully crashed mb1. waiting some time for the device to write "
-                            "the crash report...");
+    if (mb1) {
+        if (mb1_crash(mb1)) {
+            fprintf(
+                stderr, "successfully crashed mb1. waiting some time for the device to write "
+                        "the crash report...");
             sleep(5);
             crash = fetch_crashreport(device);
-        }
-        else
-        {
+        } else {
             fprintf(stderr, "could not crash mb1...");
         }
     }
@@ -323,8 +293,7 @@ static void free_dictionary(char** dictionary) /*{{{*/
     if (!dictionary)
         return;
 
-    for (i = 0; dictionary[i]; i++)
-    {
+    for (i = 0; dictionary[i]; i++) {
         free(dictionary[i]);
     }
     free(dictionary);
@@ -334,34 +303,28 @@ static void free_dictionary(char** dictionary) /*{{{*/
 static int rmdir_recursive_afc(afc_client_t afc, const char* path, int incl) /*{{{*/
 {
     char** dirlist = NULL;
-    if (afc_read_directory(afc, path, &dirlist) != AFC_E_SUCCESS)
-    {
+    if (afc_read_directory(afc, path, &dirlist) != AFC_E_SUCCESS) {
         // fprintf(stderr, "AFC: could not get directory list for %s", path);
         return -1;
     }
-    if (dirlist == NULL)
-    {
-        if (incl)
-        {
+    if (dirlist == NULL) {
+        if (incl) {
             afc_remove_path(afc, path);
         }
         return 0;
     }
 
     char** ptr;
-    for (ptr = dirlist; *ptr; ptr++)
-    {
-        if ((strcmp(*ptr, ".") == 0) || (strcmp(*ptr, "..") == 0))
-        {
+    for (ptr = dirlist; *ptr; ptr++) {
+        if ((strcmp(*ptr, ".") == 0) || (strcmp(*ptr, "..") == 0)) {
             continue;
         }
         char** info = NULL;
-        char* fpath = (char*)malloc(strlen(path) + 1 + strlen(*ptr) + 1);
+        char* fpath = (char*) malloc(strlen(path) + 1 + strlen(*ptr) + 1);
         strcpy(fpath, path);
         strcat(fpath, "/");
         strcat(fpath, *ptr);
-        if ((afc_get_file_info(afc, fpath, &info) != AFC_E_SUCCESS) || !info)
-        {
+        if ((afc_get_file_info(afc, fpath, &info) != AFC_E_SUCCESS) || !info) {
             // failed. try to delete nevertheless.
             afc_remove_path(afc, fpath);
             free(fpath);
@@ -371,12 +334,9 @@ static int rmdir_recursive_afc(afc_client_t afc, const char* path, int incl) /*{
 
         int is_dir = 0;
         int i;
-        for (i = 0; info[i]; i += 2)
-        {
-            if (!strcmp(info[i], "st_ifmt"))
-            {
-                if (!strcmp(info[i + 1], "S_IFDIR"))
-                {
+        for (i = 0; info[i]; i += 2) {
+            if (!strcmp(info[i], "st_ifmt")) {
+                if (!strcmp(info[i + 1], "S_IFDIR")) {
                     is_dir = 1;
                 }
                 break;
@@ -384,8 +344,7 @@ static int rmdir_recursive_afc(afc_client_t afc, const char* path, int incl) /*{
         }
         free_dictionary(info);
 
-        if (is_dir)
-        {
+        if (is_dir) {
             rmdir_recursive_afc(afc, fpath, 0);
         }
         afc_remove_path(afc, fpath);
@@ -393,8 +352,7 @@ static int rmdir_recursive_afc(afc_client_t afc, const char* path, int incl) /*{
     }
 
     free_dictionary(dirlist);
-    if (incl)
-    {
+    if (incl) {
         afc_remove_path(afc, path);
     }
 
@@ -409,20 +367,16 @@ static int get_rand(int min, int max) /*{{{*/
 
 static char* generate_guid() /*{{{*/
 {
-    char* guid = (char*)malloc(sizeof(char) * 37);
+    char* guid = (char*) malloc(sizeof(char) * 37);
     const char* chars = "ABCDEF0123456789";
     srand(time(NULL));
     int i = 0;
 
-    for (i = 0; i < 36; i++)
-    {
-        if (i == 8 || i == 13 || i == 18 || i == 23)
-        {
+    for (i = 0; i < 36; i++) {
+        if (i == 8 || i == 13 || i == 18 || i == 23) {
             guid[i] = '-';
             continue;
-        }
-        else
-        {
+        } else {
             guid[i] = chars[get_rand(0, 16)];
         }
     }
@@ -435,44 +389,38 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
     char* guid = NULL;
     plist_dict_iter iter = NULL;
     plist_t ns = plist_dict_get_item(*pl, "NetworkServices");
-    if (!ns || (plist_get_node_type(ns) != PLIST_DICT))
-    {
+    if (!ns || (plist_get_node_type(ns) != PLIST_DICT)) {
         fprintf(stderr, "no NetworkServices node?!");
         return;
     }
     plist_dict_new_iter(ns, &iter);
-    if (iter)
-    {
+    if (iter) {
         int found = 0;
         plist_t n = NULL;
         char* key = NULL;
-        do
-        {
+        do {
             plist_dict_next_item(ns, iter, &key, &n);
-            if (key && (plist_get_node_type(n) == PLIST_DICT))
-            {
+            if (key && (plist_get_node_type(n) == PLIST_DICT)) {
                 plist_t uname = plist_dict_get_item(n, "UserDefinedName");
-                if (uname && (plist_get_node_type(uname) == PLIST_STRING))
-                {
+                if (uname && (plist_get_node_type(uname) == PLIST_STRING)) {
                     char* uname_str = NULL;
                     plist_get_string_val(uname, &uname_str);
-                    if (uname_str)
-                    {
-                        if (strcmp(uname_str, CONNECTION_NAME) == 0)
-                        {
+                    if (uname_str) {
+                        if (strcmp(uname_str, CONNECTION_NAME) == 0) {
                             // entry found
                             found++;
                             guid = strdup(key);
-                            printf("removing /NetworkServices/%s (UserDefinedName: %s)", key,
-                                   uname_str);
+                            printf(
+                                "removing /NetworkServices/%s "
+                                "(UserDefinedName: %s)",
+                                key, uname_str);
                             plist_dict_remove_item(ns, guid);
                         }
                         free(uname_str);
                     }
                 }
             }
-            if (key)
-            {
+            if (key) {
                 free(key);
                 key = NULL;
             }
@@ -480,16 +428,14 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
         free(iter);
     }
 
-    if (!guid)
-    {
+    if (!guid) {
         // not found. just exit
         fprintf(stderr, "no entry found");
         return;
     }
 
     plist_t sets = plist_dict_get_item(*pl, "Sets");
-    if (!sets || (plist_get_node_type(sets) != PLIST_DICT))
-    {
+    if (!sets || (plist_get_node_type(sets) != PLIST_DICT)) {
         fprintf(stderr, "no Sets node?!");
         free(guid);
         return;
@@ -497,51 +443,42 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
 
     iter = NULL;
     plist_dict_new_iter(sets, &iter);
-    if (iter)
-    {
+    if (iter) {
         int found = 0;
         plist_t n = NULL;
         char* key = NULL;
-        do
-        {
+        do {
             plist_dict_next_item(sets, iter, &key, &n);
-            if (key && (plist_get_node_type(n) == PLIST_DICT))
-            {
+            if (key && (plist_get_node_type(n) == PLIST_DICT)) {
                 plist_t nn = plist_access_path(n, 3, "Network", "Service", guid);
-                if (nn)
-                {
+                if (nn) {
                     nn = plist_access_path(n, 2, "Network", "Service");
-                    if (nn)
-                    {
+                    if (nn) {
                         fprintf(stderr, "removing /Sets/%s/Network/Service/%s", key, guid);
                         plist_dict_remove_item(nn, guid);
                     }
                 }
                 nn = plist_access_path(n, 4, "Network", "Global", "IPv4", "ServiceOrder");
-                if (nn && (plist_get_node_type(nn) == PLIST_ARRAY))
-                {
-                    int32_t num = (int32_t)plist_array_get_size(nn);
+                if (nn && (plist_get_node_type(nn) == PLIST_ARRAY)) {
+                    int32_t num = (int32_t) plist_array_get_size(nn);
                     int32_t x;
-                    for (x = num - 1; x >= 0; x--)
-                    {
+                    for (x = num - 1; x >= 0; x--) {
                         plist_t nnn = plist_array_get_item(nn, x);
                         char* val = NULL;
-                        if (plist_get_node_type(nnn) == PLIST_KEY)
-                        {
+                        if (plist_get_node_type(nnn) == PLIST_KEY) {
                             plist_get_key_val(nnn, &val);
-                        }
-                        else if (plist_get_node_type(nnn) == PLIST_STRING)
-                        {
+                        } else if (plist_get_node_type(nnn) == PLIST_STRING) {
                             plist_get_string_val(nnn, &val);
                         }
-                        if (val)
-                        {
-                            if (strcmp(val, guid) == 0)
-                            {
+                        if (val) {
+                            if (strcmp(val, guid) == 0) {
                                 free(val);
-                                fprintf(stderr,
-                                        "removing /Sets/%s/Network/Global/IPv4/ServiceOrder/%s",
-                                        key, guid);
+                                fprintf(
+                                    stderr,
+                                    "removing "
+                                    "/Sets/%s/Network/Global/IPv4/"
+                                    "ServiceOrder/%s",
+                                    key, guid);
                                 plist_array_remove_item(nn, x);
                                 break;
                             }
@@ -550,8 +487,7 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
                     }
                 }
             }
-            if (key)
-            {
+            if (key) {
                 free(key);
                 key = NULL;
             }
@@ -630,28 +566,25 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 
     // get NetworkServices node
     plist_t ns = plist_dict_get_item(*pl, "NetworkServices");
-    if (!ns || (plist_get_node_type(ns) != PLIST_DICT))
-    {
+    if (!ns || (plist_get_node_type(ns) != PLIST_DICT)) {
         fprintf(stderr, "ERROR: no NetworkServices node?!");
         return;
     }
 
     // get current set
     plist_t cset = plist_dict_get_item(*pl, "CurrentSet");
-    if (!cset || (plist_get_node_type(cset) != PLIST_STRING))
-    {
+    if (!cset || (plist_get_node_type(cset) != PLIST_STRING)) {
         fprintf(stderr, "ERROR: no CurrentSet node found");
         return;
     }
 
     char* curset = NULL;
     plist_get_string_val(cset, &curset);
-    if (!curset || (memcmp(curset, "/Sets/", 6) != 0))
-    {
-        fprintf(stderr, "ERROR: CurrentSet has unexpected string value '%s'",
-                (curset) ? "(null)" : curset);
-        if (curset)
-        {
+    if (!curset || (memcmp(curset, "/Sets/", 6) != 0)) {
+        fprintf(
+            stderr, "ERROR: CurrentSet has unexpected string value '%s'",
+            (curset) ? "(null)" : curset);
+        if (curset) {
             free(curset);
         }
         return;
@@ -659,8 +592,7 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 
     // locate /Sets/{SetGUID}/Network/Service node
     plist_t netsvc = plist_access_path(*pl, 4, "Sets", curset + 6, "Network", "Service");
-    if (!netsvc)
-    {
+    if (!netsvc) {
         fprintf(stderr, "ERROR: Could not access /Sets/%s/Network/Service node", curset + 6);
         free(curset);
         return;
@@ -669,10 +601,10 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
     // locate /Sets/{SetGUID}/Network/Global/IPv4/ServiceOrder node
     plist_t order =
         plist_access_path(*pl, 6, "Sets", curset + 6, "Network", "Global", "IPv4", "ServiceOrder");
-    if (!order)
-    {
-        fprintf(stderr, "ERROR: Could not access /Sets/%s/Network/Global/IPv4/ServiceOrder node",
-                curset + 6);
+    if (!order) {
+        fprintf(
+            stderr, "ERROR: Could not access /Sets/%s/Network/Global/IPv4/ServiceOrder node",
+            curset + 6);
         free(curset);
         return;
     }
@@ -680,8 +612,7 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 
     // make sure we don't have a collision (VERY unlikely, but how knows)
     char* guid = generate_guid();
-    while (plist_dict_get_item(ns, guid))
-    {
+    while (plist_dict_get_item(ns, guid)) {
         free(guid);
         guid = generate_guid();
     }
@@ -711,26 +642,22 @@ int afc_upload_file2(afc_client_t afc, const char* filename, const char* dstfn)
     char data[0x1000];
 
     FILE* infile = fopen(filename, "rb");
-    if (!infile)
-    {
+    if (!infile) {
         throw std::runtime_error("Unable to open local file %s", filename);
         return -1;
     }
 
     afc_error_t err = afc_file_open(afc, dstfn, AFC_FOPEN_WR, &handle);
-    if (err != AFC_E_SUCCESS)
-    {
+    if (err != AFC_E_SUCCESS) {
         throw std::runtime_error("Unable to open afc://%s", dstfn);
         return -1;
     }
 
     int res = 0;
-    while (!feof(infile))
-    {
+    while (!feof(infile)) {
         uint32_t bytes_read = fread(data, 1, sizeof(data), infile);
         uint32_t bytes_written = 0;
-        if (afc_file_write(afc, handle, data, bytes_read, &bytes_written) != AFC_E_SUCCESS)
-        {
+        if (afc_file_write(afc, handle, data, bytes_read, &bytes_written) != AFC_E_SUCCESS) {
             throw std::runtime_error("Error writing to file afc://%s", dstfn);
             res = -1;
             break;
@@ -747,19 +674,17 @@ int afc_upload_file(afc_client_t afc, const char* filename, const char* todir)
 #ifdef WIN32
     int i = 0;
     int mfl = strlen(filename);
-    char* bn = (char*)filename;
-    for (i = mfl - 1; i >= 0; i--)
-    {
-        if ((bn[i] == '/') || (bn[i] == '\\'))
-        {
+    char* bn = (char*) filename;
+    for (i = mfl - 1; i >= 0; i--) {
+        if ((bn[i] == '/') || (bn[i] == '\\')) {
             bn = &bn[i + 1];
             break;
         }
     }
 #else
-    char* bn = basename((char*)filename);
+    char* bn = basename((char*) filename);
 #endif
-    char* dstfn = (char*)malloc(strlen(todir) + 1 + strlen(bn) + 1);
+    char* dstfn = (char*) malloc(strlen(todir) + 1 + strlen(bn) + 1);
     strcpy(dstfn, todir);
     strcat(dstfn, "/");
     strcat(dstfn, bn);
@@ -781,8 +706,7 @@ static void afc_free_dictionary(
     if (!dictionary)
         return;
 
-    for (i = 0; dictionary[i]; i++)
-    {
+    for (i = 0; dictionary[i]; i++) {
         free(dictionary[i]);
     }
     free(dictionary);
@@ -791,27 +715,24 @@ static void afc_free_dictionary(
 static void move_back_files_afc(afc_client_t afc)
 {
     char** list = NULL;
-    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS)
-    {
+    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS) {
         // fprintf(stderr, "Uh, oh, the folder '%s' does not exist or is not accessible...",
         // AFCTMP);
     }
 
     int i = 0;
-    while (list && list[i])
-    {
-        if (!strcmp(list[i], ".") || !strcmp(list[i], ".."))
-        {
+    while (list && list[i]) {
+        if (!strcmp(list[i], ".") || !strcmp(list[i], "..")) {
             i++;
             continue;
         }
 
-        char* tmpname = (char*)malloc(1 + strlen(list[i]) + 1);
+        char* tmpname = (char*) malloc(1 + strlen(list[i]) + 1);
         strcpy(tmpname, "/");
         strcat(tmpname, list[i]);
         rmdir_recursive_afc(afc, tmpname, 1);
 
-        char* tmxname = (char*)malloc(1 + strlen(AFCTMP) + 1 + strlen(list[i]) + 1);
+        char* tmxname = (char*) malloc(1 + strlen(AFCTMP) + 1 + strlen(list[i]) + 1);
         strcpy(tmxname, "/" AFCTMP "/");
         strcat(tmxname, list[i]);
 
@@ -828,26 +749,28 @@ static void move_back_files_afc(afc_client_t afc)
 
 static int inodenum = 54323;
 
-static int backup_add_file(backup::backup_t* backup, const char* path, int mode, const char* domain,
-                           const char* destpath)
+static int backup_add_file(
+    backup::backup_t* backup,
+    const char* path,
+    int mode,
+    const char* domain,
+    const char* destpath)
 {
     int res = 0;
     char* buff = NULL;
     int buffsize = 0;
-    if (util::file_read(path, (unsigned char**)&buff, &buffsize) < 0)
-    {
+    if (util::file_read(path, (unsigned char**) &buff, &buffsize) < 0) {
         return -1;
     }
     backup::backup_file::backup_file::t* bf = backup_file::create_with_data(buff, buffsize, 0);
-    if (bf)
-    {
+    if (bf) {
         backup::backup_file::set_domain(bf, domain);
         backup::backup_file::set_path(bf, destpath);
         backup::backup_file::set_mode(bf, mode | 0100000);
         backup::backup_file::set_inode(bf, inodenum++);
         backup::backup_file::set_uid(bf, 0);
         backup::backup_file::set_gid(bf, 0);
-        unsigned int tm = (unsigned int)(time(NULL));
+        unsigned int tm = (unsigned int) (time(NULL));
         backup::backup_file::set_time1(bf, tm);
         backup::backup_file::set_time2(bf, tm);
         backup::backup_file::set_time3(bf, tm);
@@ -855,14 +778,12 @@ static int backup_add_file(backup::backup_t* backup, const char* path, int mode,
         backup::backup_file::set_flag(bf, 4);
         backup::backup_file::update_hash(bf);
 
-        if (backup::update_file(backup, bf) < 0)
-        {
+        if (backup::update_file(backup, bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
             res = -1;
         }
         backup_file::free(bf);
-        if (buff)
-        {
+        if (buff) {
             free(buff);
         }
     }
@@ -876,16 +797,20 @@ static void get_absinthe_tmpdir(char* pathout)
     GetTempPath(512, pathout);
 #else
     strcpy(pathout, P_tmpdir);
-    if (pathout[strlen(pathout) - 1] != '/')
-    {
+    if (pathout[strlen(pathout) - 1] != '/') {
         strcat(pathout, "/");
     }
 #endif
     strcat(pathout, "absinthe/");
 }
 
-static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* device,
-                        lockdown_t* lockdown, const char* product, const char* build)
+static int jailbreak_50(
+    const char* udid,
+    status_cb_t status_cb,
+    device_t* device,
+    lockdown_t* lockdown,
+    const char* product,
+    const char* build)
 {
     char backup_directory[1024];
     get_absinthe_tmpdir(backup_directory);
@@ -894,8 +819,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
 
     // get libcopyfile_vmaddr
     uint32_t libcopyfile_vmaddr = get_libcopyfile_vmaddr(product, build);
-    if (libcopyfile_vmaddr == 0)
-    {
+    if (libcopyfile_vmaddr == 0) {
         debug("Error: device %s build %s is not supported.", product, build);
         status_cb("Sorry, your device is not supported.", 0);
         device_free(device);
@@ -909,8 +833,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     /* start AFC and move dirs out of the way */
     /********************************************************/
     lockdownd_pair_record_t port = 0;
-    if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0)
-    {
+    if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
         status_cb("ERROR: Failed to start AFC service", 0);
         lockdown_free(lockdown);
         device_free(device);
@@ -921,8 +844,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
 
     afc_client_t afc = NULL;
     afc_client_new(device->client, port, &afc);
-    if (!afc)
-    {
+    if (!afc) {
         status_cb("ERROR: Could not connect to AFC service", 0);
         device_free(device);
         return -1;
@@ -932,16 +854,14 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
 
     // check if directory exists
     char** list = NULL;
-    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS)
-    {
+    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS) {
         // we're good, directory does not exist.
-    }
-    else
-    {
+    } else {
         free_dictionary(list);
-        status_cb("Looks like you attempted to apply this Jailbreak and it failed. Will try to fix "
-                  "now...",
-                  0);
+        status_cb(
+            "Looks like you attempted to apply this Jailbreak and it failed. Will try to fix "
+            "now...",
+            0);
         sleep(5);
         goto fix;
     }
@@ -976,8 +896,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     idevicebackup2(3, bargv);
 
     backup::backup_t* backup = backup::open(backup_directory, udid);
-    if (!backup)
-    {
+    if (!backup) {
         fprintf(stderr, "ERROR: failed to open backup");
         return -1;
     }
@@ -990,11 +909,9 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     backup_file::backup_file::t* bf = NULL;
     bf =
         backup_get_file(backup, "SystemPreferencesDomain", "SystemConfiguration/preferences.plist");
-    if (bf)
-    {
+    if (bf) {
         char* fn = backup_get_file_path(backup, bf);
-        if (!fn)
-        {
+        if (!fn) {
             fprintf(stderr, "Huh, backup path for preferences.plist not found?!");
             return -1;
         }
@@ -1002,15 +919,11 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
         unsigned char* prefs = NULL;
         uint32_t plen = 0;
 
-        if (util::file_read(fn, &prefs, &plen) > 8)
-        {
+        if (util::file_read(fn, &prefs, &plen) > 8) {
             plist_t pl = NULL;
-            if (memcmp(prefs, "bplist00", 8) == 0)
-            {
+            if (memcmp(prefs, "bplist00", 8) == 0) {
                 plist_from_bin(prefs, plen, &pl);
-            }
-            else
-            {
+            } else {
                 plist_from_xml(prefs, plen, &pl);
             }
             free(prefs);
@@ -1022,7 +935,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
             debug("Adding VPN connection entry");
             prefs_add_entry(&pl);
 
-            plist_to_bin(pl, (char**)&prefs, &plen);
+            plist_to_bin(pl, (char**) &prefs, &plen);
 
             backup_file::assign_file_data(bf, prefs, plen, 1);
             free(prefs);
@@ -1030,23 +943,16 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
             backup_file::set_length(bf, plen);
             backup_file::update_hash(bf);
 
-            if (backup_update_file(backup, bf) < 0)
-            {
+            if (backup_update_file(backup, bf) < 0) {
                 fprintf(stderr, "ERROR: could not add file to backup");
-            }
-            else
-            {
+            } else {
                 backup_write_mbdb(backup);
             }
-        }
-        else
-        {
+        } else {
             fprintf(stderr, "Could not open '%s'", fn);
         }
         free(fn);
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "ERROR: could not locate preferences.plist in backup.");
     }
     backup_file::free(bf);
@@ -1055,8 +961,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     /* add a webclip to backup */
     /********************************************************/
     status_cb(NULL, 22);
-    if (backup_get_file_index(backup, "HomeDomain", "Library/WebClips") < 0)
-    {
+    if (backup_get_file_index(backup, "HomeDomain", "Library/WebClips") < 0) {
         bf = backup_file::create(NULL);
         backup_file::set_domain(bf, "HomeDomain");
         backup_file::set_path(bf, "Library/WebClips");
@@ -1064,40 +969,36 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
         backup_file::set_inode(bf, 54321);
         backup_file::set_uid(bf, 501);
         backup_file::set_gid(bf, 501);
-        unsigned int tm = (unsigned int)(time(NULL));
+        unsigned int tm = (unsigned int) (time(NULL));
         backup_file::set_time1(bf, tm);
         backup_file::set_time2(bf, tm);
         backup_file::set_time3(bf, tm);
         backup_file::set_length(bf, 0);
         backup_file::set_flag(bf, 4);
-        if (backup_update_file(backup, bf) < 0)
-        {
+        if (backup_update_file(backup, bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
         }
         backup_file::free(bf);
     }
     status_cb(NULL, 24);
     bf = backup_get_file(backup, "HomeDomain", "Library/WebClips/corona.webclip");
-    if (!bf)
-    {
+    if (!bf) {
         bf = backup_file::create(NULL);
         backup_file::set_domain(bf, "HomeDomain");
         backup_file::set_path(bf, "Library/WebClips/corona.webclip");
     }
-    if (bf)
-    {
+    if (bf) {
         backup_file::set_mode(bf, 040755);
         backup_file::set_inode(bf, 54322);
         backup_file::set_uid(bf, 501);
         backup_file::set_gid(bf, 501);
-        unsigned int tm = (unsigned int)(time(NULL));
+        unsigned int tm = (unsigned int) (time(NULL));
         backup_file::set_time1(bf, tm);
         backup_file::set_time2(bf, tm);
         backup_file::set_time3(bf, tm);
         backup_file::set_length(bf, 0);
         backup_file::set_flag(bf, 4);
-        if (backup_update_file(backup, bf) < 0)
-        {
+        if (backup_update_file(backup, bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
         }
         backup_file::free(bf);
@@ -1106,17 +1007,16 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     status_cb(NULL, 26);
     char* info_plist = NULL;
     int info_size = 0;
-    file_read("data/common/webclip_Info.plist", (unsigned char**)&info_plist, &info_size);
+    file_read("data/common/webclip_Info.plist", (unsigned char**) &info_plist, &info_size);
     bf = backup_file::create_with_data(info_plist, info_size, 0);
-    if (bf)
-    {
+    if (bf) {
         backup_file::set_domain(bf, "HomeDomain");
         backup_file::set_path(bf, "Library/WebClips/corona.webclip/Info.plist");
         backup_file::set_mode(bf, 0100644);
         backup_file::set_inode(bf, 54323);
         backup_file::set_uid(bf, 501);
         backup_file::set_gid(bf, 501);
-        unsigned int tm = (unsigned int)(time(NULL));
+        unsigned int tm = (unsigned int) (time(NULL));
         backup_file::set_time1(bf, tm);
         backup_file::set_time2(bf, tm);
         backup_file::set_time3(bf, tm);
@@ -1124,13 +1024,11 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
         backup_file::set_flag(bf, 4);
         backup_file::update_hash(bf);
 
-        if (backup_update_file(backup, bf) < 0)
-        {
+        if (backup_update_file(backup, bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
         }
         backup_file::free(bf);
-        if (info_plist)
-        {
+        if (info_plist) {
             free(info_plist);
         }
     }
@@ -1140,29 +1038,23 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     int icon_size = 0;
     const char* icon_filename;
     if (!strcmp(product, "iPhone4,1") || !strcmp(product, "iPhone3,1") ||
-        !strcmp(product, "iPod4,1"))
-    {
+        !strcmp(product, "iPod4,1")) {
         icon_filename = "data/common/webclip_icon@2x.png";
-    }
-    else if (strncmp(product, "iPad", 4) == 0)
-    {
+    } else if (strncmp(product, "iPad", 4) == 0) {
         icon_filename = "data/common/webclip_icon-72.png";
-    }
-    else
-    {
+    } else {
         icon_filename = "data/common/webclip_icon.png";
     }
-    file_read(icon_filename, (unsigned char**)&icon_data, &icon_size);
+    file_read(icon_filename, (unsigned char**) &icon_data, &icon_size);
     bf = backup_file::create_with_data(icon_data, icon_size, 0);
-    if (bf)
-    {
+    if (bf) {
         backup_file::set_domain(bf, "HomeDomain");
         backup_file::set_path(bf, "Library/WebClips/corona.webclip/icon.png");
         backup_file::set_mode(bf, 0100644);
         backup_file::set_inode(bf, 54324);
         backup_file::set_uid(bf, 501);
         backup_file::set_gid(bf, 501);
-        unsigned int tm = (unsigned int)(time(NULL));
+        unsigned int tm = (unsigned int) (time(NULL));
         backup_file::set_time1(bf, tm);
         backup_file::set_time2(bf, tm);
         backup_file::set_time3(bf, tm);
@@ -1170,14 +1062,12 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
         backup_file::set_flag(bf, 4);
         backup_file::update_hash(bf);
 
-        if (backup_update_file(backup, bf) < 0)
-        {
+        if (backup_update_file(backup, bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
         }
         backup_file::free(bf);
     }
-    if (icon_data)
-    {
+    if (icon_data) {
         free(icon_data);
     }
     backup_write_mbdb(backup);
@@ -1186,9 +1076,10 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     /********************************************************/
     /* restore backup */
     /********************************************************/
-    status_cb("Sending initial data. Your device will appear to be restoring a backup, this may "
-              "also take a while...",
-              30);
+    status_cb(
+        "Sending initial data. Your device will appear to be restoring a backup, this may "
+        "also take a while...",
+        30);
     char* rargv[] = {"idevicebackup2", "restore",        "--system", "--settings",
                      "--reboot",       backup_directory, NULL};
     idevicebackup2(6, rargv);
@@ -1200,15 +1091,13 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     /********************************************************/
 
     // wait for disconnect
-    while (connected)
-    {
+    while (connected) {
         sleep(2);
     }
     debug("Device %s disconnected", udid);
 
     // wait for device to connect
-    while (!connected)
-    {
+    while (!connected) {
         sleep(2);
     }
     debug("Device %s detected. Connecting...", udid);
@@ -1219,16 +1108,14 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     /* wait for device to finish booting to springboard */
     /********************************************************/
     device = device_create(udid);
-    if (!device)
-    {
+    if (!device) {
         status_cb("ERROR: Could not connect to device. Aborting.", 0);
         // we can't recover since the device connection failed...
         return -1;
     }
 
     lockdown = lockdown_open(device);
-    if (!lockdown)
-    {
+    if (!lockdown) {
         device_free(device);
         status_cb("ERROR: Could not connect to lockdown. Aborting", 0);
         // we can't recover since the device connection failed...
@@ -1242,29 +1129,24 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     sbservices_client_t sbsc = NULL;
     plist_t state = NULL;
 
-    while (!done && (retries-- > 0))
-    {
+    while (!done && (retries-- > 0)) {
         port = 0;
         lockdown_start_service(lockdown, "com.apple.springboardservices", &port);
-        if (!port)
-        {
+        if (!port) {
             continue;
         }
         sbsc = NULL;
         sbservices_client_new(device->client, port, &sbsc);
-        if (!sbsc)
-        {
+        if (!sbsc) {
             continue;
         }
-        if (sbservices_get_icon_state(sbsc, &state, "2") == SBSERVICES_E_SUCCESS)
-        {
+        if (sbservices_get_icon_state(sbsc, &state, "2") == SBSERVICES_E_SUCCESS) {
             plist_free(state);
             state = NULL;
             done = 1;
         }
         sbservices_client_free(sbsc);
-        if (done)
-        {
+        if (done) {
             debug("bootup complete");
             break;
         }
@@ -1278,12 +1160,10 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     sleep(3);
 
     crashreport_t* crash = NULL;
-    while (1)
-    {
+    while (1) {
         debug("Trying to clear crash reports.");
 
-        while (1)
-        {
+        while (1) {
             crashreport_t* old_crash = fetch_crashreport(device);
             if (old_crash == NULL)
                 break;
@@ -1294,8 +1174,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
         /********************************************************/
         debug("Grabbing a fresh crashreport for this device");
         crash = crash_mobilebackup(device);
-        if (crash == NULL)
-        {
+        if (crash == NULL) {
             throw std::runtime_error("Unable to get fresh crash from mobilebackup");
             continue;
         }
@@ -1313,12 +1192,10 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     /********************************************************/
     int i = 0;
     uint32_t dscs = 0;
-    while (crash->dylibs && crash->dylibs[i])
-    {
-        if (!strcmp(crash->dylibs[i]->name, "libcopyfile.dylib"))
-        {
-            debug("Found libcopyfile.dylib address in crashreport of 0x%x",
-                  crash->dylibs[i]->offset);
+    while (crash->dylibs && crash->dylibs[i]) {
+        if (!strcmp(crash->dylibs[i]->name, "libcopyfile.dylib")) {
+            debug(
+                "Found libcopyfile.dylib address in crashreport of 0x%x", crash->dylibs[i]->offset);
             dscs = crash->dylibs[i]->offset - libcopyfile_vmaddr;
         }
         i++;
@@ -1362,8 +1239,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     /* start AFC and add common and device-dependant files */
     /********************************************************/
     lockdown = lockdown_open(device);
-    if (!lockdown)
-    {
+    if (!lockdown) {
         device_free(device);
         status_cb("ERROR: Could not connect to lockdown. Aborting", 0);
         // we can't recover since the device connection failed...
@@ -1371,8 +1247,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     }
 
     port = 0;
-    if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0)
-    {
+    if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
         status_cb("ERROR: Failed to start AFC service", 0);
         lockdown_free(lockdown);
         device_free(device);
@@ -1383,8 +1258,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
 
     afc = NULL;
     afc_client_new(device->client, port, &afc);
-    if (!afc)
-    {
+    if (!afc) {
         status_cb("ERROR: Could not connect to AFC service", 0);
         device_free(device);
         return -1;
@@ -1431,36 +1305,28 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     /********************************************************/
     status_cb(NULL, 85);
     backup = backup_open(backup_directory, udid);
-    if (!backup)
-    {
+    if (!backup) {
         throw std::runtime_error("ERROR: failed to open backup");
         goto fix;
     }
     char* ipsec_plist = NULL;
     int ipsec_plist_size = 0;
-    file_read(stage1_conf, (unsigned char**)&ipsec_plist, &ipsec_plist_size);
-    if (ipsec_plist != NULL && ipsec_plist_size > 0)
-    {
-        bf = backup_get_file(backup, "SystemPreferencesDomain",
-                             "SystemConfiguration/com.apple.ipsec.plist");
-        if (bf)
-        {
+    file_read(stage1_conf, (unsigned char**) &ipsec_plist, &ipsec_plist_size);
+    if (ipsec_plist != NULL && ipsec_plist_size > 0) {
+        bf = backup_get_file(
+            backup, "SystemPreferencesDomain", "SystemConfiguration/com.apple.ipsec.plist");
+        if (bf) {
             debug("com.apple.ipsec.plist already present, replacing");
             backup_file::assign_file_data(bf, ipsec_plist, ipsec_plist_size, 0);
             backup_file::set_length(bf, ipsec_plist_size);
             backup_file::update_hash(bf);
 
-            if (backup_update_file(backup, bf) < 0)
-            {
+            if (backup_update_file(backup, bf) < 0) {
                 throw std::runtime_error("ERROR: could not add file to backup");
-            }
-            else
-            {
+            } else {
                 backup_write_mbdb(backup);
             }
-        }
-        else
-        {
+        } else {
             debug("adding com.apple.ipsec.plist");
             bf = backup_file::create_with_data(ipsec_plist, strlen(ipsec_plist), 0);
             backup_file::set_domain(bf, "SystemPreferencesDomain");
@@ -1469,7 +1335,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
             backup_file::set_inode(bf, 123456);
             backup_file::set_uid(bf, 0);
             backup_file::set_gid(bf, 0);
-            unsigned int tm = (unsigned int)(time(NULL));
+            unsigned int tm = (unsigned int) (time(NULL));
             backup_file::set_time1(bf, tm);
             backup_file::set_time2(bf, tm);
             backup_file::set_time3(bf, tm);
@@ -1477,12 +1343,9 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
             backup_file::set_flag(bf, 4);
             backup_file::update_hash(bf);
 
-            if (backup_update_file(backup, bf) < 0)
-            {
+            if (backup_update_file(backup, bf) < 0) {
                 throw std::runtime_error("ERROR: could not add file to backup");
-            }
-            else
-            {
+            } else {
                 backup_write_mbdb(backup);
             }
         }
@@ -1497,9 +1360,7 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
                           "--settings",     backup_directory, NULL};
         idevicebackup2(5, nrargv);
         free(ipsec_plist);
-    }
-    else
-    {
+    } else {
         status_cb("ERROR: no com.apple.ipsec.plist found. Aborting.", 0);
         sleep(5);
         goto fix_all;
@@ -1511,9 +1372,10 @@ static int jailbreak_50(const char* udid, status_cb_t status_cb, device_t* devic
     status_cb(NULL, 95);
     rmdir_recursive(backup_directory);
 
-    status_cb("Almost done – just unlock the screen if necessary, then tap the \"Absinthe\" icon "
-              "to finish. (It might be on a different homescreen, so don't give up looking!)",
-              100);
+    status_cb(
+        "Almost done – just unlock the screen if necessary, then tap the \"Absinthe\" icon "
+        "to finish. (It might be on a different homescreen, so don't give up looking!)",
+        100);
 
     goto leave;
 
@@ -1523,18 +1385,15 @@ fix_all:
     /********************************************************/
     status_cb("Trying to recover...", 0);
     backup = backup_open(backup_directory, udid);
-    if (!backup)
-    {
+    if (!backup) {
         throw std::runtime_error("ERROR: failed to open backup");
         goto fix;
     }
     bf =
         backup_get_file(backup, "SystemPreferencesDomain", "SystemConfiguration/preferences.plist");
-    if (bf)
-    {
+    if (bf) {
         char* fn = backup_get_file_path(backup, bf);
-        if (!fn)
-        {
+        if (!fn) {
             throw std::runtime_error("Huh, backup path for preferences.plist not found?!");
             goto fix;
         }
@@ -1542,15 +1401,11 @@ fix_all:
         unsigned char* prefs = NULL;
         uint32_t plen = 0;
 
-        if (file_read(fn, &prefs, &plen) > 8)
-        {
+        if (file_read(fn, &prefs, &plen) > 8) {
             plist_t pl = NULL;
-            if (memcmp(prefs, "bplist00", 8) == 0)
-            {
+            if (memcmp(prefs, "bplist00", 8) == 0) {
                 plist_from_bin(prefs, plen, &pl);
-            }
-            else
-            {
+            } else {
                 plist_from_xml(prefs, plen, &pl);
             }
             free(prefs);
@@ -1560,7 +1415,7 @@ fix_all:
             debug("remove VPN connection");
             prefs_remove_entry_if_present(&pl);
 
-            plist_to_bin(pl, (char**)&prefs, &plen);
+            plist_to_bin(pl, (char**) &prefs, &plen);
 
             backup_file::assign_file_data(bf, prefs, plen, 1);
             free(prefs);
@@ -1568,47 +1423,37 @@ fix_all:
             backup_file::set_length(bf, plen);
             backup_file::update_hash(bf);
 
-            if (backup_update_file(backup, bf) < 0)
-            {
+            if (backup_update_file(backup, bf) < 0) {
                 throw std::runtime_error("ERROR: could not add file to backup");
-            }
-            else
-            {
+            } else {
                 backup_write_mbdb(backup);
             }
-        }
-        else
-        {
+        } else {
             throw std::runtime_error("Could not open '%s'", fn);
         }
         free(fn);
-    }
-    else
-    {
+    } else {
         throw std::runtime_error("ERROR: could not locate preferences.plist in backup.");
     }
     backup_file::free(bf);
 
     status_cb(NULL, 10);
     bf = backup_get_file(backup, "HomeDomain", "Library/WebClips/corona.webclip/Info.plist");
-    if (bf)
-    {
+    if (bf) {
         backup_remove_file(backup, bf);
         backup_file::free(bf);
     }
 
     status_cb(NULL, 20);
     bf = backup_get_file(backup, "HomeDomain", "Library/WebClips/corona.webclip/icon.png");
-    if (bf)
-    {
+    if (bf) {
         backup_remove_file(backup, bf);
         backup_file::free(bf);
     }
 
     status_cb(NULL, 30);
     bf = backup_get_file(backup, "HomeDomain", "Library/WebClips/corona.webclip");
-    if (bf)
-    {
+    if (bf) {
         backup_remove_file(backup, bf);
         backup_file::free(bf);
     }
@@ -1627,20 +1472,19 @@ fix_all:
     /********************************************************/
     /* wait for device reboot */
     /********************************************************/
-    status_cb("The device will reboot now. DO NOT disconnect until the failure recovery procedure "
-              "is completed.",
-              50);
+    status_cb(
+        "The device will reboot now. DO NOT disconnect until the failure recovery procedure "
+        "is completed.",
+        50);
 
     // wait for disconnect
-    while (connected)
-    {
+    while (connected) {
         sleep(2);
     }
     debug("Device %s disconnected", udid);
 
     // wait for device to connect
-    while (!connected)
-    {
+    while (!connected) {
         sleep(2);
     }
     debug("Device %s detected. Connecting...", udid);
@@ -1651,23 +1495,20 @@ fix_all:
     /* connect and move back dirs */
     /********************************************************/
     device = device_create(udid);
-    if (!device)
-    {
+    if (!device) {
         status_cb("ERROR: Could not connect to device. Aborting.", 0);
         return -1;
     }
 
     lockdown = lockdown_open(device);
-    if (!lockdown)
-    {
+    if (!lockdown) {
         device_free(device);
         status_cb("ERROR: Could not connect to lockdownd. Aborting.", 0);
         return -1;
     }
 
     port = 0;
-    if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0)
-    {
+    if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
         lockdown_free(lockdown);
         device_free(device);
         status_cb("ERROR: Failed to start AFC service. Aborting.", 0);
@@ -1676,8 +1517,7 @@ fix_all:
     lockdown_free(lockdown);
 
     afc_client_new(device->client, port, &afc);
-    if (!afc)
-    {
+    if (!afc) {
         status_cb("ERROR: Could not connect to AFC. Aborting.", 0);
         goto leave;
     }
@@ -1693,8 +1533,7 @@ fix_all:
     status_cb("Waiting for device to finish booting...", 70);
 
     lockdown = lockdown_open(device);
-    if (!lockdown)
-    {
+    if (!lockdown) {
         status_cb("ERROR: Could not connect to lockdownd. Aborting.", 0);
         goto leave;
     }
@@ -1704,29 +1543,24 @@ fix_all:
     sbsc = NULL;
     state = NULL;
 
-    while (!done && (retries-- > 0))
-    {
+    while (!done && (retries-- > 0)) {
         port = 0;
         lockdown_start_service(lockdown, "com.apple.springboardservices", &port);
-        if (!port)
-        {
+        if (!port) {
             continue;
         }
         sbsc = NULL;
         sbservices_client_new(device->client, port, &sbsc);
-        if (!sbsc)
-        {
+        if (!sbsc) {
             continue;
         }
-        if (sbservices_get_icon_state(sbsc, &state, "2") == SBSERVICES_E_SUCCESS)
-        {
+        if (sbservices_get_icon_state(sbsc, &state, "2") == SBSERVICES_E_SUCCESS) {
             plist_free(state);
             state = NULL;
             done = 1;
         }
         sbservices_client_free(sbsc);
-        if (done)
-        {
+        if (done) {
             debug("bootup complete");
             break;
         }
@@ -1740,12 +1574,10 @@ fix_all:
 /********************************************************/
 fix:
     status_cb("Recovering files...", 80);
-    if (!afc)
-    {
+    if (!afc) {
         lockdown = lockdown_open(device);
         port = 0;
-        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0)
-        {
+        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
             status_cb("ERROR: Could not start AFC service. Aborting.", 0);
             lockdown_free(lockdown);
             goto leave;
@@ -1753,8 +1585,7 @@ fix:
         lockdown_free(lockdown);
 
         afc_client_new(device->client, port, &afc);
-        if (!afc)
-        {
+        if (!afc) {
             status_cb("ERROR: Could not connect to AFC. Aborting.", 0);
             goto leave;
         }
@@ -1766,18 +1597,19 @@ fix:
 
     status_cb(NULL, 95);
     afc_remove_path(afc, "/" AFCTMP);
-    if (afc_read_directory(afc, "/" AFCTMP, &list) == AFC_E_SUCCESS)
-    {
-        fprintf(stderr, "WARNING: the folder /" AFCTMP
-                        " is still present in the user's Media folder. You have to check yourself "
-                        "for any leftovers and move them back if required.");
+    if (afc_read_directory(afc, "/" AFCTMP, &list) == AFC_E_SUCCESS) {
+        fprintf(
+            stderr, "WARNING: the folder /" AFCTMP
+                    " is still present in the user's Media folder. You have to check yourself "
+                    "for any leftovers and move them back if required.");
     }
 
     rmdir_recursive(backup_directory);
 
-    status_cb("Recovery completed. If you want to retry jailbreaking, unplug your device and plug "
-              "it back in.",
-              100);
+    status_cb(
+        "Recovery completed. If you want to retry jailbreaking, unplug your device and plug "
+        "it back in.",
+        100);
 
 leave:
     afc_client_free(afc);
@@ -1791,8 +1623,13 @@ leave:
 // extern int userpref_get_device_public_key(const char* udid,
 // 		unsigned char** pubkey, unsigned int* pubkey_len);
 
-static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* device,
-                        lockdown_t* lockdown, const char* product, const char* build)
+static int jailbreak_51(
+    const char* udid,
+    status_cb_t status_cb,
+    device_t* device,
+    lockdown_t* lockdown,
+    const char* product,
+    const char* build)
 {
     char backup_directory[1024];
     get_absinthe_tmpdir(backup_directory);
@@ -1805,8 +1642,7 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     /* start AFC and move dirs out of the way */
     /********************************************************/
     lockdownd_pair_record_t port = 0;
-    if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0)
-    {
+    if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
         status_cb("ERROR: Failed to start AFC service", 0);
         lockdown_free(lockdown);
         device_free(device);
@@ -1815,8 +1651,7 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
 
     plist_t device_public_key = NULL;
     lockdown_get_value(lockdown, NULL, "DevicePublicKey", &device_public_key);
-    if (!device_public_key || (plist_get_node_type(device_public_key) != PLIST_DATA))
-    {
+    if (!device_public_key || (plist_get_node_type(device_public_key) != PLIST_DATA)) {
         status_cb("ERROR: Failed to get key", 0);
         lockdown_free(lockdown);
         device_free(device);
@@ -1828,8 +1663,7 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
 
     afc_client_t afc = NULL;
     afc_client_new(device->client, port, &afc);
-    if (!afc)
-    {
+    if (!afc) {
         status_cb("ERROR: Could not connect to AFC service", 0);
         device_free(device);
         return -1;
@@ -1841,8 +1675,7 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     uint64_t testsize = 0;
     plist_get_data_val(device_public_key, &testdata, &testsize);
     const char chk[] = "-----BEGIN RSA PUBLIC KEY-----";
-    if (memcmp(testdata, chk, strlen(chk)) != 0)
-    {
+    if (memcmp(testdata, chk, strlen(chk)) != 0) {
         plist_free(device_public_key);
         unsigned char* pkey = NULL;
         unsigned int pkeylen = 0;
@@ -1858,16 +1691,14 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
 
     // check if directory exists
     char** list = NULL;
-    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS)
-    {
+    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS) {
         // we're good, directory does not exist.
-    }
-    else
-    {
+    } else {
         free_dictionary(list);
-        status_cb("Looks like you attempted to apply this Jailbreak and it failed. Will try to fix "
-                  "now...",
-                  0);
+        status_cb(
+            "Looks like you attempted to apply this Jailbreak and it failed. Will try to fix "
+            "now...",
+            0);
         sleep(5);
         goto fix;
     }
@@ -1881,24 +1712,23 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     afc_remove_path(afc, "/Books/" IOS_5_1_OVERRIDES_INJECT_DIR);
 
     if (afc_make_link(afc, AFC_SYMLINK, "../../..", "/Books/" IOS_5_1_AUDIT_INJECT_DIR) !=
-        AFC_E_SUCCESS)
-    {
+        AFC_E_SUCCESS) {
         status_cb("ERROR: could not create link!", 0);
         afc_client_free(afc);
         device_free(device);
         return -1;
     }
-    if (afc_make_link(afc, AFC_SYMLINK, "../../../root/Library/Lockdown",
-                      "/Books/" IOS_5_1_LOCKDOWN_INJECT_DIR) != AFC_E_SUCCESS)
-    {
+    if (afc_make_link(
+            afc, AFC_SYMLINK, "../../../root/Library/Lockdown",
+            "/Books/" IOS_5_1_LOCKDOWN_INJECT_DIR) != AFC_E_SUCCESS) {
         status_cb("ERROR: could not create link!", 0);
         afc_client_free(afc);
         device_free(device);
         return -1;
     }
-    if (afc_make_link(afc, AFC_SYMLINK, "../../../db/launchd.db/com.apple.launchd",
-                      "/Books/" IOS_5_1_OVERRIDES_INJECT_DIR) != AFC_E_SUCCESS)
-    {
+    if (afc_make_link(
+            afc, AFC_SYMLINK, "../../../db/launchd.db/com.apple.launchd",
+            "/Books/" IOS_5_1_OVERRIDES_INJECT_DIR) != AFC_E_SUCCESS) {
         status_cb("ERROR: could not create link!", 0);
         afc_client_free(afc);
         device_free(device);
@@ -1927,18 +1757,20 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     afc_upload_file(afc, "data/common/tar", "/jb-install");
     afc_upload_file(afc, "data/common/lzma", "/jb-install");
     afc_upload_file(afc, "data/common/corona2/crazeles", "/jb-install");
-    afc_upload_file(afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.list",
-                    "/jb-install");
-    afc_upload_file(afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.extrainst_",
-                    "/jb-install");
-    afc_upload_file(afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.postinst",
-                    "/jb-install");
-    afc_upload_file(afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.postrm",
-                    "/jb-install");
-    afc_upload_file(afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.preinst",
-                    "/jb-install");
-    afc_upload_file(afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.prerm",
-                    "/jb-install");
+    afc_upload_file(
+        afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.list", "/jb-install");
+    afc_upload_file(
+        afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.extrainst_",
+        "/jb-install");
+    afc_upload_file(
+        afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.postinst",
+        "/jb-install");
+    afc_upload_file(
+        afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.postrm", "/jb-install");
+    afc_upload_file(
+        afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.preinst", "/jb-install");
+    afc_upload_file(
+        afc, "data/common/corona2/com.chronic-dev.greenpois0n.rocky-racoon.prerm", "/jb-install");
     afc_upload_file(afc, "data/common/corona2/remounter", "/jb-install");
     afc_upload_file(afc, "data/common/corona2/dirhelper", "/jb-install");
     afc_upload_file(afc, "data/common/corona2/jb-install", "/jb-install");
@@ -1962,8 +1794,7 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     idevicebackup2(3, bargv);
 
     backup_t* backup = backup_open(backup_directory, udid);
-    if (!backup)
-    {
+    if (!backup) {
         fprintf(stderr, "ERROR: failed to open backup");
         return -1;
     }
@@ -1972,8 +1803,7 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     backup_file::t* bf = NULL;
 
     bf = backup_file::create(NULL);
-    if (bf)
-    {
+    if (bf) {
         backup_file::set_domain(bf, "BooksDomain");
         backup_file::set_path(bf, IOS_5_1_LOCKDOWN_INJECT_DIR "/device_public_key.pem");
         backup_file::set_target(bf, "/usr/sbin/racoon");
@@ -1981,14 +1811,13 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
         backup_file::set_inode(bf, 54327);
         backup_file::set_uid(bf, 0);
         backup_file::set_gid(bf, 0);
-        unsigned int tm = (unsigned int)(time(NULL));
+        unsigned int tm = (unsigned int) (time(NULL));
         backup_file::set_time1(bf, tm);
         backup_file::set_time2(bf, tm);
         backup_file::set_time3(bf, tm);
         backup_file::set_flag(bf, 0);
 
-        if (backup_update_file(backup, bf) < 0)
-        {
+        if (backup_update_file(backup, bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
         }
         backup_file::free(bf);
@@ -2008,8 +1837,7 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     /* crash lockdownd */
     /********************************************************/
     idevice_connection_t conn = NULL;
-    if (idevice_connect(device->client, 0xf27e, &conn) != IDEVICE_E_SUCCESS)
-    {
+    if (idevice_connect(device->client, 0xf27e, &conn) != IDEVICE_E_SUCCESS) {
         status_cb("ERROR: could not connect to lockdownd", 0);
         device_free(device);
         return -1;
@@ -2028,7 +1856,7 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
 
     uint32_t bytes = 0;
     uint32_t nlen = htobe32(clen);
-    idevice_connection_send(conn, (const char*)&nlen, 4, &bytes);
+    idevice_connection_send(conn, (const char*) &nlen, 4, &bytes);
     idevice_connection_send(conn, cxml, clen, &bytes);
     free(cxml);
 
@@ -2036,21 +1864,18 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     bytes = 0;
     clen = 0;
     cxml = NULL;
-    idevice_connection_receive_timeout(conn, (char*)&clen, 4, &bytes, 1500);
+    idevice_connection_receive_timeout(conn, (char*) &clen, 4, &bytes, 1500);
     nlen = be32toh(clen);
-    if (nlen > 0)
-    {
+    if (nlen > 0) {
         cxml = malloc(nlen);
         idevice_connection_receive_timeout(conn, cxml, nlen, &bytes, 5000);
         free(cxml);
-        if (bytes > 0)
-        {
+        if (bytes > 0) {
             failed = 1;
         }
     }
     idevice_disconnect(conn);
-    if (failed)
-    {
+    if (failed) {
         status_cb("ERROR: could not stroke lockdownd", 0);
         device_free(device);
         return -1;
@@ -2064,8 +1889,7 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
 
     plist_t racoon_plist = NULL;
     lockdownd_get_value(lckd, NULL, "DevicePublicKey", &racoon_plist);
-    if (!racoon_plist || (plist_get_node_type(racoon_plist) != PLIST_DATA))
-    {
+    if (!racoon_plist || (plist_get_node_type(racoon_plist) != PLIST_DATA)) {
         status_cb("ERROR: Failed to get racoon", 0);
         lockdown_free(lockdown);
         device_free(device);
@@ -2084,29 +1908,23 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     mkdir_with_parents(racoon_path, 0755);
     strcat(racoon_path, "racoon");
 
-    got = file_write(racoon_path, racoon_data, (unsigned int)racoon_size);
-    if (got == -1)
-    {
+    got = file_write(racoon_path, racoon_data, (unsigned int) racoon_size);
+    if (got == -1) {
         throw std::runtime_error("Unable to write data to filesystem");
     }
-    if (racoon_data)
-    {
+    if (racoon_data) {
         free(racoon_data);
     }
 
     debug("patching racoon");
     bpatch_t* patch = bpatch_open("data/common/rocky-racoon/racoon.bdiff");
     debug("patch open");
-    if (patch != NULL)
-    {
-        if (bpatch_apply(patch, racoon_path) != 0)
-        {
+    if (patch != NULL) {
+        if (bpatch_apply(patch, racoon_path) != 0) {
             fprintf(stderr, "ERROR: Failed to patch target");
         }
         bpatch_free(patch);
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "ERROR: failed to open racoon.bdiff");
         return -1;
     }
@@ -2115,27 +1933,25 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     device = NULL;
 
     backup = backup_open(backup_directory, udid);
-    if (!backup)
-    {
+    if (!backup) {
         fprintf(stderr, "ERROR: failed to open backup");
         return -1;
     }
 
     // restore device_public_key.pem
-    bf = backup_get_file(backup, "BooksDomain",
-                         IOS_5_1_LOCKDOWN_INJECT_DIR "/device_public_key.pem");
-    if (bf)
-    {
+    bf = backup_get_file(
+        backup, "BooksDomain", IOS_5_1_LOCKDOWN_INJECT_DIR "/device_public_key.pem");
+    if (bf) {
         char* key_data = NULL;
         uint64_t key_size = 0;
         plist_get_data_val(device_public_key, &key_data, &key_size);
-        backup_file::assign_file_data(bf, (unsigned char*)key_data, key_size, 0);
+        backup_file::assign_file_data(bf, (unsigned char*) key_data, key_size, 0);
         backup_file::set_target(bf, NULL);
         backup_file::set_mode(bf, 0100644);
         backup_file::set_inode(bf, 54327);
         backup_file::set_uid(bf, 0);
         backup_file::set_gid(bf, 0);
-        unsigned int tm = (unsigned int)(time(NULL));
+        unsigned int tm = (unsigned int) (time(NULL));
         backup_file::set_time1(bf, tm);
         backup_file::set_time2(bf, tm);
         backup_file::set_time3(bf, tm);
@@ -2143,19 +1959,18 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
         backup_file::set_flag(bf, 4);
         backup_file::update_hash(bf);
 
-        if (backup_update_file(backup, bf) < 0)
-        {
+        if (backup_update_file(backup, bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
         }
         backup_file::free(bf);
-        if (key_data)
-        {
+        if (key_data) {
             free(key_data);
         }
     }
 
-    backup_add_file(backup, "data/common/rocky-racoon/overrides.plist", 0644, "BooksDomain",
-                    IOS_5_1_OVERRIDES_INJECT_DIR "/overrides.plist");
+    backup_add_file(
+        backup, "data/common/rocky-racoon/overrides.plist", 0644, "BooksDomain",
+        IOS_5_1_OVERRIDES_INJECT_DIR "/overrides.plist");
 
     // create audit directory
     bf = backup_file::create(NULL);
@@ -2165,14 +1980,13 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     backup_file::set_inode(bf, 54320);
     backup_file::set_uid(bf, 0);
     backup_file::set_gid(bf, 0);
-    unsigned int tm = (unsigned int)(time(NULL));
+    unsigned int tm = (unsigned int) (time(NULL));
     backup_file::set_time1(bf, tm);
     backup_file::set_time2(bf, tm);
     backup_file::set_time3(bf, tm);
     backup_file::set_length(bf, 0);
     backup_file::set_flag(bf, 0);
-    if (backup_update_file(backup, bf) < 0)
-    {
+    if (backup_update_file(backup, bf) < 0) {
         fprintf(stderr, "ERROR: could not add file to backup");
     }
     backup_file::free(bf);
@@ -2185,14 +1999,13 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     backup_file::set_inode(bf, 54321);
     backup_file::set_uid(bf, 501);
     backup_file::set_gid(bf, 501);
-    tm = (unsigned int)(time(NULL));
+    tm = (unsigned int) (time(NULL));
     backup_file::set_time1(bf, tm);
     backup_file::set_time2(bf, tm);
     backup_file::set_time3(bf, tm);
     backup_file::set_length(bf, 0);
     backup_file::set_flag(bf, 0);
-    if (backup_update_file(backup, bf) < 0)
-    {
+    if (backup_update_file(backup, bf) < 0) {
         fprintf(stderr, "ERROR: could not add file to backup");
     }
     backup_file::free(bf);
@@ -2202,8 +2015,7 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     char rocky_target[256];
 
     // add 00-ff files
-    for (i = 0; i < 256; i++)
-    {
+    for (i = 0; i < 256; i++) {
         sprintf(rocky_file, "data/%s/%s/rocky-racoon/%02x", build, product, i);
         sprintf(rocky_target, IOS_5_1_AUDIT_INJECT_DIR "/audit/rocky-racoon/%02x", i);
         backup_add_file(backup, rocky_file, 0644, "BooksDomain", rocky_target);
@@ -2234,9 +2046,10 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     /********************************************************/
     /* restore backup */
     /********************************************************/
-    status_cb("Sending final jailbreak data. Your device will appear to be restoring a backup, "
-              "this may also take a while...",
-              35);
+    status_cb(
+        "Sending final jailbreak data. Your device will appear to be restoring a backup, "
+        "this may also take a while...",
+        35);
     char* rargv[] = {"idevicebackup2", "restore",        "--system", "--settings",
                      "--reboot",       backup_directory, NULL};
     idevicebackup2(6, rargv);
@@ -2250,16 +2063,14 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     /********************************************************/
 
     // wait for disconnect
-    while (connected)
-    {
+    while (connected) {
         sleep(2);
     }
     debug("Device %s disconnected", udid);
     status_cb(NULL, 75);
 
     // wait for device to connect
-    while (!connected)
-    {
+    while (!connected) {
         sleep(2);
     }
     debug("Device %s detected. Connecting...", udid);
@@ -2270,26 +2081,22 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
     /* connect and wait for completion */
     /********************************************************/
     device = device_create(udid);
-    if (!device)
-    {
+    if (!device) {
         status_cb("ERROR: Could not connect to device. Aborting.", 0);
         return -1;
     }
 
     int retries = 30;
     int done = 0;
-    while (!done && (retries-- > 0))
-    {
+    while (!done && (retries-- > 0)) {
         lockdown = lockdown_open(device);
-        if (!lockdown)
-        {
+        if (!lockdown) {
             device_free(device);
             status_cb("ERROR: Could not connect to lockdownd. Aborting.", 0);
             return -1;
         }
         port = 0;
-        if (lockdown_start_service2(lockdown, "com.apple.afc2", &port, 0) == 0)
-        {
+        if (lockdown_start_service2(lockdown, "com.apple.afc2", &port, 0) == 0) {
             done = 1;
             break;
         }
@@ -2297,14 +2104,11 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
         lockdown = NULL;
         sleep(5);
     }
-    if (lockdown)
-    {
+    if (lockdown) {
         port = 0;
-        if (lockdown_start_service(lockdown, "com.apple.afc", &port) == 0)
-        {
+        if (lockdown_start_service(lockdown, "com.apple.afc", &port) == 0) {
             afc_client_new(device->client, port, &afc);
-            if (afc)
-            {
+            if (afc) {
                 afc_remove_path(afc, "/Books/" IOS_5_1_AUDIT_INJECT_DIR);
                 afc_remove_path(afc, "/Books/" IOS_5_1_LOCKDOWN_INJECT_DIR);
                 afc_remove_path(afc, "/Books/" IOS_5_1_OVERRIDES_INJECT_DIR);
@@ -2317,12 +2121,9 @@ static int jailbreak_51(const char* udid, status_cb_t status_cb, device_t* devic
         lockdown = NULL;
     }
 
-    if (done)
-    {
+    if (done) {
         status_cb("Done, enjoy!", 100);
-    }
-    else
-    {
+    } else {
         status_cb("Hmm... something seems to have gone wrong... trying to recover", 80);
         sleep(3);
         goto fix;
@@ -2335,12 +2136,10 @@ fix:
     /* move back any remaining dirs via AFC */
     /********************************************************/
     status_cb("Recovering files...", 80);
-    if (!afc)
-    {
+    if (!afc) {
         lockdown = lockdown_open(device);
         port = 0;
-        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0)
-        {
+        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
             status_cb("ERROR: Could not start AFC service. Aborting.", 0);
             lockdown_free(lockdown);
             goto leave;
@@ -2348,8 +2147,7 @@ fix:
         lockdown_free(lockdown);
 
         afc_client_new(device->client, port, &afc);
-        if (!afc)
-        {
+        if (!afc) {
             status_cb("ERROR: Could not connect to AFC. Aborting.", 0);
             goto leave;
         }
@@ -2361,11 +2159,11 @@ fix:
 
     status_cb(NULL, 95);
     afc_remove_path(afc, "/" AFCTMP);
-    if (afc_read_directory(afc, "/" AFCTMP, &list) == AFC_E_SUCCESS)
-    {
-        fprintf(stderr, "WARNING: the folder /" AFCTMP
-                        " is still present in the user's Media folder. You have to check yourself "
-                        "for any leftovers and move them back if required.");
+    if (afc_read_directory(afc, "/" AFCTMP, &list) == AFC_E_SUCCESS) {
+        fprintf(
+            stderr, "WARNING: the folder /" AFCTMP
+                    " is still present in the user's Media folder. You have to check yourself "
+                    "for any leftovers and move them back if required.");
     }
 
     afc_remove_path(afc, "/Books/" IOS_5_1_AUDIT_INJECT_DIR);
@@ -2374,13 +2172,13 @@ fix:
 
     rmdir_recursive(backup_directory);
 
-    status_cb("Recovery completed. If you want to retry jailbreaking, unplug your device and plug "
-              "it back in.",
-              100);
+    status_cb(
+        "Recovery completed. If you want to retry jailbreaking, unplug your device and plug "
+        "it back in.",
+        100);
 
 leave:
-    if (afc)
-    {
+    if (afc) {
         afc_client_free(afc);
         afc = NULL;
     }
@@ -2413,8 +2211,7 @@ void stroke_lockdownd(device_t* device)
     magic = __builtin_bswap32(size);
     plist_free(crashy);
 
-    if (idevice_connect(device->client, 62078, &connection))
-    {
+    if (idevice_connect(device->client, 62078, &connection)) {
         throw std::runtime_error("Failed to connect to lockdownd.");
     }
     idevice_connection_send(connection, &magic, 4, &sent);
@@ -2422,8 +2219,7 @@ void stroke_lockdownd(device_t* device)
 
     idevice_connection_receive_timeout(connection, &size, 4, &sent, 1500);
     size = __builtin_bswap32(size);
-    if (size)
-    {
+    if (size) {
         void* ptr = malloc(size);
         idevice_connection_receive_timeout(connection, ptr, &size, &sent, 5000);
     }
@@ -2438,8 +2234,13 @@ typedef struct
     lockdownd_pair_record_t port;
 } lockdownd_service_descriptor;
 
-static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* device,
-                        lockdown_t* lockdown, const char* product, const char* build)
+static int jailbreak_70(
+    const char* udid,
+    status_cb_t status_cb,
+    device_t* device,
+    lockdown_t* lockdown,
+    const char* product,
+    const char* build)
 {
     char backup_dir[1024];
     lockdownd_service_descriptor desc;
@@ -2448,23 +2249,19 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     debug("Backing up files to %s", backup_dir);
 
     lockdown = lockdown_open(device);
-    if (lockdown == NULL)
-    {
+    if (lockdown == NULL) {
         info("Lockdown connection failed");
         device_free(device);
         return -1;
     }
 
     if ((lockdown_get_string(lockdown, "HardwareModel", &product) != LOCKDOWN_E_SUCCESS) ||
-        (lockdown_get_string(lockdown, "BuildVersion", &build) != LOCKDOWN_E_SUCCESS))
-    {
+        (lockdown_get_string(lockdown, "BuildVersion", &build) != LOCKDOWN_E_SUCCESS)) {
         throw std::runtime_error("Could not get device information");
-        if (product)
-        {
+        if (product) {
             free(product);
         }
-        if (build)
-        {
+        if (build) {
             free(build);
         }
         lockdown_free(lockdown);
@@ -2475,8 +2272,7 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     debug("Device info: %s, %s", product, build);
 
     lockdownd_pair_record_t port;
-    if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0)
-    {
+    if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
         throw std::runtime_error("Failed to start AFC service", 0);
         lockdown_free(lockdown);
         device_free(device);
@@ -2488,24 +2284,21 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     afc_client_t afc = NULL;
     desc.port = port;
     afc_client_new(device->client, &desc, &afc);
-    if (!afc)
-    {
+    if (!afc) {
         throw std::runtime_error("Could not connect to AFC service");
         device_free(device);
         return -1;
     }
     // check if directory exists
     char** list = NULL;
-    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS)
-    {
+    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS) {
         // we're good, directory does not exist.
-    }
-    else
-    {
+    } else {
         free_dictionary(list);
-        info("Looks like you attempted to apply this Jailbreak and it failed. Will try to fix "
-             "now...",
-             0);
+        info(
+            "Looks like you attempted to apply this Jailbreak and it failed. Will try to fix "
+            "now...",
+            0);
         sleep(5);
         goto fix;
     }
@@ -2537,8 +2330,7 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     if (!lockdown)
         lockdown = lockdown_open(device);
 
-    if (lockdown_start_service(lockdown, "com.apple.mobile.file_relay", &port) != 0)
-    {
+    if (lockdown_start_service(lockdown, "com.apple.mobile.file_relay", &port) != 0) {
         throw std::runtime_error("Failed to start File Relay");
         lockdown_free(lockdown);
         device_free(device);
@@ -2546,16 +2338,14 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     }
 
     desc.port = port;
-    if (file_relay_client_new(device->client, &desc, &frc) != FILE_RELAY_E_SUCCESS)
-    {
+    if (file_relay_client_new(device->client, &desc, &frc) != FILE_RELAY_E_SUCCESS) {
         throw std::runtime_error("Failed to start File Relay");
         return -1;
     }
 
     const char* sources[] = {"Caches", NULL};
 
-    if (file_relay_request_sources(frc, sources, &dump) != FILE_RELAY_E_SUCCESS)
-    {
+    if (file_relay_request_sources(frc, sources, &dump) != FILE_RELAY_E_SUCCESS) {
         throw std::runtime_error("could not get sources");
         return -1;
     }
@@ -2572,30 +2362,25 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
 
     debug("Getting information from file relay...");
 
-    while (idevice_connection_receive(dump, buf, 4096, &length) == IDEVICE_E_SUCCESS)
-    {
+    while (idevice_connection_receive(dump, buf, 4096, &length) == IDEVICE_E_SUCCESS) {
         fwrite(buf, 1, length, f);
         count += length;
         length = 0;
     }
     fclose(f);
 
-    if (count)
-    {
+    if (count) {
         void* buffer = malloc(512);
         gzFile zfile = gzopen(tmpthing, "rb");
-        if (!zfile || !buffer)
-        {
+        if (!zfile || !buffer) {
             throw std::runtime_error("Could not open compressed file");
         }
 
         memset(buffer, '\0', 512);
 
-        while ((gzread(zfile, &buffer, 76) > 75) && !memcmp(&buffer, "070707", 6))
-        {
+        while ((gzread(zfile, &buffer, 76) > 75) && !memcmp(&buffer, "070707", 6)) {
             int file_name_length = cpio_get_file_name_length(&buffer);
-            if (!file_name_length)
-            {
+            if (!file_name_length) {
                 throw std::runtime_error("cpio archive has zero length filename, wat");
             }
 
@@ -2603,49 +2388,40 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
             // assert(filename_buffer != NULL );
 
             int read_len = gzread(zfile, filename_buffer, file_name_length);
-            if (read_len != file_name_length)
-            {
+            if (read_len != file_name_length) {
                 throw std::runtime_error("could not read filename?!?!");
             }
 
             int seek_offset = cpio_get_file_length(&buffer);
 
-            if (strcmp(filename_buffer,
-                       "./var/mobile/Library/Caches/com.apple.mobile.installation.plist"))
-            {
-                if (strncmp(filename_buffer,
-                            "./var/mobile/Library/Caches/com.apple.LaunchServices-",
-                            strlen("./var/mobile/Library/Caches/com.apple.LaunchServices-")))
-                {
+            if (strcmp(
+                    filename_buffer,
+                    "./var/mobile/Library/Caches/com.apple.mobile.installation.plist")) {
+                if (strncmp(
+                        filename_buffer, "./var/mobile/Library/Caches/com.apple.LaunchServices-",
+                        strlen("./var/mobile/Library/Caches/com.apple.LaunchServices-"))) {
                     if (seek_offset)
                         gzseek(zfile, seek_offset, 1);
-                }
-                else
-                {
-                    if (num_of_csstores > 15)
-                    {
+                } else {
+                    if (num_of_csstores > 15) {
                         info("Why do you have more than 16 csstore files?");
-                    }
-                    else
-                    {
+                    } else {
                         char buffer[32];
-                        int add_len =
-                            strlen("./var/mobile/Library/Caches/com.apple.LaunchServices-");
-                        int num = strtoul((char*)(filename_buffer + add_len), NULL, 10);
+                        int add_len = strlen("./var/mobile/Library/Caches/"
+                                             "com.apple.LaunchServices-");
+                        int num = strtoul((char*) (filename_buffer + add_len), NULL, 10);
                         num_of_csstores++;
                         csstores[num_of_csstores].csstore_number = num;
                         debug("Found a csstore! (%d/%d)", num, num_of_csstores);
                     }
                     gzseek(zfile, seek_offset, 1);
                 }
-            }
-            else
-            {
+            } else {
                 void* filebuf = malloc(seek_offset);
                 int readlen = 0;
                 ////assert(filebuf != NULL );
 
-                int bytes = gzread(zfile, (void*)(filebuf), seek_offset);
+                int bytes = gzread(zfile, (void*) (filebuf), seek_offset);
                 if (bytes <= 0)
                     throw std::runtime_error("Woah, what happened during reading?");
 
@@ -2659,8 +2435,7 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
         gzclose(zfile);
     }
 
-    if (frc)
-    {
+    if (frc) {
         file_relay_client_free(frc);
     }
 
@@ -2674,19 +2449,17 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     {
         plist_t system_plist =
             plist_access_path(mobile_install_plist, 2, "System", "com.apple.DemoApp");
-        if (system_plist)
-        {
+        if (system_plist) {
             plist_dict_remove_item(system_plist, "ApplicationType");
             plist_dict_remove_item(system_plist, "SBAppTags");
             plist_replace_item(system_plist, "Path", plist_new_string("/var/mobile/DemoApp.app"));
 
             plist_t environment_dict = plist_new_dict();
-            plist_dict_set_item(environment_dict, "LAUNCHD_SOCKET",
-                                plist_new_string("/private/var/tmp/launchd/sock"));
+            plist_dict_set_item(
+                environment_dict, "LAUNCHD_SOCKET",
+                plist_new_string("/private/var/tmp/launchd/sock"));
             plist_replace_item(system_plist, "EnvironmentVariables", environment_dict);
-        }
-        else
-        {
+        } else {
             throw std::runtime_error("Could not find com.apple.DemoApp in plist.");
         }
     }
@@ -2699,8 +2472,7 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     idevicebackup2(3, bargv);
 
     backup_t* backup = backup_open(backup_dir, udid);
-    if (!backup)
-    {
+    if (!backup) {
         fprintf(stderr, "ERROR: failed to open backup");
         return -1;
     }
@@ -2709,35 +2481,31 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
      * Make the backup EVIL. Part 1.
      */
     {
-        if (backup_mkdir(backup, "MediaDomain", "Media/Recordings", 0755, 501, 501, 4) != 0)
-        {
+        if (backup_mkdir(backup, "MediaDomain", "Media/Recordings", 0755, 501, 501, 4) != 0) {
             throw std::runtime_error("Could not make folder");
         }
 
-        if (backup_symlink(backup, "MediaDomain", "Media/Recordings/.haxx", "/var/mobile", 501, 501,
-                           4) != 0)
-        {
+        if (backup_symlink(
+                backup, "MediaDomain", "Media/Recordings/.haxx", "/var/mobile", 501, 501, 4) != 0) {
             throw std::runtime_error("Failed to symlink /var/mobile!");
         }
 
-        if (backup_mkdir(backup, "MediaDomain", "Media/Recordings/.haxx/DemoApp.app", 0755, 501,
-                         501, 4) != 0)
-        {
+        if (backup_mkdir(
+                backup, "MediaDomain", "Media/Recordings/.haxx/DemoApp.app", 0755, 501, 501, 4) !=
+            0) {
             throw std::runtime_error("Could not make folder");
         }
 #define ADD_FILE(path)                                                                             \
-    if (backup_add_file_from_path(backup, "MediaDomain", "payload/Unthread.app/" path,             \
-                                  "Media/Recordings/.haxx/DemoApp.app/" path, 0100644, 501, 501,   \
-                                  4) != 0)                                                         \
-    {                                                                                              \
+    if (backup_add_file_from_path(                                                                 \
+            backup, "MediaDomain", "payload/Unthread.app/" path,                                   \
+            "Media/Recordings/.haxx/DemoApp.app/" path, 0100644, 501, 501, 4) != 0) {              \
         throw std::runtime_error("Could not add" path);                                            \
     }
 
 #define ADD_FILE_EXEC(path)                                                                        \
-    if (backup_add_file_from_path(backup, "MediaDomain", "payload/Unthread.app/" path,             \
-                                  "Media/Recordings/.haxx/DemoApp.app/" path, 0100755, 501, 501,   \
-                                  4) != 0)                                                         \
-    {                                                                                              \
+    if (backup_add_file_from_path(                                                                 \
+            backup, "MediaDomain", "payload/Unthread.app/" path,                                   \
+            "Media/Recordings/.haxx/DemoApp.app/" path, 0100755, 501, 501, 4) != 0) {              \
         throw std::runtime_error("Could not add" path);                                            \
     }
 
@@ -2759,25 +2527,24 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
         if (backup_add_file_from_data(
                 backup, "MediaDomain", plist_data, plist_size,
                 "Media/Recordings/.haxx/Library/Caches/com.apple.mobile.installation.plist",
-                0100644, 501, 501, 4) != 0)
-        {
+                0100644, 501, 501, 4) != 0) {
             throw std::runtime_error("Could not add installation plist!");
         }
 
         /* Kill csstores. */
-        while (num_of_csstores != 0)
-        {
+        while (num_of_csstores != 0) {
             char buf[128];
 
-            snprintf(buf, 128,
-                     "Media/Recordings/.haxx/Library/Caches/com.apple.LaunchServices-%03d.csstore",
-                     csstores[num_of_csstores].csstore_number);
+            snprintf(
+                buf, 128,
+                "Media/Recordings/.haxx/Library/Caches/com.apple.LaunchServices-%03d.csstore",
+                csstores[num_of_csstores].csstore_number);
 
-            if (backup_add_file_from_data(backup, "MediaDomain", "LOLWUT", 6, buf, 0100644, 501,
-                                          501, 4) != 0)
-            {
-                throw std::runtime_error("Could not add cs store %d/%d!", num_of_csstores,
-                                         csstores[num_of_csstores].csstore_number);
+            if (backup_add_file_from_data(
+                    backup, "MediaDomain", "LOLWUT", 6, buf, 0100644, 501, 501, 4) != 0) {
+                throw std::runtime_error(
+                    "Could not add cs store %d/%d!", num_of_csstores,
+                    csstores[num_of_csstores].csstore_number);
             }
 
             num_of_csstores--;
@@ -2807,15 +2574,13 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     /********************************************************/
 
     // wait for disconnect
-    while (connected)
-    {
+    while (connected) {
         sleep(2);
     }
     debug("Device %s disconnected", udid);
 
     // wait for device to connect
-    while (!connected)
-    {
+    while (!connected) {
         sleep(2);
     }
     debug("Device %s detected. Connecting...", udid);
@@ -2825,16 +2590,14 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     /* wait for device to finish booting to springboard */
     /********************************************************/
     device = device_create(udid);
-    if (!device)
-    {
+    if (!device) {
         throw std::runtime_error("ERROR: Could not connect to device. Aborting.");
         // we can't recover since the device connection failed...
         return -1;
     }
 
     lockdown = lockdown_open(device);
-    if (!lockdown)
-    {
+    if (!lockdown) {
         device_free(device);
         throw std::runtime_error("ERROR: Could not connect to lockdown. Aborting");
         // we can't recover since the device connection failed...
@@ -2848,31 +2611,26 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
 
     debug("Waiting for SpringBoard...");
 
-    while (!done && (retries-- > 0))
-    {
+    while (!done && (retries-- > 0)) {
         port = 0;
         lockdown_start_service(lockdown, "com.apple.springboardservices", &port);
-        if (!port)
-        {
+        if (!port) {
             continue;
         }
         sbsc = NULL;
         desc.port = port;
 
         sbservices_client_new(device->client, &desc, &sbsc);
-        if (!sbsc)
-        {
+        if (!sbsc) {
             continue;
         }
-        if (sbservices_get_icon_state(sbsc, &state, "2") == SBSERVICES_E_SUCCESS)
-        {
+        if (sbservices_get_icon_state(sbsc, &state, "2") == SBSERVICES_E_SUCCESS) {
             plist_free(state);
             state = NULL;
             done = 1;
         }
         sbservices_client_free(sbsc);
-        if (done)
-        {
+        if (done) {
             debug("bootup complete");
             break;
         }
@@ -2887,12 +2645,10 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     rmdir_recursive(backup_dir);
     mkdir(backup_dir, 0755);
 
-    if (!afc)
-    {
+    if (!afc) {
         lockdown = lockdown_open(device);
         port = 0;
-        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0)
-        {
+        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
             info("Could not start AFC service. Aborting.");
             lockdown_free(lockdown);
             goto leave;
@@ -2901,8 +2657,7 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
 
         desc.port = port;
         afc_client_new(device->client, &desc, &afc);
-        if (!afc)
-        {
+        if (!afc) {
             info("Could not connect to AFC. Aborting.");
             goto leave;
         }
@@ -2911,28 +2666,25 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     idevicebackup2(3, bargv);
 
     backup = backup_open(backup_dir, udid);
-    if (!backup)
-    {
+    if (!backup) {
         fprintf(stderr, "ERROR: failed to open backup");
         return -1;
     }
 
     /* Make the folders */
     {
-        if (backup_mkdir(backup, "MediaDomain", "Media/Recordings", 0755, 501, 501, 4) != 0)
-        {
+        if (backup_mkdir(backup, "MediaDomain", "Media/Recordings", 0755, 501, 501, 4) != 0) {
             throw std::runtime_error("Could not make folder");
         }
 
-        if (backup_symlink(backup, "MediaDomain", "Media/Recordings/.haxx", "/var/db", 501, 501,
-                           4) != 0)
-        {
+        if (backup_symlink(
+                backup, "MediaDomain", "Media/Recordings/.haxx", "/var/db", 501, 501, 4) != 0) {
             throw std::runtime_error("Failed to symlink /var/db!");
         }
 
-        if (backup_symlink(backup, "MediaDomain", "Media/Recordings/.haxx/timezone",
-                           "/var/tmp/launchd", 501, 501, 4) != 0)
-        {
+        if (backup_symlink(
+                backup, "MediaDomain", "Media/Recordings/.haxx/timezone", "/var/tmp/launchd", 501,
+                501, 4) != 0) {
             throw std::runtime_error("Failed to symlink /var/tmp/launchd!");
         }
     }
@@ -2949,12 +2701,10 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     rmdir_recursive(backup_dir);
     mkdir(backup_dir, 0755);
 
-    if (!afc)
-    {
+    if (!afc) {
         lockdown = lockdown_open(device);
         port = 0;
-        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0)
-        {
+        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
             info("Could not start AFC service. Aborting.");
             lockdown_free(lockdown);
             goto leave;
@@ -2963,8 +2713,7 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
 
         desc.port = port;
         afc_client_new(device->client, &desc, &afc);
-        if (!afc)
-        {
+        if (!afc) {
             info("Could not connect to AFC. Aborting.");
             goto leave;
         }
@@ -2973,8 +2722,7 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     idevicebackup2(3, bargv);
 
     backup = backup_open(backup_dir, udid);
-    if (!backup)
-    {
+    if (!backup) {
         fprintf(stderr, "ERROR: failed to open backup");
         return -1;
     }
@@ -2983,20 +2731,18 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
      * Do it again.
      */
     {
-        if (backup_mkdir(backup, "MediaDomain", "Media/Recordings", 0755, 501, 501, 4) != 0)
-        {
+        if (backup_mkdir(backup, "MediaDomain", "Media/Recordings", 0755, 501, 501, 4) != 0) {
             throw std::runtime_error("Could not make folder");
         }
 
-        if (backup_symlink(backup, "MediaDomain", "Media/Recordings/.haxx", "/var/db", 501, 501,
-                           4) != 0)
-        {
+        if (backup_symlink(
+                backup, "MediaDomain", "Media/Recordings/.haxx", "/var/db", 501, 501, 4) != 0) {
             throw std::runtime_error("Failed to symlink /var/db!");
         }
 
-        if (backup_symlink(backup, "MediaDomain", "Media/Recordings/.haxx/timezone",
-                           "/var/tmp/launchd/sock", 501, 501, 4) != 0)
-        {
+        if (backup_symlink(
+                backup, "MediaDomain", "Media/Recordings/.haxx/timezone", "/var/tmp/launchd/sock",
+                501, 501, 4) != 0) {
             throw std::runtime_error("Failed to symlink /var/tmp/launchd/sock!");
         }
     }
@@ -3024,12 +2770,10 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     rmdir_recursive(backup_dir);
     mkdir(backup_dir, 0755);
 
-    if (!afc)
-    {
+    if (!afc) {
         lockdown = lockdown_open(device);
         port = 0;
-        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0)
-        {
+        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
             info("Could not start AFC service. Aborting.");
             lockdown_free(lockdown);
             goto leave;
@@ -3038,8 +2782,7 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
 
         desc.port = port;
         afc_client_new(device->client, &desc, &afc);
-        if (!afc)
-        {
+        if (!afc) {
             info("Could not connect to AFC. Aborting.");
             goto leave;
         }
@@ -3048,8 +2791,7 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
     idevicebackup2(3, bargv);
 
     backup = backup_open(backup_dir, udid);
-    if (!backup)
-    {
+    if (!backup) {
         fprintf(stderr, "ERROR: failed to open backup");
         return -1;
     }
@@ -3058,47 +2800,41 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
      * Do it again.
      */
     {
-        if (backup_mkdir(backup, "MediaDomain", "Media/Recordings", 0755, 501, 501, 4) != 0)
-        {
+        if (backup_mkdir(backup, "MediaDomain", "Media/Recordings", 0755, 501, 501, 4) != 0) {
             throw std::runtime_error("Could not make folder");
         }
 
-        if (backup_symlink(backup, "MediaDomain", "Media/Recordings/.haxx", "/", 501, 501, 4) != 0)
-        {
+        if (backup_symlink(backup, "MediaDomain", "Media/Recordings/.haxx", "/", 501, 501, 4) !=
+            0) {
             throw std::runtime_error("Failed to symlink root!");
         }
 
-        if (backup_mkdir(backup, "MediaDomain", "Media/Recordings/.haxx/var/unthreadedjb", 0755, 0,
-                         0, 4) != 0)
-        {
+        if (backup_mkdir(
+                backup, "MediaDomain", "Media/Recordings/.haxx/var/unthreadedjb", 0755, 0, 0, 4) !=
+            0) {
             throw std::runtime_error("Could not make folder");
         }
 
         /* This is bad */
-        if (!strcmp(product, "N18AP") || !strcmp(product, "N88AP"))
-        {
+        if (!strcmp(product, "N18AP") || !strcmp(product, "N88AP")) {
             if (backup_add_file_from_path(
                     backup, "MediaDomain", "payload/Unthread.app/unthread@1x.png",
-                    "Media/Recordings/.haxx/var/unthreadedjb/unthread.png", 0100644, 0, 0, 4) != 0)
-            {
+                    "Media/Recordings/.haxx/var/unthreadedjb/unthread.png", 0100644, 0, 0,
+                    4) != 0) {
                 throw std::runtime_error("Could not add unthread.png");
             }
-        }
-        else if (!strcmp(product, "K48AP"))
-        {
+        } else if (!strcmp(product, "K48AP")) {
             if (backup_add_file_from_path(
                     backup, "MediaDomain", "payload/Unthread.app/unthread-ipad.png",
-                    "Media/Recordings/.haxx/var/unthreadedjb/unthread.png", 0100644, 0, 0, 4) != 0)
-            {
+                    "Media/Recordings/.haxx/var/unthreadedjb/unthread.png", 0100644, 0, 0,
+                    4) != 0) {
                 throw std::runtime_error("Could not add unthread.png");
             }
-        }
-        else
-        {
+        } else {
             if (backup_add_file_from_path(
                     backup, "MediaDomain", "payload/Unthread.app/unthread.png",
-                    "Media/Recordings/.haxx/var/unthreadedjb/unthread.png", 0100644, 0, 0, 4) != 0)
-            {
+                    "Media/Recordings/.haxx/var/unthreadedjb/unthread.png", 0100644, 0, 0,
+                    4) != 0) {
                 throw std::runtime_error("Could not add unthread.png");
             }
         }
@@ -3110,37 +2846,34 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
 
             snprintf(jb_path, 128, "payload/%s_%s/var/unthreadedjb/jb", build, product);
             snprintf(amfi_path, 128, "payload/%s_%s/var/unthreadedjb/amfi.dylib", build, product);
-            snprintf(launchd_conf_path, 128, "payload/%s_%s/var/unthreadedjb/launchd.conf", build,
-                     product);
+            snprintf(
+                launchd_conf_path, 128, "payload/%s_%s/var/unthreadedjb/launchd.conf", build,
+                product);
 
-            if (backup_add_file_from_path(backup, "MediaDomain", launchd_conf_path,
-                                          "Media/Recordings/.haxx/var/unthreadedjb/launchd.conf",
-                                          0100644, 0, 0, 4) != 0)
-            {
+            if (backup_add_file_from_path(
+                    backup, "MediaDomain", launchd_conf_path,
+                    "Media/Recordings/.haxx/var/unthreadedjb/launchd.conf", 0100644, 0, 0,
+                    4) != 0) {
                 throw std::runtime_error("Could not add launchd.conf");
             }
-            if (backup_symlink(backup, "MediaDomain",
-                               "Media/Recordings/.haxx/private/etc/launchd.conf",
-                               "/private/var/unthreadedjb/launchd.conf", 0, 0, 4) != 0)
-            {
+            if (backup_symlink(
+                    backup, "MediaDomain", "Media/Recordings/.haxx/private/etc/launchd.conf",
+                    "/private/var/unthreadedjb/launchd.conf", 0, 0, 4) != 0) {
                 throw std::runtime_error("Failed to symlink launchd.conf!");
             }
-            if (backup_add_file_from_path(backup, "MediaDomain", jb_path,
-                                          "Media/Recordings/.haxx/var/unthreadedjb/jb", 0100755, 0,
-                                          0, 4) != 0)
-            {
+            if (backup_add_file_from_path(
+                    backup, "MediaDomain", jb_path, "Media/Recordings/.haxx/var/unthreadedjb/jb",
+                    0100755, 0, 0, 4) != 0) {
                 throw std::runtime_error("Could not add jb");
             }
-            if (backup_add_file_from_path(backup, "MediaDomain", amfi_path,
-                                          "Media/Recordings/.haxx/var/unthreadedjb/amfi.dylib",
-                                          0100755, 0, 0, 4) != 0)
-            {
+            if (backup_add_file_from_path(
+                    backup, "MediaDomain", amfi_path,
+                    "Media/Recordings/.haxx/var/unthreadedjb/amfi.dylib", 0100755, 0, 0, 4) != 0) {
                 throw std::runtime_error("Could not add amfi");
             }
-            if (backup_add_file_from_path(backup, "MediaDomain", "payload/Cydia.tar",
-                                          "Media/Recordings/.haxx/var/unthreadedjb/Cydia.tar",
-                                          0100644, 0, 0, 4) != 0)
-            {
+            if (backup_add_file_from_path(
+                    backup, "MediaDomain", "payload/Cydia.tar",
+                    "Media/Recordings/.haxx/var/unthreadedjb/Cydia.tar", 0100644, 0, 0, 4) != 0) {
                 throw std::runtime_error("Could not add amfi");
             }
         }
@@ -3156,12 +2889,10 @@ static int jailbreak_70(const char* udid, status_cb_t status_cb, device_t* devic
 /********************************************************/
 fix:
     debug("Recovering files...", 80);
-    if (!afc)
-    {
+    if (!afc) {
         lockdown = lockdown_open(device);
         port = 0;
-        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0)
-        {
+        if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
             info("Could not start AFC service. Aborting.");
             lockdown_free(lockdown);
             goto leave;
@@ -3170,35 +2901,31 @@ fix:
 
         desc.port = port;
         afc_client_new(device->client, &desc, &afc);
-        if (!afc)
-        {
+        if (!afc) {
             info("Could not connect to AFC. Aborting.");
             goto leave;
         }
     }
 
     list = NULL;
-    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS)
-    {
+    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS) {
         // fprintf(stderr, "Uh, oh, the folder '%s' does not exist or is not accessible...",
         // AFCTMP);
     }
 
     int i = 0;
-    while (list && list[i])
-    {
-        if (!strcmp(list[i], ".") || !strcmp(list[i], ".."))
-        {
+    while (list && list[i]) {
+        if (!strcmp(list[i], ".") || !strcmp(list[i], "..")) {
             i++;
             continue;
         }
 
-        char* tmpname = (char*)malloc(1 + strlen(list[i]) + 1);
+        char* tmpname = (char*) malloc(1 + strlen(list[i]) + 1);
         strcpy(tmpname, "/");
         strcat(tmpname, list[i]);
         rmdir_recursive_afc(afc, tmpname, 1);
 
-        char* tmxname = (char*)malloc(1 + strlen(AFCTMP) + 1 + strlen(list[i]) + 1);
+        char* tmxname = (char*) malloc(1 + strlen(AFCTMP) + 1 + strlen(list[i]) + 1);
         strcpy(tmxname, "/" AFCTMP "/");
         strcat(tmxname, list[i]);
 
@@ -3213,11 +2940,11 @@ fix:
     free_dictionary(list);
 
     afc_remove_path(afc, "/" AFCTMP);
-    if (afc_read_directory(afc, "/" AFCTMP, &list) == AFC_E_SUCCESS)
-    {
-        fprintf(stderr, "WARNING: the folder /" AFCTMP
-                        " is still present in the user's Media folder. You have to check yourself "
-                        "for any leftovers and move them back if required.");
+    if (afc_read_directory(afc, "/" AFCTMP, &list) == AFC_E_SUCCESS) {
+        fprintf(
+            stderr, "WARNING: the folder /" AFCTMP
+                    " is still present in the user's Media folder. You have to check yourself "
+                    "for any leftovers and move them back if required.");
     }
 
     rmdir_recursive(backup_dir);
@@ -3238,13 +2965,11 @@ int jailbreak(const char* udid, status_cb_t status_cb)
     char* build = NULL;
     char* product = NULL;
 
-    if (!udid)
-    {
+    if (!udid) {
         throw std::runtime_error("ERROR: missing UDID");
         return -1;
     }
-    if (!status_cb)
-    {
+    if (!status_cb) {
         throw std::runtime_error("ERROR: missing status callback");
         return -1;
     }
@@ -3253,13 +2978,11 @@ int jailbreak(const char* udid, status_cb_t status_cb)
 
     int retries = 20;
     int i = 0;
-    while (!connected && (i++ < retries))
-    {
+    while (!connected && (i++ < retries)) {
         sleep(1);
     }
 
-    if (!connected)
-    {
+    if (!connected) {
         status_cb("ERROR: Device connection failed", 0);
         return -1;
     }
@@ -3267,30 +2990,25 @@ int jailbreak(const char* udid, status_cb_t status_cb)
     // Open a connection to our device
     debug("Opening connection to device");
     device = device_create(udid);
-    if (device == NULL)
-    {
+    if (device == NULL) {
         status_cb("ERROR: Unable to connect to device", 0);
         return -1;
     }
 
     lockdown_t* lockdown = lockdown_open(device);
-    if (lockdown == NULL)
-    {
+    if (lockdown == NULL) {
         status_cb("ERROR: Lockdown connection failed", 0);
         device_free(device);
         return -1;
     }
 
     if ((lockdown_get_string(lockdown, "ProductType", &product) != LOCKDOWN_E_SUCCESS) ||
-        (lockdown_get_string(lockdown, "BuildVersion", &build) != LOCKDOWN_E_SUCCESS))
-    {
+        (lockdown_get_string(lockdown, "BuildVersion", &build) != LOCKDOWN_E_SUCCESS)) {
         status_cb("ERROR: Could not get device information", 0);
-        if (product)
-        {
+        if (product) {
             free(product);
         }
-        if (build)
-        {
+        if (build) {
             free(build);
         }
         lockdown_free(lockdown);
@@ -3299,25 +3017,19 @@ int jailbreak(const char* udid, status_cb_t status_cb)
     }
 
     lockdownd_pair_record_t port = 0;
-    if (lockdown_start_service2(lockdown, "com.apple.afc2", &port, 0) == 0)
-    {
+    if (lockdown_start_service2(lockdown, "com.apple.afc2", &port, 0) == 0) {
         char** fileinfo = NULL;
         uint32_t ffmt = 0;
 
         afc_client_t afc2 = NULL;
         afc_client_new(device->client, port, &afc2);
-        if (afc2)
-        {
+        if (afc2) {
             afc_get_file_info(afc2, "/Applications", &fileinfo);
-            if (fileinfo)
-            {
+            if (fileinfo) {
                 int i;
-                for (i = 0; fileinfo[i]; i += 2)
-                {
-                    if (!strcmp(fileinfo[i], "st_ifmt"))
-                    {
-                        if (strcmp(fileinfo[i + 1], "S_IFLNK") == 0)
-                        {
+                for (i = 0; fileinfo[i]; i += 2) {
+                    if (!strcmp(fileinfo[i], "st_ifmt")) {
+                        if (strcmp(fileinfo[i + 1], "S_IFLNK") == 0) {
                             ffmt = 1;
                         }
                         break;
@@ -3326,8 +3038,7 @@ int jailbreak(const char* udid, status_cb_t status_cb)
                 afc_free_dictionary(fileinfo);
                 fileinfo = NULL;
 
-                if (ffmt)
-                {
+                if (ffmt) {
                     status_cb("ERROR: Device already jailbroken! Detected stash.", 0);
                     afc_client_free(afc2);
                     lockdown_free(lockdown);
@@ -3337,8 +3048,7 @@ int jailbreak(const char* udid, status_cb_t status_cb)
             }
 
             afc_get_file_info(afc2, "/private/etc/launchd.conf", &fileinfo);
-            if (fileinfo)
-            {
+            if (fileinfo) {
                 status_cb("ERROR: Device already jailbroken! Detected untether.", 0);
                 afc_client_free(afc2);
                 lockdown_free(lockdown);
@@ -3351,19 +3061,15 @@ int jailbreak(const char* udid, status_cb_t status_cb)
     }
 
     int res = -1;
-    if ((strcmp(build, "11A501") == 0))
-    {
+    if ((strcmp(build, "11A501") == 0)) {
         info("Jailbreaking 7.x");
         res = jailbreak_70(udid, status_cb, device, lockdown, product, build);
-    }
-    else if ((strcmp(build, "9B176") == 0) || (strcmp(build, "9B206") == 0) ||
-             (strcmp(build, "9B208") == 0))
-    {
+    } else if (
+        (strcmp(build, "9B176") == 0) || (strcmp(build, "9B206") == 0) ||
+        (strcmp(build, "9B208") == 0)) {
         info("Jailbreaking 5.1.1");
         res = jailbreak_51(udid, status_cb, device, lockdown, product, build);
-    }
-    else
-    {
+    } else {
         throw std::runtime_error("Unable to find the correct build");
         // res = jailbreak_50(udid, status_cb, device, lockdown, product, build);
     }

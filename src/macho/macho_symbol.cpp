@@ -17,52 +17,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
+#include "common.hpp"
+#include "debug.hpp"
+#include "macho_symbol.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "debug.hpp"
-#include "common.hpp"
-#include "macho_symbol.hpp"
-
 /*
  * Mach-O Segment Functions
  */
-macho_symbol_t* macho_symbol_create() {
-	macho_symbol_t* command = NULL;
-	return command;
+macho_symbol_t* macho_symbol_create()
+{
+    macho_symbol_t* command = NULL;
+    return command;
 }
 
-macho_symbol_t* macho_symbol_load(unsigned char* data, unsigned int offset) {
-	macho_symbol_t* command = macho_symbol_create();
-	return command;
+macho_symbol_t* macho_symbol_load(unsigned char* data, unsigned int offset)
+{
+    macho_symbol_t* command = macho_symbol_create();
+    return command;
 }
 
-void macho_symbol_debug(macho_symbol_t* command) {
+void macho_symbol_debug(macho_symbol_t* command) {}
 
-}
-
-void macho_symbol_free(macho_symbol_t* command) {
-
-}
+void macho_symbol_free(macho_symbol_t* command) {}
 
 /*
  * Mach-O Segment Info Functions
  */
-macho_symbol_info_t* macho_symbol_info_create() {
-	macho_symbol_info_t* info = NULL;
-	return info;
+macho_symbol_info_t* macho_symbol_info_create()
+{
+    macho_symbol_info_t* info = NULL;
+    return info;
 }
 
-macho_symbol_info_t* macho_symbol_info_load(unsigned char* data, unsigned int offset) {
-	macho_symbol_info_t* info = macho_symbol_info_create();
-	return info;
+macho_symbol_info_t* macho_symbol_info_load(unsigned char* data, unsigned int offset)
+{
+    macho_symbol_info_t* info = macho_symbol_info_create();
+    return info;
 }
 
-void macho_symbol_info_debug(macho_symbol_info_t* info) {
+void macho_symbol_info_debug(macho_symbol_info_t* info) {}
 
-}
-
-void macho_symbol_info_free(macho_symbol_info_t* info) {
-
-}
+void macho_symbol_info_free(macho_symbol_info_t* info) {}

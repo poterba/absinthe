@@ -38,36 +38,27 @@ int __mkdir(const char* path, int mode) /*{{{*/
 /* recursively remove path, including path */
 static void rmdir_recursive(const char* path) /*{{{*/
 {
-    if (!path)
-    {
+    if (!path) {
         return;
     }
     DIR* cur_dir = opendir(path);
-    if (cur_dir)
-    {
+    if (cur_dir) {
         struct dirent* ep;
-        while ((ep = readdir(cur_dir)))
-        {
-            if ((strcmp(ep->d_name, ".") == 0) || (strcmp(ep->d_name, "..") == 0))
-            {
+        while ((ep = readdir(cur_dir))) {
+            if ((strcmp(ep->d_name, ".") == 0) || (strcmp(ep->d_name, "..") == 0)) {
                 continue;
             }
-            char* fpath = (char*)malloc(strlen(path) + 1 + strlen(ep->d_name) + 1);
-            if (fpath)
-            {
+            char* fpath = (char*) malloc(strlen(path) + 1 + strlen(ep->d_name) + 1);
+            if (fpath) {
                 struct stat st;
                 strcpy(fpath, path);
                 strcat(fpath, "/");
                 strcat(fpath, ep->d_name);
 
-                if ((stat(fpath, &st) == 0) && S_ISDIR(st.st_mode))
-                {
+                if ((stat(fpath, &st) == 0) && S_ISDIR(st.st_mode)) {
                     rmdir_recursive(fpath);
-                }
-                else
-                {
-                    if (remove(fpath) != 0)
-                    {
+                } else {
+                    if (remove(fpath) != 0) {
                         fprintf(stderr, "could not remove file %s: %s", fpath, strerror(errno));
                     }
                 }
@@ -76,8 +67,7 @@ static void rmdir_recursive(const char* path) /*{{{*/
         }
         closedir(cur_dir);
     }
-    if (rmdir(path) != 0)
-    {
+    if (rmdir(path) != 0) {
         fprintf(stderr, "could not remove directory %s: %s", path, strerror(errno));
     }
 } /*}}}*/
@@ -90,8 +80,7 @@ static void free_dictionary(char** dictionary) /*{{{*/
     if (!dictionary)
         return;
 
-    for (i = 0; dictionary[i]; i++)
-    {
+    for (i = 0; dictionary[i]; i++) {
         free(dictionary[i]);
     }
     free(dictionary);
@@ -101,34 +90,28 @@ static void free_dictionary(char** dictionary) /*{{{*/
 static int rmdir_recursive_afc(afc_client_t afc, const char* path, int incl) /*{{{*/
 {
     char** dirlist = NULL;
-    if (afc_read_directory(afc, path, &dirlist) != AFC_E_SUCCESS)
-    {
+    if (afc_read_directory(afc, path, &dirlist) != AFC_E_SUCCESS) {
         // fprintf(stderr, "AFC: could not get directory list for %s", path);
         return -1;
     }
-    if (dirlist == NULL)
-    {
-        if (incl)
-        {
+    if (dirlist == NULL) {
+        if (incl) {
             afc_remove_path(afc, path);
         }
         return 0;
     }
 
     char** ptr;
-    for (ptr = dirlist; *ptr; ptr++)
-    {
-        if ((strcmp(*ptr, ".") == 0) || (strcmp(*ptr, "..") == 0))
-        {
+    for (ptr = dirlist; *ptr; ptr++) {
+        if ((strcmp(*ptr, ".") == 0) || (strcmp(*ptr, "..") == 0)) {
             continue;
         }
         char** info = NULL;
-        char* fpath = (char*)malloc(strlen(path) + 1 + strlen(*ptr) + 1);
+        char* fpath = (char*) malloc(strlen(path) + 1 + strlen(*ptr) + 1);
         strcpy(fpath, path);
         strcat(fpath, "/");
         strcat(fpath, *ptr);
-        if ((afc_get_file_info(afc, fpath, &info) != AFC_E_SUCCESS) || !info)
-        {
+        if ((afc_get_file_info(afc, fpath, &info) != AFC_E_SUCCESS) || !info) {
             // failed. try to delete nevertheless.
             afc_remove_path(afc, fpath);
             free(fpath);
@@ -138,12 +121,9 @@ static int rmdir_recursive_afc(afc_client_t afc, const char* path, int incl) /*{
 
         int is_dir = 0;
         int i;
-        for (i = 0; info[i]; i += 2)
-        {
-            if (!strcmp(info[i], "st_ifmt"))
-            {
-                if (!strcmp(info[i + 1], "S_IFDIR"))
-                {
+        for (i = 0; info[i]; i += 2) {
+            if (!strcmp(info[i], "st_ifmt")) {
+                if (!strcmp(info[i + 1], "S_IFDIR")) {
                     is_dir = 1;
                 }
                 break;
@@ -151,8 +131,7 @@ static int rmdir_recursive_afc(afc_client_t afc, const char* path, int incl) /*{
         }
         free_dictionary(info);
 
-        if (is_dir)
-        {
+        if (is_dir) {
             rmdir_recursive_afc(afc, fpath, 0);
         }
         afc_remove_path(afc, fpath);
@@ -160,8 +139,7 @@ static int rmdir_recursive_afc(afc_client_t afc, const char* path, int incl) /*{
     }
 
     free_dictionary(dirlist);
-    if (incl)
-    {
+    if (incl) {
         afc_remove_path(afc, path);
     }
 
@@ -172,16 +150,13 @@ int connected = 0;
 
 static void idevice_event_cb(const idevice_event_t* event, void* user_data)
 {
-    char* udid = (char*)user_data;
+    char* udid = (char*) user_data;
     printf("device event %d: %s", event->event, event->udid);
     if (udid && strcmp(udid, event->udid))
         return;
-    if (event->event == IDEVICE_DEVICE_ADD)
-    {
+    if (event->event == IDEVICE_DEVICE_ADD) {
         connected = 1;
-    }
-    else if (event->event == IDEVICE_DEVICE_REMOVE)
-    {
+    } else if (event->event == IDEVICE_DEVICE_REMOVE) {
         connected = 0;
     }
 }
@@ -194,20 +169,16 @@ static int get_rand(int min, int max) /*{{{*/
 
 static char* generate_guid() /*{{{*/
 {
-    char* guid = (char*)malloc(sizeof(char) * 37);
+    char* guid = (char*) malloc(sizeof(char) * 37);
     const char* chars = "ABCDEF0123456789";
     srand(time(NULL));
     int i = 0;
 
-    for (i = 0; i < 36; i++)
-    {
-        if (i == 8 || i == 13 || i == 18 || i == 23)
-        {
+    for (i = 0; i < 36; i++) {
+        if (i == 8 || i == 13 || i == 18 || i == 23) {
             guid[i] = '-';
             continue;
-        }
-        else
-        {
+        } else {
             guid[i] = chars[get_rand(0, 16)];
         }
     }
@@ -220,44 +191,37 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
     char* guid = NULL;
     plist_dict_iter iter = NULL;
     plist_t ns = plist_dict_get_item(*pl, "NetworkServices");
-    if (!ns || (plist_get_node_type(ns) != PLIST_DICT))
-    {
+    if (!ns || (plist_get_node_type(ns) != PLIST_DICT)) {
         fprintf(stderr, "no NetworkServices node?!");
         return;
     }
     plist_dict_new_iter(ns, &iter);
-    if (iter)
-    {
+    if (iter) {
         int found = 0;
         plist_t n = NULL;
         char* key = NULL;
-        do
-        {
+        do {
             plist_dict_next_item(ns, iter, &key, &n);
-            if (key && (plist_get_node_type(n) == PLIST_DICT))
-            {
+            if (key && (plist_get_node_type(n) == PLIST_DICT)) {
                 plist_t uname = plist_dict_get_item(n, "UserDefinedName");
-                if (uname && (plist_get_node_type(uname) == PLIST_STRING))
-                {
+                if (uname && (plist_get_node_type(uname) == PLIST_STRING)) {
                     char* uname_str = NULL;
                     plist_get_string_val(uname, &uname_str);
-                    if (uname_str)
-                    {
-                        if (strcmp(uname_str, CONNECTION_NAME) == 0)
-                        {
+                    if (uname_str) {
+                        if (strcmp(uname_str, CONNECTION_NAME) == 0) {
                             // entry found
                             found++;
                             guid = strdup(key);
-                            printf("removing /NetworkServices/%s (UserDefinedName: %s)", key,
-                                   uname_str);
+                            printf(
+                                "removing /NetworkServices/%s (UserDefinedName: %s)", key,
+                                uname_str);
                             plist_dict_remove_item(ns, guid);
                         }
                         free(uname_str);
                     }
                 }
             }
-            if (key)
-            {
+            if (key) {
                 free(key);
                 key = NULL;
             }
@@ -265,16 +229,14 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
         free(iter);
     }
 
-    if (!guid)
-    {
+    if (!guid) {
         // not found. just exit
         fprintf(stderr, "no entry found");
         return;
     }
 
     plist_t sets = plist_dict_get_item(*pl, "Sets");
-    if (!sets || (plist_get_node_type(sets) != PLIST_DICT))
-    {
+    if (!sets || (plist_get_node_type(sets) != PLIST_DICT)) {
         fprintf(stderr, "no Sets node?!");
         free(guid);
         return;
@@ -282,51 +244,39 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
 
     iter = NULL;
     plist_dict_new_iter(sets, &iter);
-    if (iter)
-    {
+    if (iter) {
         int found = 0;
         plist_t n = NULL;
         char* key = NULL;
-        do
-        {
+        do {
             plist_dict_next_item(sets, iter, &key, &n);
-            if (key && (plist_get_node_type(n) == PLIST_DICT))
-            {
+            if (key && (plist_get_node_type(n) == PLIST_DICT)) {
                 plist_t nn = plist_access_path(n, 3, "Network", "Service", guid);
-                if (nn)
-                {
+                if (nn) {
                     nn = plist_access_path(n, 2, "Network", "Service");
-                    if (nn)
-                    {
+                    if (nn) {
                         fprintf(stderr, "removing /Sets/%s/Network/Service/%s", key, guid);
                         plist_dict_remove_item(nn, guid);
                     }
                 }
                 nn = plist_access_path(n, 4, "Network", "Global", "IPv4", "ServiceOrder");
-                if (nn && (plist_get_node_type(nn) == PLIST_ARRAY))
-                {
-                    int32_t num = (int32_t)plist_array_get_size(nn);
+                if (nn && (plist_get_node_type(nn) == PLIST_ARRAY)) {
+                    int32_t num = (int32_t) plist_array_get_size(nn);
                     int32_t x;
-                    for (x = num - 1; x >= 0; x--)
-                    {
+                    for (x = num - 1; x >= 0; x--) {
                         plist_t nnn = plist_array_get_item(nn, x);
                         char* val = NULL;
-                        if (plist_get_node_type(nnn) == PLIST_KEY)
-                        {
+                        if (plist_get_node_type(nnn) == PLIST_KEY) {
                             plist_get_key_val(nnn, &val);
-                        }
-                        else if (plist_get_node_type(nnn) == PLIST_STRING)
-                        {
+                        } else if (plist_get_node_type(nnn) == PLIST_STRING) {
                             plist_get_string_val(nnn, &val);
                         }
-                        if (val)
-                        {
-                            if (strcmp(val, guid) == 0)
-                            {
+                        if (val) {
+                            if (strcmp(val, guid) == 0) {
                                 free(val);
-                                fprintf(stderr,
-                                        "removing /Sets/%s/Network/Global/IPv4/ServiceOrder/%s",
-                                        key, guid);
+                                fprintf(
+                                    stderr, "removing /Sets/%s/Network/Global/IPv4/ServiceOrder/%s",
+                                    key, guid);
                                 plist_array_remove_item(nn, x);
                                 break;
                             }
@@ -335,8 +285,7 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
                     }
                 }
             }
-            if (key)
-            {
+            if (key) {
                 free(key);
                 key = NULL;
             }
@@ -405,28 +354,25 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 
     // get NetworkServices node
     plist_t ns = plist_dict_get_item(*pl, "NetworkServices");
-    if (!ns || (plist_get_node_type(ns) != PLIST_DICT))
-    {
+    if (!ns || (plist_get_node_type(ns) != PLIST_DICT)) {
         fprintf(stderr, "ERROR: no NetworkServices node?!");
         return;
     }
 
     // get current set
     plist_t cset = plist_dict_get_item(*pl, "CurrentSet");
-    if (!cset || (plist_get_node_type(cset) != PLIST_STRING))
-    {
+    if (!cset || (plist_get_node_type(cset) != PLIST_STRING)) {
         fprintf(stderr, "ERROR: no CurrentSet node found");
         return;
     }
 
     char* curset = NULL;
     plist_get_string_val(cset, &curset);
-    if (!curset || (memcmp(curset, "/Sets/", 6) != 0))
-    {
-        fprintf(stderr, "ERROR: CurrentSet has unexpected string value '%s'",
-                (curset) ? "(null)" : curset);
-        if (curset)
-        {
+    if (!curset || (memcmp(curset, "/Sets/", 6) != 0)) {
+        fprintf(
+            stderr, "ERROR: CurrentSet has unexpected string value '%s'",
+            (curset) ? "(null)" : curset);
+        if (curset) {
             free(curset);
         }
         return;
@@ -434,8 +380,7 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 
     // locate /Sets/{SetGUID}/Network/Service node
     plist_t netsvc = plist_access_path(*pl, 4, "Sets", curset + 6, "Network", "Service");
-    if (!netsvc)
-    {
+    if (!netsvc) {
         fprintf(stderr, "ERROR: Could not access /Sets/%s/Network/Service node", curset + 6);
         free(curset);
         return;
@@ -444,10 +389,10 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
     // locate /Sets/{SetGUID}/Network/Global/IPv4/ServiceOrder node
     plist_t order =
         plist_access_path(*pl, 6, "Sets", curset + 6, "Network", "Global", "IPv4", "ServiceOrder");
-    if (!order)
-    {
-        fprintf(stderr, "ERROR: Could not access /Sets/%s/Network/Global/IPv4/ServiceOrder node",
-                curset + 6);
+    if (!order) {
+        fprintf(
+            stderr, "ERROR: Could not access /Sets/%s/Network/Global/IPv4/ServiceOrder node",
+            curset + 6);
         free(curset);
         return;
     }
@@ -455,8 +400,7 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 
     // make sure we don't have a collision (VERY unlikely, but how knows)
     char* guid = generate_guid();
-    while (plist_dict_get_item(ns, guid))
-    {
+    while (plist_dict_get_item(ns, guid)) {
         free(guid);
         guid = generate_guid();
     }
@@ -517,14 +461,12 @@ int main(int argc, char** argv)
 
     // ropMain(dscs); // this writes racoon-exploit.conf to disk
 
-    if (IDEVICE_E_SUCCESS != idevice_new(&device, NULL))
-    {
+    if (IDEVICE_E_SUCCESS != idevice_new(&device, NULL)) {
         printf("No device found, is it plugged in?");
         return -1;
     }
 
-    if (IDEVICE_E_SUCCESS == idevice_get_udid(device, &udid))
-    {
+    if (IDEVICE_E_SUCCESS == idevice_get_udid(device, &udid)) {
         printf("DeviceUniqueID : %s", udid);
     }
 
@@ -535,33 +477,28 @@ int main(int argc, char** argv)
 
     int retries = 20;
     int i = 0;
-    while (!connected && (i++ < retries))
-    {
+    while (!connected && (i++ < retries)) {
         sleep(1);
     }
 
-    if (!connected)
-    {
+    if (!connected) {
         fprintf(stderr, "ERROR: Device connection failed");
         return -1;
     }
 
-    if (IDEVICE_E_SUCCESS != idevice_new(&device, udid))
-    {
+    if (IDEVICE_E_SUCCESS != idevice_new(&device, udid)) {
         printf("No device found, is it plugged in?");
         return -1;
     }
 
-    if (LOCKDOWN_E_SUCCESS != lockdownd_client_new_with_handshake(device, &lckd, "mb2hackup"))
-    {
+    if (LOCKDOWN_E_SUCCESS != lockdownd_client_new_with_handshake(device, &lckd, "mb2hackup")) {
         idevice_free(device);
         printf("Error connecting to lockdownd.");
         return -1;
     }
 
     lockdownd_start_service(lckd, "com.apple.afc", &port);
-    if (!port)
-    {
+    if (!port) {
         lockdownd_client_free(lckd);
         idevice_free(device);
         printf("Error starting AFC service");
@@ -569,8 +506,7 @@ int main(int argc, char** argv)
     }
 
     afc_client_new(device, port, &afc);
-    if (!afc)
-    {
+    if (!afc) {
         lockdownd_client_free(lckd);
         idevice_free(device);
         printf("Could not connect to AFC");
@@ -581,17 +517,15 @@ int main(int argc, char** argv)
 
     // check if directory exists
     char** list = NULL;
-    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS)
-    {
+    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS) {
         // we're good, directory does not exist.
-    }
-    else
-    {
+    } else {
         free_dictionary(list);
-        fprintf(stderr,
-                "ERROR: the directory '%s' already exists. This is most likely a failed attempt to "
-                "use this code...",
-                AFCTMP);
+        fprintf(
+            stderr,
+            "ERROR: the directory '%s' already exists. This is most likely a failed attempt to "
+            "use this code...",
+            AFCTMP);
         goto fix;
     }
 
@@ -619,8 +553,7 @@ int main(int argc, char** argv)
     idevicebackup2(bargc, bargv);
 
     backup_t* backup = backup_open(BKPTMP, udid);
-    if (!backup)
-    {
+    if (!backup) {
         fprintf(stderr, "ERROR: failed to open backup");
         return -1;
     }
@@ -648,31 +581,24 @@ int main(int argc, char** argv)
     char* ipsec_plist = NULL;
     int ipsec_plist_size = 0;
     file_read("racoon-exploit.conf", &ipsec_plist, &ipsec_plist_size);
-    if (ipsec_plist != NULL && ipsec_plist_size > 0)
-    {
+    if (ipsec_plist != NULL && ipsec_plist_size > 0) {
         /*
          * com.apple.ipsec.plist
          */
-        bf = backup_get_file(backup, "SystemPreferencesDomain",
-                             "SystemConfiguration/com.apple.ipsec.plist");
-        if (bf)
-        {
+        bf = backup_get_file(
+            backup, "SystemPreferencesDomain", "SystemConfiguration/com.apple.ipsec.plist");
+        if (bf) {
             fprintf(stderr, "com.apple.ipsec.plist already present, replacing");
             backup_file_assign_file_data(bf, ipsec_plist, strlen(ipsec_plist), 0);
             backup_file_set_length(bf, strlen(ipsec_plist));
             backup_file_update_hash(bf);
 
-            if (backup_update_file(backup, bf) < 0)
-            {
+            if (backup_update_file(backup, bf) < 0) {
                 fprintf(stderr, "ERROR: could not add file to backup");
-            }
-            else
-            {
+            } else {
                 backup_write_mbdb(backup);
             }
-        }
-        else
-        {
+        } else {
             fprintf(stderr, "adding com.apple.ipsec.plist");
             bf = backup_file_create_with_data(ipsec_plist, strlen(ipsec_plist), 0);
             backup_file_set_domain(bf, "SystemPreferencesDomain");
@@ -681,7 +607,7 @@ int main(int argc, char** argv)
             backup_file_set_inode(bf, 123456);
             backup_file_set_uid(bf, 0);
             backup_file_set_gid(bf, 0);
-            unsigned int tm = (unsigned int)(time(NULL));
+            unsigned int tm = (unsigned int) (time(NULL));
             backup_file_set_time1(bf, tm);
             backup_file_set_time2(bf, tm);
             backup_file_set_time3(bf, tm);
@@ -689,12 +615,9 @@ int main(int argc, char** argv)
             backup_file_set_flag(bf, 4);
             backup_file_update_hash(bf);
 
-            if (backup_update_file(backup, bf) < 0)
-            {
+            if (backup_update_file(backup, bf) < 0) {
                 fprintf(stderr, "ERROR: could not add file to backup");
-            }
-            else
-            {
+            } else {
                 backup_write_mbdb(backup);
             }
         }
@@ -706,11 +629,9 @@ int main(int argc, char** argv)
      */
     bf =
         backup_get_file(backup, "SystemPreferencesDomain", "SystemConfiguration/preferences.plist");
-    if (bf)
-    {
+    if (bf) {
         char* fn = backup_get_file_path(backup, bf);
-        if (!fn)
-        {
+        if (!fn) {
             fprintf(stderr, "Huh, backup path for preferences.plist not found?!");
             return -1;
         }
@@ -718,15 +639,11 @@ int main(int argc, char** argv)
         unsigned char* prefs = NULL;
         uint32_t plen = 0;
 
-        if (file_read(fn, &prefs, &plen) > 8)
-        {
+        if (file_read(fn, &prefs, &plen) > 8) {
             plist_t pl = NULL;
-            if (memcmp(prefs, "bplist00", 8) == 0)
-            {
+            if (memcmp(prefs, "bplist00", 8) == 0) {
                 plist_from_bin(prefs, plen, &pl);
-            }
-            else
-            {
+            } else {
                 plist_from_xml(prefs, plen, &pl);
             }
             free(prefs);
@@ -735,7 +652,7 @@ int main(int argc, char** argv)
 
             process_preferences_plist(&pl);
 
-            plist_to_bin(pl, (char**)&prefs, &plen);
+            plist_to_bin(pl, (char**) &prefs, &plen);
 
             backup_file_assign_file_data(bf, prefs, plen, 1);
             free(prefs);
@@ -743,22 +660,15 @@ int main(int argc, char** argv)
             backup_file_set_length(bf, plen);
             backup_file_update_hash(bf);
 
-            if (backup_update_file(backup, bf) < 0)
-            {
+            if (backup_update_file(backup, bf) < 0) {
                 fprintf(stderr, "ERROR: could not add file to backup");
-            }
-            else
-            {
+            } else {
                 backup_write_mbdb(backup);
             }
-        }
-        else
-        {
+        } else {
             fprintf(stderr, "Could not open '%s'", fn);
         }
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "ERROR: could not locate preferences.plist in backup.");
     }
     backup_file_free(bf);
@@ -774,16 +684,14 @@ int main(int argc, char** argv)
     printf("waiting for device reboot");
 
     // wait for disconnect
-    while (connected)
-    {
+    while (connected) {
         sleep(2);
     }
 
     printf("Device %s disconnected", udid);
 
     // wait for device to connect
-    while (!connected)
-    {
+    while (!connected) {
         sleep(2);
     }
     idevice_event_unsubscribe();
@@ -791,14 +699,12 @@ int main(int argc, char** argv)
     sleep(2);
 
     device = NULL;
-    if (IDEVICE_E_SUCCESS != idevice_new(&device, udid))
-    {
+    if (IDEVICE_E_SUCCESS != idevice_new(&device, udid)) {
         printf("Reconnect to %s failed... whoops", udid);
         return -1;
     }
 
-    if (LOCKDOWN_E_SUCCESS != lockdownd_client_new_with_handshake(device, &lckd, "mb2hackup"))
-    {
+    if (LOCKDOWN_E_SUCCESS != lockdownd_client_new_with_handshake(device, &lckd, "mb2hackup")) {
         idevice_free(device);
         printf("Error connecting to lockdownd.");
         return -1;
@@ -806,8 +712,7 @@ int main(int argc, char** argv)
 
     port = 0;
     lockdownd_start_service(lckd, "com.apple.afc", &port);
-    if (!port)
-    {
+    if (!port) {
         lockdownd_client_free(lckd);
         idevice_free(device);
         printf("Error starting AFC service");
@@ -815,8 +720,7 @@ int main(int argc, char** argv)
     }
 
     afc_client_new(device, port, &afc);
-    if (!afc)
-    {
+    if (!afc) {
         lockdownd_client_free(lckd);
         idevice_free(device);
         printf("Could not connect to AFC");
@@ -826,27 +730,24 @@ int main(int argc, char** argv)
     printf("moving back files...");
 
     list = NULL;
-    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS)
-    {
+    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS) {
         fprintf(stderr, "Uh, oh, the folder '%s' does not exist or is not accessible...", AFCTMP);
     }
 
     i = 0;
-    while (list && list[i])
-    {
-        if (!strcmp(list[i], ".") || !strcmp(list[i], ".."))
-        {
+    while (list && list[i]) {
+        if (!strcmp(list[i], ".") || !strcmp(list[i], "..")) {
             i++;
             continue;
         }
         printf("%s", list[i]);
 
-        char* tmpname = (char*)malloc(1 + strlen(list[i]) + 1);
+        char* tmpname = (char*) malloc(1 + strlen(list[i]) + 1);
         strcpy(tmpname, "/");
         strcat(tmpname, list[i]);
         rmdir_recursive_afc(afc, tmpname, 1);
 
-        char* tmxname = (char*)malloc(1 + strlen(AFCTMP) + 1 + strlen(list[i]) + 1);
+        char* tmxname = (char*) malloc(1 + strlen(AFCTMP) + 1 + strlen(list[i]) + 1);
         strcpy(tmxname, "/" AFCTMP "/");
         strcat(tmxname, list[i]);
 
@@ -867,29 +768,24 @@ int main(int argc, char** argv)
     sbservices_client_t sbsc = NULL;
     plist_t state = NULL;
 
-    while (!done && (retries-- > 0))
-    {
+    while (!done && (retries-- > 0)) {
         port = 0;
         lockdownd_start_service(lckd, "com.apple.springboardservices", &port);
-        if (!port)
-        {
+        if (!port) {
             continue;
         }
         sbsc = NULL;
         sbservices_client_new(device, port, &sbsc);
-        if (!sbsc)
-        {
+        if (!sbsc) {
             continue;
         }
-        if (sbservices_get_icon_state(sbsc, &state, "2") == SBSERVICES_E_SUCCESS)
-        {
+        if (sbservices_get_icon_state(sbsc, &state, "2") == SBSERVICES_E_SUCCESS) {
             plist_free(state);
             state = NULL;
             done = 1;
         }
         sbservices_client_free(sbsc);
-        if (done)
-        {
+        if (done) {
             printf("bootup complete");
             break;
         }
@@ -902,28 +798,25 @@ fix:
     printf("moving back any leftovers...");
 
     list = NULL;
-    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS)
-    {
+    if (afc_read_directory(afc, "/" AFCTMP, &list) != AFC_E_SUCCESS) {
         // fprintf(stderr, "Uh, oh, the folder '%s' does not exist or is not accessible...",
         // AFCTMP);
     }
 
     i = 0;
-    while (list && list[i])
-    {
-        if (!strcmp(list[i], ".") || !strcmp(list[i], ".."))
-        {
+    while (list && list[i]) {
+        if (!strcmp(list[i], ".") || !strcmp(list[i], "..")) {
             i++;
             continue;
         }
         printf("%s", list[i]);
 
-        char* tmpname = (char*)malloc(1 + strlen(list[i]) + 1);
+        char* tmpname = (char*) malloc(1 + strlen(list[i]) + 1);
         strcpy(tmpname, "/");
         strcat(tmpname, list[i]);
         rmdir_recursive_afc(afc, tmpname, 1);
 
-        char* tmxname = (char*)malloc(1 + strlen(AFCTMP) + 1 + strlen(list[i]) + 1);
+        char* tmxname = (char*) malloc(1 + strlen(AFCTMP) + 1 + strlen(list[i]) + 1);
         strcpy(tmxname, "/" AFCTMP "/");
         strcat(tmxname, list[i]);
 
@@ -939,11 +832,11 @@ fix:
 
     printf("cleaning up");
     afc_remove_path(afc, "/" AFCTMP);
-    if (afc_read_directory(afc, "/" AFCTMP, &list) == AFC_E_SUCCESS)
-    {
-        fprintf(stderr, "WARNING: the folder /" AFCTMP
-                        " is still present in the user's Media folder. You have to check yourself "
-                        "for any leftovers and move them back if required.");
+    if (afc_read_directory(afc, "/" AFCTMP, &list) == AFC_E_SUCCESS) {
+        fprintf(
+            stderr, "WARNING: the folder /" AFCTMP
+                    " is still present in the user's Media folder. You have to check yourself "
+                    "for any leftovers and move them back if required.");
     }
 
     rmdir_recursive(BKPTMP);

@@ -21,11 +21,10 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string>
 
-namespace absinthe
-{
-namespace util
-{
+namespace absinthe {
+namespace util {
 
 typedef struct file_t
 {

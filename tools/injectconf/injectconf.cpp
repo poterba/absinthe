@@ -27,20 +27,16 @@ static int get_rand(int min, int max) /*{{{*/
 
 static char* generate_guid() /*{{{*/
 {
-    char* guid = (char*)malloc(sizeof(char) * 37);
+    char* guid = (char*) malloc(sizeof(char) * 37);
     const char* chars = "ABCDEF0123456789";
     srand(time(NULL));
     int i = 0;
 
-    for (i = 0; i < 36; i++)
-    {
-        if (i == 8 || i == 13 || i == 18 || i == 23)
-        {
+    for (i = 0; i < 36; i++) {
+        if (i == 8 || i == 13 || i == 18 || i == 23) {
             guid[i] = '-';
             continue;
-        }
-        else
-        {
+        } else {
             guid[i] = chars[get_rand(0, 16)];
         }
     }
@@ -53,44 +49,37 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
     char* guid = NULL;
     plist_dict_iter iter = NULL;
     plist_t ns = plist_dict_get_item(*pl, "NetworkServices");
-    if (!ns || (plist_get_node_type(ns) != PLIST_DICT))
-    {
+    if (!ns || (plist_get_node_type(ns) != PLIST_DICT)) {
         fprintf(stderr, "no NetworkServices node?!");
         return;
     }
     plist_dict_new_iter(ns, &iter);
-    if (iter)
-    {
+    if (iter) {
         int found = 0;
         plist_t n = NULL;
         char* key = NULL;
-        do
-        {
+        do {
             plist_dict_next_item(ns, iter, &key, &n);
-            if (key && (plist_get_node_type(n) == PLIST_DICT))
-            {
+            if (key && (plist_get_node_type(n) == PLIST_DICT)) {
                 plist_t uname = plist_dict_get_item(n, "UserDefinedName");
-                if (uname && (plist_get_node_type(uname) == PLIST_STRING))
-                {
+                if (uname && (plist_get_node_type(uname) == PLIST_STRING)) {
                     char* uname_str = NULL;
                     plist_get_string_val(uname, &uname_str);
-                    if (uname_str)
-                    {
-                        if (strcmp(uname_str, CONNECTION_NAME) == 0)
-                        {
+                    if (uname_str) {
+                        if (strcmp(uname_str, CONNECTION_NAME) == 0) {
                             // entry found
                             found++;
                             guid = strdup(key);
-                            printf("removing /NetworkServices/%s (UserDefinedName: %s)", key,
-                                   uname_str);
+                            printf(
+                                "removing /NetworkServices/%s (UserDefinedName: %s)", key,
+                                uname_str);
                             plist_dict_remove_item(ns, guid);
                         }
                         free(uname_str);
                     }
                 }
             }
-            if (key)
-            {
+            if (key) {
                 free(key);
                 key = NULL;
             }
@@ -98,16 +87,14 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
         free(iter);
     }
 
-    if (!guid)
-    {
+    if (!guid) {
         // not found. just exit
         fprintf(stderr, "no entry found");
         return;
     }
 
     plist_t sets = plist_dict_get_item(*pl, "Sets");
-    if (!sets || (plist_get_node_type(sets) != PLIST_DICT))
-    {
+    if (!sets || (plist_get_node_type(sets) != PLIST_DICT)) {
         fprintf(stderr, "no Sets node?!");
         free(guid);
         return;
@@ -115,51 +102,39 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
 
     iter = NULL;
     plist_dict_new_iter(sets, &iter);
-    if (iter)
-    {
+    if (iter) {
         int found = 0;
         plist_t n = NULL;
         char* key = NULL;
-        do
-        {
+        do {
             plist_dict_next_item(sets, iter, &key, &n);
-            if (key && (plist_get_node_type(n) == PLIST_DICT))
-            {
+            if (key && (plist_get_node_type(n) == PLIST_DICT)) {
                 plist_t nn = plist_access_path(n, 3, "Network", "Service", guid);
-                if (nn)
-                {
+                if (nn) {
                     nn = plist_access_path(n, 2, "Network", "Service");
-                    if (nn)
-                    {
+                    if (nn) {
                         fprintf(stderr, "removing /Sets/%s/Network/Service/%s", key, guid);
                         plist_dict_remove_item(nn, guid);
                     }
                 }
                 nn = plist_access_path(n, 4, "Network", "Global", "IPv4", "ServiceOrder");
-                if (nn && (plist_get_node_type(nn) == PLIST_ARRAY))
-                {
-                    int32_t num = (int32_t)plist_array_get_size(nn);
+                if (nn && (plist_get_node_type(nn) == PLIST_ARRAY)) {
+                    int32_t num = (int32_t) plist_array_get_size(nn);
                     int32_t x;
-                    for (x = num - 1; x >= 0; x--)
-                    {
+                    for (x = num - 1; x >= 0; x--) {
                         plist_t nnn = plist_array_get_item(nn, x);
                         char* val = NULL;
-                        if (plist_get_node_type(nnn) == PLIST_KEY)
-                        {
+                        if (plist_get_node_type(nnn) == PLIST_KEY) {
                             plist_get_key_val(nnn, &val);
-                        }
-                        else if (plist_get_node_type(nnn) == PLIST_STRING)
-                        {
+                        } else if (plist_get_node_type(nnn) == PLIST_STRING) {
                             plist_get_string_val(nnn, &val);
                         }
-                        if (val)
-                        {
-                            if (strcmp(val, guid) == 0)
-                            {
+                        if (val) {
+                            if (strcmp(val, guid) == 0) {
                                 free(val);
-                                fprintf(stderr,
-                                        "removing /Sets/%s/Network/Global/IPv4/ServiceOrder/%s",
-                                        key, guid);
+                                fprintf(
+                                    stderr, "removing /Sets/%s/Network/Global/IPv4/ServiceOrder/%s",
+                                    key, guid);
                                 plist_array_remove_item(nn, x);
                                 break;
                             }
@@ -168,8 +143,7 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
                     }
                 }
             }
-            if (key)
-            {
+            if (key) {
                 free(key);
                 key = NULL;
             }
@@ -248,28 +222,25 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 
     // get NetworkServices node
     plist_t ns = plist_dict_get_item(*pl, "NetworkServices");
-    if (!ns || (plist_get_node_type(ns) != PLIST_DICT))
-    {
+    if (!ns || (plist_get_node_type(ns) != PLIST_DICT)) {
         fprintf(stderr, "ERROR: no NetworkServices node?!");
         return;
     }
 
     // get current set
     plist_t cset = plist_dict_get_item(*pl, "CurrentSet");
-    if (!cset || (plist_get_node_type(cset) != PLIST_STRING))
-    {
+    if (!cset || (plist_get_node_type(cset) != PLIST_STRING)) {
         fprintf(stderr, "ERROR: no CurrentSet node found");
         return;
     }
 
     char* curset = NULL;
     plist_get_string_val(cset, &curset);
-    if (!curset || (memcmp(curset, "/Sets/", 6) != 0))
-    {
-        fprintf(stderr, "ERROR: CurrentSet has unexpected string value '%s'",
-                (curset) ? "(null)" : curset);
-        if (curset)
-        {
+    if (!curset || (memcmp(curset, "/Sets/", 6) != 0)) {
+        fprintf(
+            stderr, "ERROR: CurrentSet has unexpected string value '%s'",
+            (curset) ? "(null)" : curset);
+        if (curset) {
             free(curset);
         }
         return;
@@ -277,8 +248,7 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 
     // locate /Sets/{SetGUID}/Network/Service node
     plist_t netsvc = plist_access_path(*pl, 4, "Sets", curset + 6, "Network", "Service");
-    if (!netsvc)
-    {
+    if (!netsvc) {
         fprintf(stderr, "ERROR: Could not access /Sets/%s/Network/Service node", curset + 6);
         free(curset);
         return;
@@ -287,10 +257,10 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
     // locate /Sets/{SetGUID}/Network/Global/IPv4/ServiceOrder node
     plist_t order =
         plist_access_path(*pl, 6, "Sets", curset + 6, "Network", "Global", "IPv4", "ServiceOrder");
-    if (!order)
-    {
-        fprintf(stderr, "ERROR: Could not access /Sets/%s/Network/Global/IPv4/ServiceOrder node",
-                curset + 6);
+    if (!order) {
+        fprintf(
+            stderr, "ERROR: Could not access /Sets/%s/Network/Global/IPv4/ServiceOrder node",
+            curset + 6);
         free(curset);
         return;
     }
@@ -298,8 +268,7 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 
     // make sure we don't have a collision (VERY unlikely, but how knows)
     char* guid = generate_guid();
-    while (plist_dict_get_item(ns, guid))
-    {
+    while (plist_dict_get_item(ns, guid)) {
         free(guid);
         guid = generate_guid();
     }
@@ -325,8 +294,7 @@ static void prefs_add_entry(plist_t* pl) /*{{{*/
 
 int main(int argc, char* argv[])
 {
-    if (argc != 3)
-    {
+    if (argc != 3) {
         printf("usage: injectconf <backupdir> <conf>");
         return 0;
     }
@@ -338,8 +306,7 @@ int main(int argc, char* argv[])
     device_free(device);
 
     backup_t* backup = backup_open(backup_directory, udid);
-    if (!backup)
-    {
+    if (!backup) {
         fprintf(stderr, "ERROR: failed to open backup");
         return -1;
     }
@@ -352,11 +319,9 @@ int main(int argc, char* argv[])
     backup_file_t* bf = NULL;
     bf =
         backup_get_file(backup, "SystemPreferencesDomain", "SystemConfiguration/preferences.plist");
-    if (bf)
-    {
+    if (bf) {
         char* fn = backup_get_file_path(backup, bf);
-        if (!fn)
-        {
+        if (!fn) {
             fprintf(stderr, "Huh, backup path for preferences.plist not found?!");
             return -1;
         }
@@ -364,15 +329,11 @@ int main(int argc, char* argv[])
         unsigned char* prefs = NULL;
         uint32_t plen = 0;
 
-        if (file_read(fn, &prefs, &plen) > 8)
-        {
+        if (file_read(fn, &prefs, &plen) > 8) {
             plist_t pl = NULL;
-            if (memcmp(prefs, "bplist00", 8) == 0)
-            {
+            if (memcmp(prefs, "bplist00", 8) == 0) {
                 plist_from_bin(prefs, plen, &pl);
-            }
-            else
-            {
+            } else {
                 plist_from_xml(prefs, plen, &pl);
             }
             free(prefs);
@@ -384,7 +345,7 @@ int main(int argc, char* argv[])
             debug("Adding VPN connection entry");
             prefs_add_entry(&pl);
 
-            plist_to_bin(pl, (char**)&prefs, &plen);
+            plist_to_bin(pl, (char**) &prefs, &plen);
 
             backup_file_assign_file_data(bf, prefs, plen, 1);
             free(prefs);
@@ -392,58 +353,44 @@ int main(int argc, char* argv[])
             backup_file_set_length(bf, plen);
             backup_file_update_hash(bf);
 
-            if (backup_update_file(backup, bf) < 0)
-            {
+            if (backup_update_file(backup, bf) < 0) {
                 fprintf(stderr, "ERROR: could not add file to backup");
-            }
-            else
-            {
+            } else {
                 backup_write_mbdb(backup);
                 printf("Done!");
             }
-        }
-        else
-        {
+        } else {
             fprintf(stderr, "Could not open '%s'", fn);
         }
         free(fn);
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "ERROR: could not locate preferences.plist in backup.");
     }
     backup_file_free(bf);
     // backup_free(backup);
 
     // backup = backup_open(backup_directory, udid);
-    if (!backup)
-    {
+    if (!backup) {
         throw std::runtime_error("ERROR: failed to open backup");
         return -1;
     }
     char* ipsec_plist = NULL;
     int ipsec_plist_size = 0;
-    file_read(argv[2], (unsigned char**)&ipsec_plist, &ipsec_plist_size);
-    bf = backup_get_file(backup, "SystemPreferencesDomain",
-                         "SystemConfiguration/com.apple.ipsec.plist");
-    if (bf)
-    {
+    file_read(argv[2], (unsigned char**) &ipsec_plist, &ipsec_plist_size);
+    bf = backup_get_file(
+        backup, "SystemPreferencesDomain", "SystemConfiguration/com.apple.ipsec.plist");
+    if (bf) {
         debug("com.apple.ipsec.plist already present, replacing");
         backup_file_assign_file_data(bf, ipsec_plist, ipsec_plist_size, 0);
         backup_file_set_length(bf, ipsec_plist_size);
         backup_file_update_hash(bf);
 
-        if (backup_update_file(backup, bf) < 0)
-        {
+        if (backup_update_file(backup, bf) < 0) {
             throw std::runtime_error("ERROR: could not add file to backup");
-        }
-        else
-        {
+        } else {
             backup_write_mbdb(backup);
         }
-    }
-    else
-    {
+    } else {
         debug("adding com.apple.ipsec.plist");
         bf = backup_file_create_with_data(ipsec_plist, strlen(ipsec_plist), 0);
         backup_file_set_domain(bf, "SystemPreferencesDomain");
@@ -452,7 +399,7 @@ int main(int argc, char* argv[])
         backup_file_set_inode(bf, 123456);
         backup_file_set_uid(bf, 0);
         backup_file_set_gid(bf, 0);
-        unsigned int tm = (unsigned int)(time(NULL));
+        unsigned int tm = (unsigned int) (time(NULL));
         backup_file_set_time1(bf, tm);
         backup_file_set_time2(bf, tm);
         backup_file_set_time3(bf, tm);
@@ -460,12 +407,9 @@ int main(int argc, char* argv[])
         backup_file_set_flag(bf, 4);
         backup_file_update_hash(bf);
 
-        if (backup_update_file(backup, bf) < 0)
-        {
+        if (backup_update_file(backup, bf) < 0) {
             throw std::runtime_error("ERROR: could not add file to backup");
-        }
-        else
-        {
+        } else {
             backup_write_mbdb(backup);
         }
     }

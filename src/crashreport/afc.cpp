@@ -26,53 +26,29 @@
 #include <stdlib.h>
 #include <string.h>
 
-namespace absinthe
+namespace absinthe {
+namespace crashreport {
+AFC::AFC(std::shared_ptr<util::Device> device)
 {
-namespace crashreport
-{
-void AFC::connect(std::shared_ptr<util::Device> device)
-{
-    int err = 0;
     uint16_t port = 0;
-    afc_t* afc = NULL;
-    lockdown_t* lockdown = NULL;
 
-    lockdown = lockdown_open(device);
-    if (lockdown == NULL)
-    {
-        throw std::runtime_error("Unable to open connection to lockdownd");
-    }
-
-    err = lockdown_start_service(lockdown, "com.apple.afc", &port);
-    if (err < 0)
-    {
+    auto lockdown = std::make_shared<util::Lockdown>(device);
+    if (lockdown->start_service("com.apple.afc", &port) < 0) {
         throw std::runtime_error("Unable to start AFC service");
     }
-    lockdown_close(lockdown);
+    lockdown->close();
 
-    afc = afc_open(device, port);
-    if (afc == NULL)
-    {
-        throw std::runtime_error("Unable to open connection to AFC service");
-    }
+    AFC(device, port);
 }
 
-void AFC::open(std::shared_ptr<util::Device> device, uint16_t port)
+AFC::AFC(std::shared_ptr<util::Device> device, uint16_t port) : _device(device), _port(port)
 {
     afc_error_t err = AFC_E_SUCCESS;
-    afc_t* afc = afc_create();
-    if (afc != NULL)
-    {
-        err = afc_client_new(device->client, port, &_client);
-        if (err != AFC_E_SUCCESS)
-        {
-            afc_free(afc);
-            throw std::runtime_error("Unable to create new MobileBackup2 client");
-        }
-        _device = device;
-        _port = port;
+
+    lockdownd_service_descriptor desc{_port, false};
+    if (afc_client_new(device->client(), &desc, &_client) != AFC_E_SUCCESS) {
+        throw std::runtime_error("Unable to create new MobileBackup2 client");
     }
-    return afc;
 }
 
 int AFC::close()
@@ -89,8 +65,7 @@ static void afc_free_dictionary(char** dictionary)
     if (!dictionary)
         return;
 
-    for (i = 0; dictionary[i]; i++)
-    {
+    for (i = 0; dictionary[i]; i++) {
         free(dictionary[i]);
     }
     free(dictionary);
@@ -98,8 +73,7 @@ static void afc_free_dictionary(char** dictionary)
 
 void AFC::apparition_afc_get_file_contents(const char* filename, char** data, uint64_t* size)
 {
-    if (!data || !size)
-    {
+    if (!data || !size) {
         return;
     }
 
@@ -107,60 +81,48 @@ void AFC::apparition_afc_get_file_contents(const char* filename, char** data, ui
     uint32_t fsize = 0;
 
     afc_get_file_info(_client, filename, &fileinfo);
-    if (!fileinfo)
-    {
+    if (!fileinfo) {
         return;
     }
     int i;
-    for (i = 0; fileinfo[i]; i += 2)
-    {
-        if (!strcmp(fileinfo[i], "st_size"))
-        {
+    for (i = 0; fileinfo[i]; i += 2) {
+        if (!strcmp(fileinfo[i], "st_size")) {
             fsize = atol(fileinfo[i + 1]);
             break;
         }
     }
     afc_free_dictionary(fileinfo);
 
-    if (fsize == 0)
-    {
+    if (fsize == 0) {
         return;
     }
 
     uint64_t f = 0;
     afc_file_open(_client, filename, AFC_FOPEN_RDONLY, &f);
-    if (!f)
-    {
+    if (!f) {
         return;
     }
-    char* buf = (char*)malloc((uint32_t)fsize);
+    char* buf = (char*) malloc((uint32_t) fsize);
     uint32_t done = 0;
-    while (done < fsize)
-    {
+    while (done < fsize) {
         uint32_t bread = 0;
         afc_file_read(_client, f, buf + done, 65536, &bread);
-        if (bread > 0)
-        {
-        }
-        else
-        {
+        if (bread > 0) {
+        } else {
             break;
         }
         done += bread;
     }
-    if (done == fsize)
-    {
+    if (done == fsize) {
         *size = fsize;
         *data = buf;
-    }
-    else
-    {
+    } else {
         free(buf);
     }
     afc_file_close(_client, f);
 }
 
-int afc_send_file(afc_t* afc, const char* local, const char* remote)
+int AFC::send_file(const char* local, const char* remote)
 {
 
     uint64_t lockfile = 0;
@@ -168,14 +130,14 @@ int afc_send_file(afc_t* afc, const char* local, const char* remote)
     unsigned int bytes = 0;
 
     afc_file_open(_client, remote, AFC_FOPEN_WR, &my_file);
-    if (my_file)
-    {
+    if (my_file) {
         // char *outdatafile = strdup("THIS IS HOW WE DO IT, WHORE");
 
-        // FIXME: right here its just sending "local/file.txt, rather than the contents of the file.
+        // FIXME: right here its just sending "local/file.txt, rather than the
+        // contents of the file.
 
-        // afc_file_write(afc->client, my_file, outdatafile, strlen(outdatafile), &bytes);// <-- old
-        // code
+        // afc_file_write(afc->client, my_file, outdatafile, strlen(outdatafile),
+        // &bytes);// <-- old code
         afc_file_write(_client, my_file, local, strlen(local), &bytes);
         // free(outdatafile);
         if (bytes > 0)
@@ -186,4 +148,9 @@ int afc_send_file(afc_t* afc, const char* local, const char* remote)
     }
 
     printf("afc all done.");
+
+    return 0;
 }
+
+} // namespace crashreport
+} // namespace absinthe

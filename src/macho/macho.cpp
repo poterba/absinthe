@@ -32,9 +32,8 @@
  */
 macho_t* macho_create()
 {
-    macho_t* macho = (macho_t*)malloc(sizeof(macho_t));
-    if (macho)
-    {
+    macho_t* macho = (macho_t*) malloc(sizeof(macho_t));
+    if (macho) {
         memset(macho, '\0', sizeof(macho));
     }
     return macho;
@@ -47,16 +46,14 @@ macho_t* macho_load(unsigned char* data, unsigned int size, dyldcache_t* cache)
     macho_t* macho = NULL;
 
     macho = macho_create();
-    if (macho)
-    {
+    if (macho) {
         macho->offset = 0;
         macho->data = data;
         macho->size = size;
 
         // debug("Loading Mach-O header");
         macho->header = macho_header_load(macho);
-        if (macho->header == NULL)
-        {
+        if (macho->header == NULL) {
             throw std::runtime_error("Unable to load Mach-O header information");
             macho_free(macho);
             return NULL;
@@ -65,8 +62,7 @@ macho_t* macho_load(unsigned char* data, unsigned int size, dyldcache_t* cache)
         // debug("Loading Mach-O command");
         macho->command_count = macho->header->ncmds;
         macho->commands = macho_commands_load(macho);
-        if (macho->commands == NULL)
-        {
+        if (macho->commands == NULL) {
             throw std::runtime_error("Unable to parse Mach-O load commands");
             macho_free(macho);
             return NULL;
@@ -76,10 +72,8 @@ macho_t* macho_load(unsigned char* data, unsigned int size, dyldcache_t* cache)
         uint32_t seg_count = 0;
         uint32_t symtab_count = 0;
         uint32_t unk_count = 0;
-        for (i = 0; i < macho->command_count; i++)
-        {
-            switch (macho->commands[i]->info->cmd)
-            {
+        for (i = 0; i < macho->command_count; i++) {
+            switch (macho->commands[i]->info->cmd) {
                 case MACHO_CMD_SEGMENT:
                     seg_count++;
                     break;
@@ -99,14 +93,12 @@ macho_t* macho_load(unsigned char* data, unsigned int size, dyldcache_t* cache)
 
         macho->cache = cache;
 
-        if (unk_count > 0)
-        {
+        if (unk_count > 0) {
             throw std::runtime_error("WARNING: %d unhandled Mach-O Commands", unk_count);
         }
 
         // debug("Handling %d Mach-O commands", macho->command_count);
-        for (i = 0; i < macho->command_count; i++)
-        {
+        for (i = 0; i < macho->command_count; i++) {
             macho_handle_command(macho, macho->commands[i]);
         }
         // TODO: Remove the line below this once debugging is finished
@@ -122,12 +114,10 @@ macho_t* macho_open(const char* path)
     unsigned int size = 0;
     unsigned char* data = NULL;
 
-    if (path)
-    {
+    if (path) {
         // debug("Reading Mach-O file from path");
         err = file_read(path, &data, &size);
-        if (err < 0)
-        {
+        if (err < 0) {
             throw std::runtime_error("Unable to read Mach-O file");
             macho_free(macho);
             return NULL;
@@ -135,8 +125,7 @@ macho_t* macho_open(const char* path)
 
         // debug("Creating Mach-O object from file");
         macho = macho_load(data, size, NULL);
-        if (macho == NULL)
-        {
+        if (macho == NULL) {
             throw std::runtime_error("Unable to load Mach-O file");
             return NULL;
         }
@@ -150,16 +139,12 @@ uint32_t macho_lookup(macho_t* macho, const char* sym)
     int j = 0;
     nlist* nl = NULL;
     macho_symtab_t* symtab = NULL;
-    for (i = 0; i < macho->symtab_count; i++)
-    {
+    for (i = 0; i < macho->symtab_count; i++) {
         symtab = macho->symtabs[i];
-        for (j = 0; j < symtab->nsyms; j++)
-        {
+        for (j = 0; j < symtab->nsyms; j++) {
             nl = &symtab->symbols[j];
-            if (nl->n_un.n_name != NULL)
-            {
-                if (strcmp(sym, nl->n_un.n_name) == 0)
-                {
+            if (nl->n_un.n_name != NULL) {
+                if (strcmp(sym, nl->n_un.n_name) == 0) {
                     return nl->n_value;
                 }
             }
@@ -168,21 +153,20 @@ uint32_t macho_lookup(macho_t* macho, const char* sym)
     return 0;
 }
 
-void macho_list_symbols(macho_t* macho, void (*print_func)(const char*, uint32_t, void*),
-                        void* userdata)
+void macho_list_symbols(
+    macho_t* macho,
+    void (*print_func)(const char*, uint32_t, void*),
+    void* userdata)
 {
     int i = 0;
     int j = 0;
     nlist* nl = NULL;
     macho_symtab_t* symtab = NULL;
-    for (i = 0; i < macho->symtab_count; i++)
-    {
+    for (i = 0; i < macho->symtab_count; i++) {
         symtab = macho->symtabs[i];
-        for (j = 0; j < symtab->nsyms; j++)
-        {
+        for (j = 0; j < symtab->nsyms; j++) {
             nl = &symtab->symbols[j];
-            if ((nl->n_un.n_name != NULL) && (nl->n_value != 0))
-            {
+            if ((nl->n_un.n_name != NULL) && (nl->n_value != 0)) {
                 print_func(nl->n_un.n_name, nl->n_value, userdata);
             }
         }
@@ -191,8 +175,7 @@ void macho_list_symbols(macho_t* macho, void (*print_func)(const char*, uint32_t
 
 void macho_debug(macho_t* macho)
 {
-    if (macho)
-    {
+    if (macho) {
         debug("Mach-O:");
         if (macho->header)
             macho_header_debug(macho->header);
@@ -206,32 +189,26 @@ void macho_debug(macho_t* macho)
 
 void macho_free(macho_t* macho)
 {
-    if (macho)
-    {
-        if (macho->header)
-        {
+    if (macho) {
+        if (macho->header) {
             macho_header_free(macho->header);
             macho->header = NULL;
         }
-        if (macho->commands)
-        {
+        if (macho->commands) {
             macho_commands_free(macho->commands);
             macho->commands = NULL;
         }
 
-        if (macho->segments)
-        {
+        if (macho->segments) {
             macho_segments_free(macho->segments);
             macho->segments = NULL;
         }
-        if (macho->symtabs)
-        {
+        if (macho->symtabs) {
             macho_symtabs_free(macho->symtabs);
             macho->symtabs = NULL;
         }
 
-        if (macho->data)
-        {
+        if (macho->data) {
             macho->size = 0;
             macho->offset = 0;
             macho->data = NULL;
@@ -246,9 +223,8 @@ void macho_free(macho_t* macho)
  */
 macho_header_t* macho_header_create()
 {
-    macho_header_t* header = (macho_header_t*)malloc(sizeof(macho_header_t));
-    if (header)
-    {
+    macho_header_t* header = (macho_header_t*) malloc(sizeof(macho_header_t));
+    if (header) {
         memset(header, '\0', sizeof(macho_header_t));
     }
     return header;
@@ -260,14 +236,12 @@ macho_header_t* macho_header_load(macho_t* macho)
     unsigned int offset = 0;
     unsigned char* data = NULL;
     macho_header_t* header = NULL;
-    if (macho)
-    {
+    if (macho) {
         data = macho->data;
         size = macho->size;
         offset = macho->offset;
         header = macho_header_create();
-        if (header)
-        {
+        if (header) {
             memcpy(header, &data[offset], sizeof(macho_header_t));
             macho->offset += sizeof(macho_header_t);
         }
@@ -277,8 +251,7 @@ macho_header_t* macho_header_load(macho_t* macho)
 
 void macho_header_debug(macho_header_t* header)
 {
-    if (header)
-    {
+    if (header) {
         debug("\tHeader:");
         debug("\t\t     magic = 0x%08x", header->magic);
         debug("\t\t   cputype = 0x%08x", header->cputype);
@@ -293,8 +266,7 @@ void macho_header_debug(macho_header_t* header)
 
 void macho_header_free(macho_header_t* header)
 {
-    if (header)
-    {
+    if (header) {
         free(header);
     }
 }
@@ -302,42 +274,34 @@ void macho_header_free(macho_header_t* header)
 int macho_handle_command(macho_t* macho, macho_command_t* command)
 {
     int ret = 0;
-    if (macho)
-    {
+    if (macho) {
         // printf("handle command %x", command->info->cmd);
         // If load command is a segment command, then load a segment
         //  if a symbol table, then load a symbol table... etc...
-        switch (command->info->cmd)
-        {
+        switch (command->info->cmd) {
             case MACHO_CMD_SEGMENT:
                 // segment of this file to be mapped
                 {
                     macho_segment_t* seg = macho_segment_load(macho->data, command->offset);
-                    if (seg)
-                    {
+                    if (seg) {
                         macho->segments[macho->segment_count++] = seg;
-                    }
-                    else
-                    {
-                        throw std::runtime_error("Could not load segment at offset 0x%x",
-                                                 command->offset);
+                    } else {
+                        throw std::runtime_error(
+                            "Could not load segment at offset 0x%x", command->offset);
                     }
                 }
                 break;
             case MACHO_CMD_SYMTAB:
                 // link-edit stab symbol table info
                 {
-                    macho_symtab_t* symtab =
-                        macho_symtab_load(macho->data + command->offset,
-                                          (macho->cache) ? macho->cache->data : macho->data);
-                    if (symtab)
-                    {
+                    macho_symtab_t* symtab = macho_symtab_load(
+                        macho->data + command->offset,
+                        (macho->cache) ? macho->cache->data : macho->data);
+                    if (symtab) {
                         macho->symtabs[macho->symtab_count++] = symtab;
-                    }
-                    else
-                    {
-                        throw std::runtime_error("Could not load symtab at offset 0x%x",
-                                                 command->offset);
+                    } else {
+                        throw std::runtime_error(
+                            "Could not load symtab at offset 0x%x", command->offset);
                     }
                 }
                 break;
@@ -355,9 +319,8 @@ int macho_handle_command(macho_t* macho, macho_command_t* command)
 macho_command_t** macho_commands_create(uint32_t count)
 {
     uint32_t size = (count + 1) * sizeof(macho_command_t*);
-    macho_command_t** commands = (macho_command_t**)malloc(size);
-    if (commands)
-    {
+    macho_command_t** commands = (macho_command_t**) malloc(size);
+    if (commands) {
         memset(commands, '\0', size);
     }
     return commands;
@@ -368,24 +331,20 @@ macho_command_t** macho_commands_load(macho_t* macho)
     int i = 0;
     uint32_t count = 0;
     macho_command_t** commands = NULL;
-    if (macho)
-    {
+    if (macho) {
         count = macho->command_count;
         // debug("Creating Mach-O commands array");
         commands = macho_commands_create(count);
-        if (commands == NULL)
-        {
+        if (commands == NULL) {
             throw std::runtime_error("Unable to create Mach-O commands array");
             return NULL;
         }
 
         // debug("Loading Mach-O commands array");
-        for (i = 0; i < count; i++)
-        {
+        for (i = 0; i < count; i++) {
             // debug("Loading Mach-O command %d from offset 0x%x", i, macho->offset);
             commands[i] = macho_command_load(macho->data, macho->offset);
-            if (commands[i] == NULL)
-            {
+            if (commands[i] == NULL) {
                 throw std::runtime_error("Unable to parse Mach-O load command");
                 macho_commands_free(commands);
                 return NULL;
@@ -399,11 +358,9 @@ macho_command_t** macho_commands_load(macho_t* macho)
 void macho_commands_debug(macho_command_t** commands)
 {
     int i = 0;
-    if (commands)
-    {
+    if (commands) {
         debug("\tCommands:");
-        while (commands[i] != NULL)
-        {
+        while (commands[i] != NULL) {
             macho_command_debug(commands[i++]);
         }
         debug("\t");
@@ -413,10 +370,8 @@ void macho_commands_debug(macho_command_t** commands)
 void macho_commands_free(macho_command_t** commands)
 {
     int i = 0;
-    if (commands)
-    {
-        while (commands[i] != NULL)
-        {
+    if (commands) {
+        while (commands[i] != NULL) {
             macho_command_free(commands[i]);
             commands[i] = NULL;
             i++;
@@ -433,9 +388,8 @@ macho_segment_t** macho_segments_create(uint32_t count)
     if (count == 0)
         return NULL;
     int size = (count + 1) * sizeof(macho_segment_t*);
-    macho_segment_t** segments = (macho_segment_t**)malloc(size);
-    if (segments)
-    {
+    macho_segment_t** segments = (macho_segment_t**) malloc(size);
+    if (segments) {
         memset(segments, '\0', size);
     }
     return segments;
@@ -451,8 +405,7 @@ void macho_segments_debug(macho_segment_t** segments)
 {
     debug("\tSegments:");
     int i = 0;
-    while (segments[i])
-    {
+    while (segments[i]) {
         macho_segment_debug(segments[i]);
         i++;
     }
@@ -461,11 +414,9 @@ void macho_segments_debug(macho_segment_t** segments)
 
 void macho_segments_free(macho_segment_t** segments)
 {
-    if (segments)
-    {
+    if (segments) {
         int i = 0;
-        while (segments[i])
-        {
+        while (segments[i]) {
             macho_segment_free(segments[i]);
             i++;
         }
@@ -481,9 +432,8 @@ macho_symtab_t** macho_symtabs_create(uint32_t count)
     if (count == 0)
         return NULL;
     int size = (count + 1) * sizeof(macho_symtab_t*);
-    macho_symtab_t** symtabs = (macho_symtab_t**)malloc(size);
-    if (symtabs)
-    {
+    macho_symtab_t** symtabs = (macho_symtab_t**) malloc(size);
+    if (symtabs) {
         memset(symtabs, '\0', size);
     }
     return symtabs;
@@ -493,8 +443,7 @@ void macho_symtabs_debug(macho_symtab_t** symtabs)
 {
     debug("\tSymtabs:");
     int i = 0;
-    while (symtabs[i])
-    {
+    while (symtabs[i]) {
         macho_symtab_debug(symtabs[i]);
         i++;
     }
@@ -503,11 +452,9 @@ void macho_symtabs_debug(macho_symtab_t** symtabs)
 
 void macho_symtabs_free(macho_symtab_t** symtabs)
 {
-    if (symtabs)
-    {
+    if (symtabs) {
         int i = 0;
-        while (symtabs[i])
-        {
+        while (symtabs[i]) {
             macho_symtab_free(symtabs[i]);
             i++;
         }
@@ -539,8 +486,7 @@ void macho_sections_debug(macho_section_t** sections)
 void macho_sections_free(macho_section_t** sections)
 {
     // TODO: Loop through and free each item
-    if (sections)
-    {
+    if (sections) {
         free(sections);
     }
 }

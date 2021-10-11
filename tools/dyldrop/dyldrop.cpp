@@ -42,24 +42,19 @@ static void print_sym(const char* name, uint32_t addr, void* userdata)
 
 static void print_sym_struct_elem(const char* name, uint32_t address, void* userdata)
 {
-    if (userdata)
-    {
+    if (userdata) {
         fprintf(userdata, "\t{ \"%s\", 0x%08x },", name, address);
-    }
-    else
-    {
+    } else {
         printf("\t{ \"%s\", 0x%08x },", name, address);
     }
 }
 
 static char* c_safe_name(const char* name)
 {
-    char* outname = (char*)malloc(strlen(name) + 1);
+    char* outname = (char*) malloc(strlen(name) + 1);
     int i;
-    for (i = 0; i < strlen(name) + 1; i++)
-    {
-        switch (name[i])
-        {
+    for (i = 0; i < strlen(name) + 1; i++) {
+        switch (name[i]) {
             case ' ':
             case '.':
             case '-':
@@ -87,52 +82,42 @@ int main(int argc, char* argv[])
     dyldimage_t* image = NULL;
     dyldcache_t* cache = NULL;
 
-    if ((argc < 4) && (argc != 3))
-    {
+    if ((argc < 4) && (argc != 3)) {
         char* name = strrchr(argv[0], '/');
         name = name ? name + 1 : argv[0];
-        info("Usage: %s <dyldcache> <dylib> <symbol>"
-             "       %s <dyldcache> -l <dylib>"
-             "       %s <dyldcache> -s <symbol>"
-             "       %s <dyldcache> -h PATH"
-             "       %s <dyldcache> -S <symbol1> [<symbol2> ...]"
-             "       %s <mach-o> -l"
-             "       %s <mach-o> <symbol>",
-             name, name, name, name, name, name, name);
+        info(
+            "Usage: %s <dyldcache> <dylib> <symbol>"
+            "       %s <dyldcache> -l <dylib>"
+            "       %s <dyldcache> -s <symbol>"
+            "       %s <dyldcache> -h PATH"
+            "       %s <dyldcache> -S <symbol1> [<symbol2> ...]"
+            "       %s <mach-o> -l"
+            "       %s <mach-o> <symbol>",
+            name, name, name, name, name, name, name);
         return 0;
     }
 
-    if (argc >= 4)
-    {
+    if (argc >= 4) {
         int mode = MODE_NONE;
         path = strdup(argv[1]);
-        if (!strcmp(argv[2], "-s"))
-        {
+        if (!strcmp(argv[2], "-s")) {
             dylib = NULL;
             symbol = strdup(argv[3]);
             mode = MODE_SYM_SEARCH;
-        }
-        else if (!strcmp(argv[2], "-l"))
-        {
+        } else if (!strcmp(argv[2], "-l")) {
             dylib = strdup(argv[3]);
             symbol = NULL;
             mode = MODE_DYLIB_LIST;
-        }
-        else if (!strcmp(argv[2], "-h"))
-        {
+        } else if (!strcmp(argv[2], "-h")) {
             dylib = NULL;
             symbol = NULL;
             outpath = strdup(argv[3]);
             mode = MODE_SYM_HEADER;
-        }
-        else if (!strcmp(argv[2], "-S"))
-        {
+        } else if (!strcmp(argv[2], "-S")) {
             dylib = NULL;
             symbol = NULL;
             mode = MODE_SYMDB;
-        }
-        else
-        {
+        } else {
             dylib = strdup(argv[2]);
             symbol = strdup(argv[3]);
             mode = MODE_DYLIB_SYM;
@@ -140,81 +125,63 @@ int main(int argc, char* argv[])
 
         debug("Creating dyldcache from %s", path);
         cache = dyldcache_open(path);
-        if (cache == NULL)
-        {
+        if (cache == NULL) {
             throw std::runtime_error("Unable to allocate memory for dyldcache");
             goto panic;
         }
 
-        if (outpath)
-        {
+        if (outpath) {
             mkdir_with_parents(outpath, 0755);
         }
 
-        for (i = 0; i < cache->header->images_count; i++)
-        {
+        for (i = 0; i < cache->header->images_count; i++) {
             image = cache->images[i];
             // debug("Found %s", image->name);
-            if ((dylib == NULL) || (strcmp(dylib, image->name) == 0))
-            {
+            if ((dylib == NULL) || (strcmp(dylib, image->name) == 0)) {
                 macho = macho_load(image->data, image->size, cache);
-                if (macho == NULL)
-                {
+                if (macho == NULL) {
                     debug("Unable to parse Mach-O file in cache");
                     continue;
                 }
                 // macho_debug(macho);
 
-                if (symbol)
-                {
+                if (symbol) {
                     address = macho_lookup(macho, symbol);
-                    if (address != 0)
-                    {
-                        if (!dylib)
-                        {
+                    if (address != 0) {
+                        if (!dylib) {
                             printf("// %s:", image->name);
                         }
                         print_sym(symbol, address, NULL);
                     }
-                }
-                else if (!symbol && (mode == MODE_SYMDB))
-                {
+                } else if (!symbol && (mode == MODE_SYMDB)) {
                     int j;
                     int symno = 0;
-                    char** symnames = (char**)malloc(sizeof(char*) * argc - 3);
-                    uint32_t* symaddrs = (uint32_t*)malloc(sizeof(uint32_t) * argc - 3);
-                    for (j = 3; j < argc; j++)
-                    {
+                    char** symnames = (char**) malloc(sizeof(char*) * argc - 3);
+                    uint32_t* symaddrs = (uint32_t*) malloc(sizeof(uint32_t) * argc - 3);
+                    for (j = 3; j < argc; j++) {
                         address = macho_lookup(macho, argv[j]);
-                        if (address != 0)
-                        {
+                        if (address != 0) {
                             symnames[symno] = argv[j];
                             symaddrs[symno] = address;
                             symno++;
                         }
                     }
-                    if (symno > 0)
-                    {
+                    if (symno > 0) {
                         char* cn = c_safe_name(image->name);
                         printf("// %s", image->name);
                         printf("struct %s_syms {", cn);
-                        for (j = 0; j < symno; j++)
-                        {
+                        for (j = 0; j < symno; j++) {
                             char* csn = c_safe_name(symnames[j]);
                             printf("\tvoid* %s;", csn);
                             free(csn);
                         }
                         printf("};");
                         printf("struct %s_syms %s = {", cn, cn);
-                        for (j = 0; j < symno; j++)
-                        {
+                        for (j = 0; j < symno; j++) {
                             printf("\t(void*)0x%x", symaddrs[j]);
-                            if (j == symno - 1)
-                            {
+                            if (j == symno - 1) {
                                 printf("");
-                            }
-                            else
-                            {
+                            } else {
                                 printf(",");
                             }
                         }
@@ -224,26 +191,21 @@ int main(int argc, char* argv[])
                     }
                     free(symnames);
                     free(symaddrs);
-                }
-                else
-                {
-                    if (dylib)
-                    {
+                } else {
+                    if (dylib) {
                         printf("// %s:", image->name);
                         macho_list_symbols(macho, print_sym, NULL);
-                    }
-                    else
-                    {
+                    } else {
                         char* cn = c_safe_name(image->name);
-                        char* cf = (char*)malloc(strlen(outpath) + 1 + strlen(image->name) + 2 + 1);
+                        char* cf =
+                            (char*) malloc(strlen(outpath) + 1 + strlen(image->name) + 2 + 1);
                         strcpy(cf, outpath);
                         strcat(cf, "/");
                         strcat(cf, image->name);
                         strcat(cf, ".hpp");
 
                         FILE* f = fopen(cf, "wb");
-                        if (f)
-                        {
+                        if (f) {
                             fprintf(f, "// %s", image->name);
                             fprintf(f, "static struct symaddr %s_syms[] {", cn);
                             macho_list_symbols(macho, print_sym_struct_elem, f);
@@ -263,36 +225,28 @@ int main(int argc, char* argv[])
 
         dyldcache_free(cache);
         cache = NULL;
-    }
-    else if (argc == 3)
-    {
+    } else if (argc == 3) {
         path = strdup(argv[1]);
         symbol = strdup(argv[2]);
 
         macho = macho_open(path);
-        if (macho == NULL)
-        {
+        if (macho == NULL) {
             debug("Unable to parse Mach-O file");
         }
         // macho_debug(dylib);
 
-        if (strcmp(symbol, "-l") == 0)
-        {
+        if (strcmp(symbol, "-l") == 0) {
             macho_list_symbols(macho, print_sym, NULL);
             address = 0;
-        }
-        else
-        {
+        } else {
             address = macho_lookup(macho, symbol);
-            if (address != 0)
-            {
+            if (address != 0) {
                 printf("#define %s (void*)0x%08x", symbol, address);
             }
         }
     }
 
-    if (address == 0xFFFFFFFF)
-    {
+    if (address == 0xFFFFFFFF) {
         goto panic;
     }
 

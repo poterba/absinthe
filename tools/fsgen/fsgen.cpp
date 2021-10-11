@@ -11,8 +11,7 @@
 int main(int argc, char* argv[])
 {
     int dscs = 0;
-    if (argc < 2)
-    {
+    if (argc < 2) {
         fprintf(stderr, "syntax: %s <dyld shared cache slide, ex: 0x40000>", argv[0]);
         exit(1);
     }

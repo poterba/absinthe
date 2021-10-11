@@ -11,17 +11,17 @@
 
 class iTunesKiller
 {
-private:
-	int* watchit;
+  private:
+    int* watchit;
 #ifdef WIN32
-	HANDLE thread;
+    HANDLE thread;
 #else
-	pthread_t thread;
+    pthread_t thread;
 #endif
 
-public:
-	iTunesKiller(int* watchdog);
-	void Start(void);
-	void* Entry(void* data);
+  public:
+    iTunesKiller(int* watchdog);
+    void Start(void);
+    void* Entry(void* data);
 };
 #endif

@@ -17,22 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "common.hpp"
 #include "debug.hpp"
 #include "macho_segment.hpp"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*
  * Mach-O Segment Functions
  */
 macho_segment_t* macho_segment_create()
 {
-    macho_segment_t* segment = (macho_segment_t*)malloc(sizeof(macho_segment_t));
-    if (segment)
-    {
+    macho_segment_t* segment = (macho_segment_t*) malloc(sizeof(macho_segment_t));
+    if (segment) {
         memset(segment, '\0', sizeof(macho_segment_t));
     }
     return segment;
@@ -42,11 +40,9 @@ macho_segment_t* macho_segment_load(unsigned char* data, unsigned int offset)
 {
     unsigned char* address = NULL;
     macho_segment_t* segment = macho_segment_create();
-    if (segment)
-    {
+    if (segment) {
         segment->command = macho_segment_cmd_load(data, offset);
-        if (!segment->command)
-        {
+        if (!segment->command) {
             macho_segment_free(segment);
             return NULL;
         }
@@ -71,14 +67,11 @@ void macho_segment_debug(macho_segment_t* segment)
 
 void macho_segment_free(macho_segment_t* segment)
 {
-    if (segment)
-    {
-        if (segment->command)
-        {
+    if (segment) {
+        if (segment->command) {
             macho_segment_cmd_free(segment->command);
         }
-        if (segment->name)
-        {
+        if (segment->name) {
             free(segment->name);
         }
         free(segment);
@@ -91,8 +84,7 @@ void macho_segment_free(macho_segment_t* segment)
 macho_segment_cmd_t* macho_segment_cmd_create()
 {
     macho_segment_cmd_t* info = malloc(sizeof(macho_segment_cmd_t));
-    if (info)
-    {
+    if (info) {
         memset(info, '\0', sizeof(macho_segment_cmd_t));
     }
     return info;
@@ -101,8 +93,7 @@ macho_segment_cmd_t* macho_segment_cmd_create()
 macho_segment_cmd_t* macho_segment_cmd_load(unsigned char* data, unsigned int offset)
 {
     macho_segment_cmd_t* cmd = macho_segment_cmd_create();
-    if (cmd)
-    {
+    if (cmd) {
         memcpy(cmd, data + offset, sizeof(macho_segment_cmd_t));
         // macho_segment_cmd_debug(cmd);
     }
@@ -127,8 +118,7 @@ void macho_segment_cmd_debug(macho_segment_cmd_t* cmd)
 
 void macho_segment_cmd_free(macho_segment_cmd_t* cmd)
 {
-    if (cmd)
-    {
+    if (cmd) {
         free(cmd);
     }
 }

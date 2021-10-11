@@ -45,12 +45,9 @@
 #define sleep(x) Sleep(x * 1000)
 #endif
 
-namespace absinthe
-{
-namespace util
-{
-namespace
-{
+namespace absinthe {
+namespace util {
+namespace {
 
 struct mobilebackup_client_private
 {
@@ -66,22 +63,19 @@ MB1::connect(std::shared_ptr<Device> device)
     mb1_t* mb1 = NULL;
     lockdown_t* lockdown = NULL;
 
-    if (device == NULL)
-    {
+    if (device == NULL) {
         throw std::runtime_error("Invalid arguments");
         return NULL;
     }
 
     lockdown::lockdown = lockdown_open(device);
-    if (lockdown == NULL)
-    {
+    if (lockdown == NULL) {
         throw std::runtime_error("Unable to open connection to lockdownd");
         return NULL;
     }
 
     err = lockdown_start_service(lockdown, "com.apple.mobilebackup", &port);
-    if (err < 0)
-    {
+    if (err < 0) {
         throw std::runtime_error("Unable to start MobileBackup service");
         return NULL;
     }
@@ -89,8 +83,7 @@ MB1::connect(std::shared_ptr<Device> device)
     lockdown_free(lockdown);
 
     mb1 = mb1_open(device, port);
-    if (mb1 == NULL)
-    {
+    if (mb1 == NULL) {
         throw std::runtime_error("Unable to open connection to MobileBackup service");
         return NULL;
     }
@@ -102,11 +95,9 @@ mb1_t* mb1_open(device_t* device, uint16_t port)
 {
     mobilebackup_error_t err = MOBILEBACKUP_E_SUCCESS;
     mb1_t* mb1 = mb1_create();
-    if (mb1 != NULL)
-    {
+    if (mb1 != NULL) {
         err = mobilebackup_client_new(device->client, port, &(mb1->client));
-        if (err != MOBILEBACKUP_E_SUCCESS)
-        {
+        if (err != MOBILEBACKUP_E_SUCCESS) {
             throw std::runtime_error("Unable to create new MobileBackup client");
             mb1_free(mb1);
             return NULL;
@@ -119,10 +110,8 @@ mb1_t* mb1_open(device_t* device, uint16_t port)
 
 void mb1_free(mb1_t* mb1)
 {
-    if (mb1)
-    {
-        if (mb1->client)
-        {
+    if (mb1) {
+        if (mb1->client) {
             mobilebackup_client_free(mb1->client);
             mb1->client = NULL;
         }
@@ -166,19 +155,15 @@ int mb1_crash(mb1_t* mb1)
     // TODO: fix this
     // device_link_service_error_t res = device_link_service_receive((struct
     // mobilebackup_client_private*)(mb1->client)->parent, &pl);
-    if (pl)
-    {
+    if (pl) {
         plist_free(pl);
     }
-    if (res == DEVICE_LINK_SERVICE_E_MUX_ERROR)
-    {
+    if (res == DEVICE_LINK_SERVICE_E_MUX_ERROR) {
         // yep. this leaks. but who cares :P
         free(mb1->client);
         mb1->client = NULL;
         return 1;
-    }
-    else
-    {
+    } else {
         return 0;
     }
 }

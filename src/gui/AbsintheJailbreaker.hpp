@@ -11,17 +11,17 @@
 
 class AbsintheJailbreaker
 {
-private:
-	AbsintheWorker* worker;
+  private:
+    AbsintheWorker* worker;
 #ifdef WIN32
-	HANDLE thread;
+    HANDLE thread;
 #else
-	pthread_t thread;
+    pthread_t thread;
 #endif
 
-public:
-	AbsintheJailbreaker(AbsintheWorker* worker);
-	void Start(void);
-	void statusCallback(const char* message, int progress);
-	void* Entry(void* data);
+  public:
+    AbsintheJailbreaker(AbsintheWorker* worker);
+    void Start(void);
+    void statusCallback(const char* message, int progress);
+    void* Entry(void* data);
 };

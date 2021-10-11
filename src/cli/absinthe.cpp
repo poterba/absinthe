@@ -17,37 +17,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include "mb1.hpp"
-#include "rop.hpp"
-// #include "debug.hpp"
 #include "backup.hpp"
 #include "crashreporter.hpp"
 #include "device.hpp"
 #include "dictionary.hpp"
+#include "dyldcache.hpp"
 #include "idevicebackup2.hpp"
 #include "jailbreak.hpp"
-
-#include "dyldcache.hpp"
-
-// #include "offsets.hpp"
+#include "mb1.hpp"
+#include "rop.hpp"
+#include "version.h"
 
 #include <dirent.h>
 #include <getopt.h>
 #include <iostream>
+#include <libimobiledevice/sbservices.h>
 #include <memory>
+#include <plist/plist.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <unistd.h>
-
-#include <plist/plist.h>
-#include <signal.h>
-
-#include <libimobiledevice/sbservices.h>
-
 #include <tclap/CmdLine.h>
-
-#include "version.h"
+#include <unistd.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /// TODO: We need to add an event handler for when devices are connected. This handler needs to wait
@@ -55,8 +47,7 @@
 /// connection.
 /////////////////////////////////////////////////////////////////////////////////////////
 
-namespace absinthe
-{
+namespace absinthe {
 #if 0
 unsigned long find_aslr_slide(crashreport_t* crash, char* cache)
 {
@@ -94,12 +85,9 @@ void signal_handler(int sig) { absinthe::core::jb_signal_handler(sig); }
 void status_cb(const char* msg, int progress)
 {
     static std::string lastmsg{};
-    if (!msg)
-    {
+    if (!msg) {
         msg = lastmsg.data();
-    }
-    else
-    {
+    } else {
         lastmsg = msg;
     }
     printf("[%d%%] %s", progress, msg);
@@ -112,28 +100,27 @@ int main(int argc, char* argv[])
     std::shared_ptr<absinthe::util::Device> device;
 
     char* name = strrchr(argv[0], '/');
-    if (name)
-    {
+    if (name) {
         int nlen = strlen(argv[0]) - strlen(name);
         char path[512];
         memcpy(path, argv[0], nlen);
         path[nlen] = 0;
         std::cout << "setting working directory to " << path << std::endl;
-        if (chdir(path) != 0)
-        {
+        if (chdir(path) != 0) {
             std::cerr << "unable to set working directory" << std::endl;
         }
     }
 
-    TCLAP::CmdLine cmd("(c) 2011-2012, Chronic-Dev LLC"
-                       "Jailbreak iOS5.0 using ub3rl33t MobileBackup2 exploit.",
-                       // "Discovered by Nikias Bassen, Exploited by Joshua Hill"
-                       ' ', ABSINTHE_VERSION_STRING);
+    TCLAP::CmdLine cmd(
+        "(c) 2011-2012, Chronic-Dev LLC"
+        "Jailbreak iOS5.0 using ub3rl33t MobileBackup2 exploit.",
+        // "Discovered by Nikias Bassen, Exploited by Joshua Hill"
+        ' ', ABSINTHE_VERSION_STRING);
     TCLAP::SwitchArg verbose("v", "verbose", "prints debuging info while running", cmd, false);
     TCLAP::ValueArg<std::string> udidArg(
         "u", "udid", "target specific device by its 40-digit device UDID", false, "", "UDID");
-    TCLAP::ValueArg<unsigned long> target("t", "target", "offset to ROP gadget we want to execute",
-                                          false, 0, "ADDRESS");
+    TCLAP::ValueArg<unsigned long> target(
+        "t", "target", "offset to ROP gadget we want to execute", false, 0, "ADDRESS");
     TCLAP::ValueArg<unsigned long> pointer(
         "p", "pointer", "heap address we're hoping contains our target", false, 0, "ADDRESS");
     TCLAP::ValueArg<unsigned long> aslrslide(
@@ -143,12 +130,9 @@ int main(int argc, char* argv[])
     cmd.add(pointer);
     cmd.add(aslrslide);
 
-    try
-    {
+    try {
         cmd.parse(argc, argv);
-    }
-    catch (const TCLAP::ArgException& e)
-    {
+    } catch (const TCLAP::ArgException& e) {
         std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
     }
 
@@ -162,13 +146,10 @@ int main(int argc, char* argv[])
 
     std::string udid = udidArg.getValue();
     // device detection
-    if (udid.empty())
-    {
+    if (udid.empty()) {
         device = std::make_shared<absinthe::util::Device>(std::string{});
         udid = device->udid();
-    }
-    else
-    {
+    } else {
         // Open a connection to our device
         std::cout << "Detecting device..." << std::endl;
         device = std::make_shared<absinthe::util::Device>(udid);
@@ -177,55 +158,44 @@ int main(int argc, char* argv[])
     auto lockdown = std::make_unique<absinthe::util::Lockdown>(device);
     char *product, *build;
     if ((lockdown->get_string("ProductType", &product) != LOCKDOWN_E_SUCCESS) ||
-        (lockdown->get_string("BuildVersion", &build) != LOCKDOWN_E_SUCCESS))
-    {
+        (lockdown->get_string("BuildVersion", &build) != LOCKDOWN_E_SUCCESS)) {
         std::cerr << "Could not get device information" << std::endl;
         return -1;
     }
 
-    if (!absinthe::core::jb_device_is_supported(product, build))
-    {
+    if (!absinthe::core::jb_device_is_supported(product, build)) {
         std::cerr << "Error: device " << product << " build " << build << " is not supported."
                   << std::endl;
         return -1;
     }
 
     int cc = absinthe::core::jb_check_consistency(product, build);
-    if (cc == 0)
-    {
+    if (cc == 0) {
         std::cout << "Consistency check passed" << std::endl;
-    }
-    else if (cc == -1)
-    {
+    } else if (cc == -1) {
         std::cerr << "ERROR: Consistency check failed: device " << product << " build " << build
                   << " not supported" << std::endl;
         return -1;
-    }
-    else if (cc == -2)
-    {
+    } else if (cc == -2) {
         std::cerr << "ERROR: Consistency check failed: could not find required files for device "
                   << product << " build " << build << std::endl;
         return -1;
-    }
-    else
-    {
+    } else {
         std::cerr << "ERROR: Consistency check failed: unknown error" << std::endl;
         return -1;
     }
 
     plist_t pl = NULL;
     lockdown->get_value(NULL, "ActivationState", &pl);
-    if (pl && plist_get_node_type(pl) == PLIST_STRING)
-    {
+    if (pl && plist_get_node_type(pl) == PLIST_STRING) {
         char* as = NULL;
         plist_get_string_val(pl, &as);
         plist_free(pl);
-        if (as)
-        {
-            if (strcmp(as, "Unactivated") == 0)
-            {
+        if (as) {
+            if (strcmp(as, "Unactivated") == 0) {
                 free(as);
-                std::cerr << "Error: The attached device is not activated. You need to activate it "
+                std::cerr << "Error: The attached device is not activated. You need to "
+                             "activate it "
                              "before "
                              "it can be used with Absinthe."
                           << std::endl;
@@ -237,17 +207,15 @@ int main(int argc, char* argv[])
 
     pl = NULL;
     lockdown->get_value("com.apple.mobile.backup", "WillEncrypt", &pl);
-    if (pl && plist_get_node_type(pl) == PLIST_BOOLEAN)
-    {
+    if (pl && plist_get_node_type(pl) == PLIST_BOOLEAN) {
         unsigned char c = 0;
         plist_get_bool_val(pl, &c);
         plist_free(pl);
-        if (c)
-        {
-            std::cerr
-                << "Error: You have a device backup password set. You need to disable the backup "
-                   "password in iTunes."
-                << std::endl;
+        if (c) {
+            std::cerr << "Error: You have a device backup password set. You need to "
+                         "disable the backup "
+                         "password in iTunes."
+                      << std::endl;
             return -1;
         }
     }

@@ -1,12 +1,12 @@
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <vector>
-
-#include <string.h>
 
 #include "AbsintheMainWnd.hpp"
 #include "debug.hpp"
+
+#include <cstdio>
+#include <fstream>
+#include <iostream>
+#include <string.h>
+#include <vector>
 
 #ifdef WIN32
 #include <windows.h>
@@ -26,23 +26,19 @@ static bool hasAdminRights() /*{{{*/
     bool res = false;
     int bSuccess;
 
-    if ((bSuccess = OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hAccessToken)))
-    {
-        ptg = (TOKEN_GROUPS*)malloc(1024);
+    if ((bSuccess = OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hAccessToken))) {
+        ptg = (TOKEN_GROUPS*) malloc(1024);
         bSuccess = GetTokenInformation(hAccessToken, TokenGroups, ptg, 1024, &dwInfoBufferSize);
         CloseHandle(hAccessToken);
-        if (bSuccess)
-        {
+        if (bSuccess) {
             SID_IDENTIFIER_AUTHORITY sia = {SECURITY_NT_AUTHORITY};
-            AllocateAndInitializeSid(&sia, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS,
-                                     0, 0, 0, 0, 0, 0, &psidAdmins);
-            if (psidAdmins)
-            {
+            AllocateAndInitializeSid(
+                &sia, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0,
+                &psidAdmins);
+            if (psidAdmins) {
                 unsigned int g;
-                for (g = 0; g < ptg->GroupCount; g++)
-                {
-                    if (EqualSid(psidAdmins, ptg->Groups[g].Sid))
-                    {
+                for (g = 0; g < ptg->GroupCount; g++) {
+                    if (EqualSid(psidAdmins, ptg->Groups[g].Sid)) {
                         res = true;
                         break;
                     }
@@ -62,30 +58,25 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, char* CmdLine, int Cm
     TCHAR mfn[512];
     mfn[0] = 0;
     int mfl = GetModuleFileName(NULL, mfn, 512);
-    if (mfl > 0)
-    {
+    if (mfl > 0) {
         int i;
-        for (i = mfl - 1; i >= 0; i--)
-        {
-            if ((mfn[i] == '/') || (mfn[i] == '\\'))
-            {
+        for (i = mfl - 1; i >= 0; i--) {
+            if ((mfn[i] == '/') || (mfn[i] == '\\')) {
                 mfn[i] = '\0';
                 break;
             }
         }
-        if (!SetCurrentDirectory(mfn))
-        {
+        if (!SetCurrentDirectory(mfn)) {
             debug("unable to set working directory");
         }
     }
 
-    if (!hasAdminRights())
-    {
+    if (!hasAdminRights()) {
         MessageBox(NULL, "You must run this app as Administrator.", "Error", MB_OK | MB_ICONERROR);
         return -1;
     }
 
-    AbsintheMainWnd* mainWnd = new AbsintheMainWnd((int*)&hInst, NULL);
+    AbsintheMainWnd* mainWnd = new AbsintheMainWnd((int*) &hInst, NULL);
     mainWnd->run();
 
     return 0;
@@ -105,16 +96,14 @@ int main(int argc, char** argv)
 #else
     const char* argv0 = argv[0];
 #endif
-    char* name = strrchr((char*)argv0, '/');
-    if (name)
-    {
+    char* name = strrchr((char*) argv0, '/');
+    if (name) {
         int nlen = strlen(argv0) - strlen(name);
         char path[512];
         memcpy(path, argv0, nlen);
         path[nlen] = 0;
         debug("setting working directory to %s", path);
-        if (chdir(path) != 0)
-        {
+        if (chdir(path) != 0) {
             debug("unable to set working directory");
         }
     }

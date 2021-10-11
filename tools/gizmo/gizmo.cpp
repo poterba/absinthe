@@ -45,32 +45,25 @@ uint32_t find_reference(FILE* target, uint32_t offset, uint32_t base)
 
     value = base + offset;
     debug("Searching for 0x%08x", value);
-    for (i = 0; i < size; i++)
-    {
+    for (i = 0; i < size; i++) {
         fseek(target, i, SEEK_SET);
         got = fread(buffer, 1, 4, target);
-        if (got == 4)
-        {
-            value = *((unsigned int*)&buffer[0]);
-            if (value > 0x30000000 && value < 0x40000000)
-            {
+        if (got == 4) {
+            value = *((unsigned int*) &buffer[0]);
+            if (value > 0x30000000 && value < 0x40000000) {
                 // fprintf(stderr, "Found reference interesting address at offset 0x%x", i);
             }
-            if (value == base + offset)
-            {
+            if (value == base + offset) {
                 fprintf(stderr, "Found reference to ROP gadget at offset 0x%x", i);
                 found++;
             }
         }
     }
 
-    if (found == 0)
-    {
+    if (found == 0) {
         // throw std::runtime_error("No reference found for 0x%08x", base + offset);
         i = 0;
-    }
-    else
-    {
+    } else {
         info("Found %d references to 0x%08x", found, base + offset);
     }
 
@@ -85,29 +78,25 @@ int check_ascii(unsigned char* data, unsigned int size)
     unsigned char value;
     // Loop through each ROP gadget for this firmware and find one in a nice ascii
     //  safe address for our stack pivot
-    for (i = 0; i < size; i++)
-    {
+    for (i = 0; i < size; i++) {
         value = data[i];
         // Make sure none of the bytes have their highest bit set
         //  this ensures all bytes will pass the ASCII filter
         //  and make sure the address has no NULL's in it this
         //  will cause our string to terminate prematurely
-        if ((value & '\x80') != 0 || (value & '\x7F') == 0)
-        {
+        if ((value & '\x80') != 0 || (value & '\x7F') == 0) {
             throw std::runtime_error("Byte not in ASCII range");
             return -1;
         }
 
         // Last loop, so we're ascii compatiable string
-        if (size == i)
-        {
+        if (size == i) {
             found = 1;
             break;
         }
     }
 
-    if (found == 0)
-    {
+    if (found == 0) {
         throw std::runtime_error("String was not ASCII compatible");
         return -1;
     }
@@ -124,16 +113,14 @@ int main(int argc, char* argv[])
     unsigned int offsets[10][50000];
     unsigned int* location = NULL;
 
-    if (argc != 2)
-    {
+    if (argc != 2) {
         printf("Usage: ./gizmo <dyldcache>");
         return -1;
     }
     char* cache_path = argv[1];
 
     FILE* fd = fopen(cache_path, "rb");
-    if (fd)
-    {
+    if (fd) {
         // Find the size
         fseek(fd, 0, SEEK_END);
         uint64_t cache_size = ftell(fd);
@@ -151,18 +138,15 @@ int main(int argc, char* argv[])
         printf("\tuint16_t shift;");
         printf("} rop_offsets_t;\n");
         printf("const rop_offsets_t offsets[] = {");
-        for (i = 0; i < cache_size; i++)
-        {
+        for (i = 0; i < cache_size; i++) {
             // Ok now let's loop through the binary searching for ROP gadgets
             fseek(fd, i, SEEK_SET);
             memset(data, '\0', 0x10);
             int got = fread(data, 1, 10, fd);
-            if (got == 10)
-            {
+            if (got == 10) {
                 // if(memcmp(data, "\xA7\xF1\x18\x0D\xBD\xE8\x00\x0D\xF0\xBD", 10) == 0) {
                 if ((memcmp(data, ROP_SUB_SP_R7, 2) == 0) &&
-                    (memcmp(&data[3], ROP_SUB_R7_RX, 1) == 0))
-                {
+                    (memcmp(&data[3], ROP_SUB_R7_RX, 1) == 0)) {
                     shift = data[2];
                     unsigned int* index = &offsets[shift / 4];
                     // printf("\nMOV SP, R7 at 0x%x", i);
@@ -172,8 +156,7 @@ int main(int argc, char* argv[])
                     if ((memcmp(data + 4, ROP_POP_R7_PC, 2) == 0) ||
                         (memcmp(data + 4, ROP_POP_R4_R7_PC, 2) == 0) ||
                         (memcmp(data + 4, ROP_POP_R4_R5_R7_PC, 2) == 0) ||
-                        (memcmp(data + 4, ROP_POP_R4_TO_R7_PC, 2) == 0))
-                    {
+                        (memcmp(data + 4, ROP_POP_R4_TO_R7_PC, 2) == 0)) {
                         // printf("POP {R7,PC} at 0x%x", i + 4);
                         // printf("Found shift 0x%02x -> ", data[2]);
                         // printf("0x%08x: ", i);
@@ -182,45 +165,35 @@ int main(int argc, char* argv[])
                         // printf("\n\t0x%08x,", i);
                         found++;
                         offset = i;
-                        if (*index < 49999)
-                        {
+                        if (*index < 49999) {
                             location = &offsets[shift / 4][index[0]];
                             // printf("Added offset 0x%08x to shift array index %d at location
                             // %p", i, shift / 4, location);
                             int size = 0;
-                            if (memcmp(data + 4, ROP_POP_R7_PC, 2) == 0)
-                            {
+                            if (memcmp(data + 4, ROP_POP_R7_PC, 2) == 0) {
                                 size = 8;
-                            }
-                            else if (memcmp(data + 4, ROP_POP_R4_R7_PC, 2) == 0)
-                            {
+                            } else if (memcmp(data + 4, ROP_POP_R4_R7_PC, 2) == 0) {
                                 size = 12;
-                            }
-                            else if (memcmp(data + 4, ROP_POP_R4_R5_R7_PC, 2) == 0)
-                            {
+                            } else if (memcmp(data + 4, ROP_POP_R4_R5_R7_PC, 2) == 0) {
                                 size = 16;
-                            }
-                            else if (memcmp(data + 4, ROP_POP_R4_TO_R7_PC, 2) == 0)
-                            {
+                            } else if (memcmp(data + 4, ROP_POP_R4_TO_R7_PC, 2) == 0) {
                                 size = 20;
                             }
                             index[0] += 1;
                             index[index[0]] = offset;
-                            uint32_t ref = find_reference(fd, offset, (unsigned int)0x30f1a000);
-                            if (ref)
-                            {
-                                info(" // Reference to 0x%08x found at 0x%08x",
-                                     offset + (unsigned int)0x30f1a000, ref);
-                                printf("\n\t{ 0x%08x, 0x%08x, 0x%04x, 0x%04x },", ref, i, size,
-                                       shift);
+                            uint32_t ref = find_reference(fd, offset, (unsigned int) 0x30f1a000);
+                            if (ref) {
+                                info(
+                                    " // Reference to 0x%08x found at 0x%08x",
+                                    offset + (unsigned int) 0x30f1a000, ref);
+                                printf(
+                                    "\n\t{ 0x%08x, 0x%08x, 0x%04x, 0x%04x },", ref, i, size, shift);
                                 // if(check_ascii(ref, 4) < 0) {
                                 // throw std::runtime_error("This reference contains an invalid
                                 // character");
                                 //}
                             }
-                        }
-                        else
-                        {
+                        } else {
                             fprintf(stderr, "Already too many of these gadgets");
                             break;
                         }
@@ -229,9 +202,7 @@ int main(int argc, char* argv[])
                 }
 
                 // printf("\r(%d / %d) Found %d gadgets (0x%x)", i, cache_size, found, offset);
-            }
-            else
-            {
+            } else {
                 break;
             }
         }
@@ -244,9 +215,7 @@ int main(int argc, char* argv[])
         fprintf(stderr, "Found %d %d byte shift gadgets", offsets[2][0], 8);
         fprintf(stderr, "Found %d %d byte shift gadgets", offsets[3][0], 12);
         fprintf(stderr, "Found %d %d byte shift gadgets", offsets[4][0], 16);
-    }
-    else
-    {
+    } else {
         printf("Unable to open dyldcache");
         return -1;
     }

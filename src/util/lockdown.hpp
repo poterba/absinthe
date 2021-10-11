@@ -25,24 +25,24 @@
 
 namespace absinthe {
 namespace util {
-	
+
 class Lockdown
 {
-public:
-	Lockdown( std::shared_ptr<Device> device );
+  public:
+    Lockdown(std::shared_ptr<Device> device);
 
-	int get_value(const char *domain, const char *key, plist_t *value);
-	int get_string(const char *key, char** value);
-	int start_service(const char* service, uint16_t* port);
-	int start_service2(const char* service, uint16_t* port, int warn_on_fail);
-	int stop_service(const char* service);
+    int get_value(const char* domain, const char* key, plist_t* value);
+    int get_string(const char* key, char** value);
+    int start_service(const char* service, uint16_t* port);
+    int start_service2(const char* service, uint16_t* port, int warn_on_fail);
+    int stop_service(const char* service);
 
-	int close();
-	void free();
+    int close();
+    void free();
 
-private:
-	std::shared_ptr<Device> _device;
-	lockdownd_client_t _client;
+  private:
+    std::shared_ptr<Device> _device;
+    lockdownd_client_t _client;
 };
 
 } // namespace util

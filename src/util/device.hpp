@@ -23,14 +23,12 @@
 
 #include <string>
 
-namespace absinthe
-{
-namespace util
-{
+namespace absinthe {
+namespace util {
 
 class Device final
 {
-public:
+  public:
     explicit Device(const std::string& udid);
     ~Device();
 
@@ -39,7 +37,7 @@ public:
 
     const std::string& udid() const;
 
-private:
+  private:
     idevice_t _client;
     std::string _udid;
     std::string _ecid;
