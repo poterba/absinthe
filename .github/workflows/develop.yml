@@ -27,13 +27,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - if: ${{ matrix.os == 'macos-latest'}}
+      - if: matrix.os == 'macos-latest'
         run: brew install ninja libimobiledevice conan
 
-      - if: ${{ matrix.os == 'ubuntu-latest'}}
+      - if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y gcc g++ ninja-build libimobiledevice-dev && pip3 install conan
 
-      - if: ${{ matrix.os == 'windows-latest'}}
+      - if: matrix.os == 'windows-latest'
         run: |
           choco install ninja conan
           refreshenv
