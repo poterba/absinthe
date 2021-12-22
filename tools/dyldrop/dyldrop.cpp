@@ -99,27 +99,27 @@ int main(int argc, char* argv[])
 
     if (argc >= 4) {
         int mode = MODE_NONE;
-        path = strdup(argv[1]);
+        path = argv[1];
         if (!strcmp(argv[2], "-s")) {
             dylib = NULL;
-            symbol = strdup(argv[3]);
+            symbol = argv[3];
             mode = MODE_SYM_SEARCH;
         } else if (!strcmp(argv[2], "-l")) {
-            dylib = strdup(argv[3]);
+            dylib = argv[3];
             symbol = NULL;
             mode = MODE_DYLIB_LIST;
         } else if (!strcmp(argv[2], "-h")) {
             dylib = NULL;
             symbol = NULL;
-            outpath = strdup(argv[3]);
+            outpath = argv[3];
             mode = MODE_SYM_HEADER;
         } else if (!strcmp(argv[2], "-S")) {
             dylib = NULL;
             symbol = NULL;
             mode = MODE_SYMDB;
         } else {
-            dylib = strdup(argv[2]);
-            symbol = strdup(argv[3]);
+            dylib = argv[2];
+            symbol = argv[3];
             mode = MODE_DYLIB_SYM;
         }
 
@@ -226,8 +226,8 @@ int main(int argc, char* argv[])
         dyldcache_free(cache);
         cache = NULL;
     } else if (argc == 3) {
-        path = strdup(argv[1]);
-        symbol = strdup(argv[2]);
+        path = argv[1];
+        symbol = argv[2];
 
         macho = macho_open(path);
         if (macho == NULL) {

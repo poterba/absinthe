@@ -68,7 +68,7 @@ bpatch_t* bpatch_open(const char* path)
 {
     unsigned int size = 0;
     uint8_t* data = NULL;
-    file_read(path, &data, &size);
+    util::file_read(path, &data, &size);
     if (data == NULL || size == 0) {
         throw std::runtime_error("Unable to open binary patch file");
         return NULL;
@@ -80,7 +80,7 @@ bpatch_t* bpatch_open(const char* path)
         return NULL;
     }
 
-    bpatch->path = strdup(path);
+    bpatch->path = path;
     if (bpatch->path == NULL) {
         bpatch_free(bpatch);
         return NULL;

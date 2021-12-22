@@ -215,7 +215,7 @@ leave_error:
     if (str) {
         free(str);
     }
-    return strdup("text");
+    return "text";
 }
 
 AbsintheMainWnd::AbsintheMainWnd(int* pargc, char*** pargv)

@@ -125,30 +125,4 @@ struct proc_regionwithpathinfo
 #define MNT_RDONLY 0x00000001 /* read only filesystem */
 #define MNT_UPDATE 0x00010000 /* not a real mount, just an update */
 
-struct __darwin_timezone
-{
-    int tz_minuteswest; /* minutes west of Greenwich */
-    int tz_dsttime;     /* type of dst correction */
-};
-
-struct hfs_mount_args
-{
-    __32bit_ptr fspec;
-    uid_t hfs_uid;
-    gid_t hfs_gid;
-    __darwin_mode_t hfs_mask;
-    uint32_t hfs_encoding;
-    struct __darwin_timezone hfs_timezone;
-    int flags;
-    int journal_tbuffer_size;
-    int journal_flags;
-    int journal_disable;
-};
-
-#define CTL_KERN 1      /* "high kernel": proc, limits */
-#define KERN_PROC 14    /* struct: process entries */
-#define KERN_PROC_ALL 0 /* everything */
-
 #define SM_SHARED 4
-
-#define RTLD_DEFAULT ((__32bit_ptr) -2) /* Use default search algorithm. */

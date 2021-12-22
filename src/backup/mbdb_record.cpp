@@ -39,33 +39,27 @@ MBDBRecord::MBDBRecord(unsigned char* data)
     // Parse Domain
     unsigned short strsize = be16toh(*((unsigned short*) &data[offset]));
     if (strsize > 0 && strsize < 0xFFFF) {
-        domain = (char*) malloc(strsize + 1);
-        if (domain == NULL) {
-            throw std::runtime_error("Allocation Error!");
-        }
         offset += 2;
-        memcpy(domain, &data[offset], strsize);
-        domain[strsize] = 0;
+        _domain = std::string(&data[offset], strsize);
+        _domain[strsize] = 0;
         offset += strsize;
     } else {
-        domain = NULL;
+        _domain = {};
         offset += 2;
     }
-    domain_size = strsize;
+    _domain_size = strsize;
 
     // Parse Path
     strsize = be16toh(*((unsigned short*) &data[offset]));
     if (strsize > 0 && strsize < 0xFFFF) {
-        path = (char*) malloc(strsize + 1);
-        if (path == NULL) {
+        if (_path.empty()) {
             throw std::runtime_error("Allocation Error!");
         }
         offset += 2;
-        memcpy(path, &data[offset], strsize);
-        path[strsize] = 0;
+        _path = std::string(&data[offset], strsize);
         offset += strsize;
     } else {
-        path = NULL;
+        _path = {};
         offset += 2;
     }
     path_size = strsize;
@@ -73,87 +67,75 @@ MBDBRecord::MBDBRecord(unsigned char* data)
     // Parse Target
     strsize = be16toh(*((unsigned short*) &data[offset]));
     if (strsize > 0 && strsize < 0xFFFF) {
-        target = (char*) malloc(strsize + 1);
-        if (target == NULL) {
-            throw std::runtime_error("Allocation Error!");
-        }
         offset += 2;
-        memcpy(target, &data[offset], strsize);
-        target[strsize] = 0;
+        _target = std::string(&data[offset], strsize);
+        _target[strsize] = 0;
         offset += strsize;
     } else {
-        target = NULL;
+        _target = {};
         offset += 2;
     }
-    target_size = strsize;
+    _target_size = strsize;
 
     // parse DataHash
     strsize = be16toh(*((unsigned short*) &data[offset]));
     if (strsize > 0 && strsize < 0xFFFF) {
-        datahash = (char*) malloc(strsize);
-        if (datahash == NULL) {
-            throw std::runtime_error("Allocation Error!");
-        }
         offset += 2;
-        memcpy(datahash, &data[offset], strsize);
+        _datahash = std::string(&data[offset], strsize);
         offset += strsize;
     } else {
-        datahash = NULL;
+        _datahash = {};
         offset += 2;
     }
-    datahash_size = strsize;
+    _datahash_size = strsize;
 
     // parse unknown1
     strsize = be16toh(*((unsigned short*) &data[offset]));
     if (strsize > 0 && strsize < 0xFFFF) {
-        unknown1 = (char*) malloc(strsize + 1);
-        if (unknown1 == NULL) {
-            throw std::runtime_error("Allocation Error!");
-        }
         offset += 2;
-        memcpy(unknown1, &data[offset], strsize);
-        unknown1[strsize] = 0;
+        _unknown1 = std::string(&data[offset], strsize);
+        _unknown1[strsize] = 0;
         offset += strsize;
     } else {
-        unknown1 = NULL;
+        _unknown1 = {};
         offset += 2;
     }
-    unknown1_size = strsize;
+    _unknown1_size = strsize;
 
-    mode = be16toh(*((unsigned short*) &data[offset]));
+    _mode = be16toh(*((unsigned short*) &data[offset]));
     offset += 2;
 
-    unknown2 = be32toh(*((unsigned int*) &data[offset]));
+    _unknown2 = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    inode = be32toh(*((unsigned int*) &data[offset]));
+    _inode = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    uid = be32toh(*((unsigned int*) &data[offset]));
+    _uid = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    gid = be32toh(*((unsigned int*) &data[offset]));
+    _gid = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    time1 = be32toh(*((unsigned int*) &data[offset]));
+    _time1 = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    time2 = be32toh(*((unsigned int*) &data[offset]));
+    _time2 = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    time3 = be32toh(*((unsigned int*) &data[offset]));
+    _time3 = be32toh(*((unsigned int*) &data[offset]));
     offset += 4;
 
-    length = be64toh(*((unsigned long long*) &data[offset]));
+    _length = be64toh(*((unsigned long long*) &data[offset]));
     offset += 8;
 
-    flag = *((unsigned char*) &data[offset]);
+    _flag = *((unsigned char*) &data[offset]);
     offset += 1;
 
-    property_count = *((unsigned char*) &data[offset]);
+    _property_count = *((unsigned char*) &data[offset]);
     offset += 1;
 
-    for (int i = 0; i < property_count; i++) {
+    for (int i = 0; i < _property_count; i++) {
         Property prop; // = malloc(sizeof(property_t));
         prop.name_size = be16toh(*((unsigned short*) &data[offset]));
         prop.name = (char*) malloc(prop.name_size + 1);
@@ -169,9 +151,9 @@ MBDBRecord::MBDBRecord(unsigned char* data)
         prop.value[prop.value_size] = 0;
         offset += prop.value_size;
 
-        properties.push_back(prop);
+        _properties.push_back(prop);
     }
-    this_size = offset;
+    _this_size = offset;
 
     // _debug();
 }
@@ -200,110 +182,108 @@ MBDBRecord::MBDBRecord(unsigned char* data)
 void MBDBRecord::_debug()
 {
     std::cout << "mbdb record" << std::endl;
-    std::cout << "\tdomain = " << domain << std::endl;
-    std::cout << "\tpath = " << path << std::endl;
-    std::cout << "\ttarget = " << target << std::endl;
-    std::cout << "\tdatahash = " << datahash << std::endl;
-    std::cout << "\tunknown1 = " << unknown1 << std::endl;
-    std::cout << "\tmode = " << std::hex << mode << std::dec << std::endl;
-    std::cout << "\tunknown2 = 0x" << unknown2 << std::endl;
-    std::cout << "\tinode = 0x" << inode << std::endl;
-    std::cout << "\tuid = " << uid << std::endl;
-    std::cout << "\tgid = " << gid << std::endl;
-    std::cout << "\ttime1 = 0x" << time1 << std::endl;
-    std::cout << "\ttime2 = 0x" << time2 << std::endl;
-    std::cout << "\ttime3 = 0x" << time3 << std::endl;
-    std::cout << "\tlength = " << length << std::endl;
-    std::cout << "\tflag = 0x" << flag << std::endl;
-    std::cout << "\tproperty_count = " << property_count << std::endl;
+    std::cout << "\tdomain = " << _domain << std::endl;
+    std::cout << "\tpath = " << _path << std::endl;
+    std::cout << "\ttarget = " << _target << std::endl;
+    std::cout << "\tdatahash = " << _datahash << std::endl;
+    std::cout << "\tunknown1 = " << _unknown1 << std::endl;
+    std::cout << "\tmode = " << std::hex << _mode << std::dec << std::endl;
+    std::cout << "\tunknown2 = 0x" << _unknown2 << std::endl;
+    std::cout << "\tinode = 0x" << _inode << std::endl;
+    std::cout << "\tuid = " << _uid << std::endl;
+    std::cout << "\tgid = " << _gid << std::endl;
+    std::cout << "\ttime1 = 0x" << _time1 << std::endl;
+    std::cout << "\ttime2 = 0x" << _time2 << std::endl;
+    std::cout << "\ttime3 = 0x" << _time3 << std::endl;
+    std::cout << "\tlength = " << _length << std::endl;
+    std::cout << "\tflag = 0x" << _flag << std::endl;
+    std::cout << "\tproperty_count = " << _property_count << std::endl;
 }
 
 void MBDBRecord::init()
 {
-    target_size = 0xFFFF;
-    datahash_size = 0xFFFF;
-    unknown1_size = 0xFFFF;
-    this_size = 2 + 2 + 2 + 2 + 2 + 2 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 8 + 1 + 1;
+    _target_size = 0xFFFF;
+    _datahash_size = 0xFFFF;
+    _unknown1_size = 0xFFFF;
+    _this_size = 2 + 2 + 2 + 2 + 2 + 2 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 8 + 1 + 1;
 }
 
-void MBDBRecord::set_domain(const char* domain)
+void MBDBRecord::set_domain(const std::string& domain)
 {
-    unsigned short old_size = domain_size;
-    if (domain_size > 0 && domain_size < 0xFFFF) {
-        this_size -= domain_size;
+    unsigned short old_size = _domain_size;
+    if (_domain_size > 0 && _domain_size < 0xFFFF) {
+        _this_size -= _domain_size;
     }
-    if (domain && (strlen(domain) > 0)) {
-        domain_size = strlen(domain);
-        domain = strdup(domain);
-        this_size += domain_size;
+    if (!domain.empty()) {
+        _domain_size = domain.size();
+        _domain = domain;
+        _this_size += _domain_size;
     } else {
-        domain_size = 0;
+        _domain_size = 0;
     }
 }
 
-void MBDBRecord::set_path(const char* path)
+void MBDBRecord::set_path(const std::string& path)
 {
-    unsigned short old_size = path_size;
-    path = {};
-    if (path_size > 0 && path_size < 0xFFFF) {
-        this_size -= path_size;
+    unsigned short old_size = _path_size;
+    _path = {};
+    if (_path_size > 0 && _path_size < 0xFFFF) {
+        _this_size -= _path_size;
     }
-    if (path && (strlen(path) > 0)) {
-        path_size = strlen(path);
-        path = strdup(path);
-        this_size += path_size;
+    if (!_path.empty()) {
+        _path_size = path.size();
+        _path = path;
+        _this_size += _path_size;
     } else {
-        path_size = 0;
+        _path_size = 0;
     }
 }
 
-void MBDBRecord::set_target(const char* target)
+void MBDBRecord::set_target(const std::string& target)
 {
-    unsigned short old_size = target_size;
-    target = {};
-    if (target_size > 0 && target_size < 0xFFFF) {
-        this_size -= target_size;
+    unsigned short old_size = _target_size;
+    _target = {};
+    if (_target_size > 0 && _target_size < 0xFFFF) {
+        _this_size -= _target_size;
     }
-    if (target && (strlen(target) > 0)) {
-        target_size = strlen(target);
-        target = strdup(target);
-        this_size += target_size;
+    if (!_target.empty()) {
+        _target_size = target.size();
+        _target = target;
+        _this_size += _target_size;
     } else {
-        target_size = 0xFFFF;
+        _target_size = 0xFFFF;
     }
 }
 
-void MBDBRecord::set_datahash(const char* hash, unsigned short hash_size)
+void MBDBRecord::set_datahash(const std::string& hash)
 {
-    unsigned short old_size = datahash_size;
-    datahash = {};
-    if (datahash_size > 0 && datahash_size < 0xFFFF) {
-        this_size -= datahash_size;
+    unsigned short old_size = _datahash_size;
+    _datahash = {};
+    if (_datahash_size > 0 && _datahash_size < 0xFFFF) {
+        _this_size -= _datahash_size;
     }
-    if (hash && (hash_size > 0)) {
-        datahash_size = hash_size;
-        datahash = (char*) malloc(hash_size);
-        memcpy(datahash, hash, hash_size);
-        this_size += datahash_size;
+    if (!hash.empty()) {
+        _datahash_size = _hash_size;
+        _datahash = hash;
+        _this_size += _datahash_size;
     } else {
-        datahash_size = 0xFFFF;
+        _datahash_size = 0xFFFF;
     }
 }
 
-void MBDBRecord::set_unknown1(const char* data, unsigned short size)
+void MBDBRecord::set_unknown1(const std::string& data)
 {
-    unsigned short old_size = unknown1_size;
-    unknown1 = {};
-    if (unknown1_size > 0 && unknown1_size < 0xFFFF) {
-        this_size -= unknown1_size;
+    unsigned short old_size = _unknown1_size;
+    _unknown1 = {};
+    if (_unknown1_size > 0 && _unknown1_size < 0xFFFF) {
+        _this_size -= _unknown1_size;
     }
     if (data && (size > 0)) {
-        unknown1_size = size;
-        unknown1 = (char*) malloc(size);
-        memcpy(unknown1, data, size);
-        this_size += unknown1_size;
+        _unknown1_size = data.size();
+        _unknown1 = data;
+        _this_size += _unknown1_size;
     } else {
-        unknown1_size = 0xFFFF;
+        _unknown1_size = 0xFFFF;
     }
 }
 
@@ -332,7 +312,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     unsigned int offset = 0;
     unsigned char* data_buf = NULL;
 
-    data_buf = (unsigned char*) malloc(this_size);
+    data_buf = (unsigned char*) malloc(_this_size);
     if (!data_buf) {
         throw std::runtime_error("Allocation Error!");
         return -1;
@@ -341,28 +321,28 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     unsigned short strsize;
 
     // append Domain
-    strsize = htobe16(domain_size);
+    strsize = htobe16(_domain_size);
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
-    if (domain != NULL) {
-        memcpy(&data_buf[offset], domain, domain_size);
-        offset += domain_size;
+    if (!_domain.empty()) {
+        memcpy(&data_buf[offset], _domain, _domain_size);
+        offset += _domain_size;
     }
 
     // append Path
-    strsize = htobe16(path_size);
+    strsize = htobe16(_path_size);
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
     if (path != NULL) {
-        memcpy(&data_buf[offset], path, path_size);
-        offset += path_size;
+        memcpy(&data_buf[offset], _path, _path_size);
+        offset += _path_size;
     }
 
     // append Target
-    strsize = htobe16(target_size);
+    strsize = htobe16(_target_size);
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
-    if (target != NULL) {
+    if (!_target.empty()) {
         memcpy(&data_buf[offset], target, target_size);
         offset += target_size;
     }
@@ -451,7 +431,6 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
         throw std::runtime_error("ERROR: inconsistent record size");
         // throw std::runtime_error("%s: ERROR: inconsistent record size (present %d != created
         // %d)",  __func__, this_size, offset);
-        return -1;
     }
 
     *data = data_buf;

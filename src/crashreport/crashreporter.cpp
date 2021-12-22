@@ -42,7 +42,7 @@ Reporter::Reporter(std::shared_ptr<util::Device> device, uint16_t port)
       _copier(std::make_shared<Copy>(device, port))
 {}
 
-std::unique_ptr<Report> Reporter::last_crash()
+std::shared_ptr<Report> Reporter::last_crash()
 {
     char** list = NULL;
     afc_error_t err = AFC_E_SUCCESS;
@@ -89,7 +89,7 @@ std::unique_ptr<Report> Reporter::last_crash()
 
     printf("Copying '%s'", lastItem);
     if (lastItem) {
-        lastItem = strdup(lastItem);
+        lastItem = lastItem;
     }
     for (i = 0; list[i]; i++) {
         free(list[i]);
@@ -135,20 +135,19 @@ std::unique_ptr<Report> Reporter::last_crash()
     uint32_t size = 0;
     plist_t plist = NULL;
     int ferr = 0;
-    unsigned char* datas = NULL;
-    ferr = util::file_read(crash_file, &datas, &size);
+    std::string datas;
+    ferr = util::file_read(crash_file, datas, &size);
     if (ferr < 0) {
         fprintf(stderr, "Unable to open %s", crash_file);
         free(lastItem);
         return {};
     }
 
-    plist_from_xml(static_cast<const char*>(datas), size, &plist);
-    free(datas);
+    plist_from_xml(datas.c_str(), size, &plist);
 
-    std::unique_ptr<Report> report = NULL;
+    std::shared_ptr<Report> report = NULL;
     if (plist) {
-        report = std::make_unique<Report>(plist);
+        report = std::make_shared<Report>(plist);
         plist_free(plist);
         remove(crash_file);
     } else {

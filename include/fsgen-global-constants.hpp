@@ -17,6 +17,8 @@
 #define USELESS 0xdeadbeef
 #define PLACE_HOLDER 0xdeadbeef
 
+#endif
+
 struct constants
 {
     unsigned int STRLEN_FILENAME;
@@ -35,30 +37,17 @@ enum
     MAX_FIRMWARE
 };
 
-const char* devices[MAX_DEVICE] =
-{
-    [iPad1_1] = "iPad1,1",
-    [iPhone2_1] = "iPhone2,1",
-    [iPhone3_1] = "iPhone3,1",
-    [iPhone3_3] = "iPhone3,3",
-    [iPhone4_1] = "iPhone4,1",
-    [iPad2_1] = "iPad2,1",
-    [iPad2_2] = "iPad2,2",
-    [iPad2_3] = "iPad2,3",
-    [iPod3_1] = "iPod3,1",
+const char* devices[MAX_DEVICE] = {
+    [iPad1_1] = "iPad1,1",     [iPhone2_1] = "iPhone2,1", [iPhone3_1] = "iPhone3,1",
+    [iPhone3_3] = "iPhone3,3", [iPhone4_1] = "iPhone4,1", [iPad2_1] = "iPad2,1",
+    [iPad2_2] = "iPad2,2",     [iPad2_3] = "iPad2,3",     [iPod3_1] = "iPod3,1",
     [iPod4_1] = "iPod4,1",
 };
 
 const char* firmwares[MAX_FIRMWARE] =
-{
-    [FW9A334] = "9A334",
-    [FW9A405] = "9A405",
-    [FW9A406] = "9A406"
-};
+    {[FW9A334] = "9A334", [FW9A405] = "9A405", [FW9A406] = "9A406"};
 
-
-struct constants constants_bootstrap_iPad1_1_9A334 =
-{
+struct constants constants_bootstrap_iPad1_1_9A334 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -69,8 +58,7 @@ struct constants constants_bootstrap_iPad1_1_9A334 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPad1_1_9A334 =
-{
+struct constants constants_iPad1_1_9A334 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -81,8 +69,7 @@ struct constants constants_iPad1_1_9A334 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPad1_1_9A334 =
-{
+struct offsets offsets_iPad1_1_9A334 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x3573ddc4,
     ._dsc_fstat = 0x3572e6f4,
@@ -133,7 +120,7 @@ struct offsets offsets_iPad1_1_9A334 =
     .LIBC_BLX_R4_POP_R47 = (0x35771f38 + 1),
     // lockf$NOCANCEL+0x98
     .LIBC_MOV_SP_R4__POP_R47 = (0x35777cd8 + 1),
-    // filesec_discard_aclbuf+0x26 
+    // filesec_discard_aclbuf+0x26
     .LIBC_STR_R0_R4__POP_R47 = (0x3578b49a + 1),
     // malloc_default_zone+0x24
     .LIBC_LDR_R0_R0__POP_R7 = (0x357514b4 + 1),
@@ -195,12 +182,9 @@ struct offsets offsets_iPad1_1_9A334 =
     .SYSENT = 0x802ccbac,
     .FLUSH_DCACHE_ALL = 0x80071b0c,
     .INVALIDATE_ICACHE_ALL = 0x800719c4,
-    .SB_EVALUATE = (0x806030ec + 1)
-};
+    .SB_EVALUATE = (0x806030ec + 1)};
 
-
-struct constants constants_bootstrap_iPad1_1 =
-{
+struct constants constants_bootstrap_iPad1_1 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -211,8 +195,7 @@ struct constants constants_bootstrap_iPad1_1 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPad1_1 =
-{
+struct constants constants_iPad1_1 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -223,8 +206,7 @@ struct constants constants_iPad1_1 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPad1_1 =
-{
+struct offsets offsets_iPad1_1 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x35f66dc4,
     ._dsc_fstat = 0x35f576f4,
@@ -275,7 +257,7 @@ struct offsets offsets_iPad1_1 =
     .LIBC_BLX_R4_POP_R47 = (0x347f0f38 + 1),
     // lockf$NOCANCEL+0x98
     .LIBC_MOV_SP_R4__POP_R47 = (0x347f6cd8 + 1),
-    // filesec_discard_aclbuf+0x26 
+    // filesec_discard_aclbuf+0x26
     .LIBC_STR_R0_R4__POP_R47 = (0x3480a49a + 1),
     // malloc_default_zone+0x24
     .LIBC_LDR_R0_R0__POP_R7 = (0x347d04b4 + 1),
@@ -337,12 +319,9 @@ struct offsets offsets_iPad1_1 =
     .SYSENT = 0x802ccbac,
     .FLUSH_DCACHE_ALL = 0x80071b0c,
     .INVALIDATE_ICACHE_ALL = 0x800719c4,
-    .SB_EVALUATE = (0x806030ec + 1)
-};
+    .SB_EVALUATE = (0x806030ec + 1)};
 
-
-struct constants constants_bootstrap_iPhone2_1_9A334 =
-{
+struct constants constants_bootstrap_iPhone2_1_9A334 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -353,8 +332,7 @@ struct constants constants_bootstrap_iPhone2_1_9A334 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPhone2_1_9A334 =
-{
+struct constants constants_iPhone2_1_9A334 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -365,8 +343,7 @@ struct constants constants_iPhone2_1_9A334 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPhone2_1_9A334 =
-{
+struct offsets offsets_iPhone2_1_9A334 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x30cc9dc4,
     ._dsc_fstat = 0x30cba6f4,
@@ -417,7 +394,7 @@ struct offsets offsets_iPhone2_1_9A334 =
     .LIBC_BLX_R4_POP_R47 = (0x3378af38 + 1),
     // lockf$NOCANCEL+0x98
     .LIBC_MOV_SP_R4__POP_R47 = (0x33790cd8 + 1),
-    // filesec_discard_aclbuf+0x26 
+    // filesec_discard_aclbuf+0x26
     .LIBC_STR_R0_R4__POP_R47 = (0x337a449a + 1),
     // malloc_default_zone+0x24
     .LIBC_LDR_R0_R0__POP_R7 = (0x3376a4b4 + 1),
@@ -479,12 +456,9 @@ struct offsets offsets_iPhone2_1_9A334 =
     .SYSENT = 0x802ccbac,
     .FLUSH_DCACHE_ALL = 0x80071198,
     .INVALIDATE_ICACHE_ALL = 0x80071b88,
-    .SB_EVALUATE = (0x805780ec + 1)
-};
+    .SB_EVALUATE = (0x805780ec + 1)};
 
-
-struct constants constants_bootstrap_iPhone2_1 =
-{
+struct constants constants_bootstrap_iPhone2_1 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -495,8 +469,7 @@ struct constants constants_bootstrap_iPhone2_1 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPhone2_1 =
-{
+struct constants constants_iPhone2_1 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -507,8 +480,7 @@ struct constants constants_iPhone2_1 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPhone2_1 =
-{
+struct offsets offsets_iPhone2_1 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x36e19dc4,
     ._dsc_fstat = 0x36e0a6f4,
@@ -559,7 +531,7 @@ struct offsets offsets_iPhone2_1 =
     .LIBC_BLX_R4_POP_R47 = (0x35d0ef38 + 1),
     // lockf$NOCANCEL+0x98
     .LIBC_MOV_SP_R4__POP_R47 = (0x35d14cd8 + 1),
-    // filesec_discard_aclbuf+0x26 
+    // filesec_discard_aclbuf+0x26
     .LIBC_STR_R0_R4__POP_R47 = (0x35d2849a + 1),
     // malloc_default_zone+0x24
     .LIBC_LDR_R0_R0__POP_R7 = (0x35cee4b4 + 1),
@@ -621,12 +593,9 @@ struct offsets offsets_iPhone2_1 =
     .SYSENT = 0x802ccbac,
     .FLUSH_DCACHE_ALL = 0x80071b0c,
     .INVALIDATE_ICACHE_ALL = 0x800719c4,
-    .SB_EVALUATE = (0x805780ec + 1)
-};
+    .SB_EVALUATE = (0x805780ec + 1)};
 
-
-struct constants constants_bootstrap_iPhone3_1_9A334 =
-{
+struct constants constants_bootstrap_iPhone3_1_9A334 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -637,8 +606,7 @@ struct constants constants_bootstrap_iPhone3_1_9A334 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPhone3_1_9A334 =
-{
+struct constants constants_iPhone3_1_9A334 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -649,8 +617,7 @@ struct constants constants_iPhone3_1_9A334 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPhone3_1_9A334 =
-{
+struct offsets offsets_iPhone3_1_9A334 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x31d5ddc4,
     ._dsc_fstat = 0x31d4e6f4,
@@ -701,7 +668,7 @@ struct offsets offsets_iPhone3_1_9A334 =
     .LIBC_BLX_R4_POP_R47 = (0x36231f38 + 1),
     // lockf$NOCANCEL+0x98
     .LIBC_MOV_SP_R4__POP_R47 = (0x36237cd8 + 1),
-    // filesec_discard_aclbuf+0x26 
+    // filesec_discard_aclbuf+0x26
     .LIBC_STR_R0_R4__POP_R47 = (0x3624b49a + 1),
     // malloc_default_zone+0x24
     .LIBC_LDR_R0_R0__POP_R7 = (0x362114b4 + 1),
@@ -763,12 +730,9 @@ struct offsets offsets_iPhone3_1_9A334 =
     .SYSENT = 0x802ccbac,
     .FLUSH_DCACHE_ALL = 0x80071b0c,
     .INVALIDATE_ICACHE_ALL = 0x800719c4,
-    .SB_EVALUATE = (0x805fb0ec + 1)
-};
+    .SB_EVALUATE = (0x805fb0ec + 1)};
 
-
-struct constants constants_bootstrap_iPhone3_1 =
-{
+struct constants constants_bootstrap_iPhone3_1 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -779,8 +743,7 @@ struct constants constants_bootstrap_iPhone3_1 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPhone3_1 =
-{
+struct constants constants_iPhone3_1 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -791,8 +754,7 @@ struct constants constants_iPhone3_1 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPhone3_1 =
-{
+struct offsets offsets_iPhone3_1 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x35c72dc4,
     ._dsc_fstat = 0x35c636f4,
@@ -843,7 +805,7 @@ struct offsets offsets_iPhone3_1 =
     .LIBC_BLX_R4_POP_R47 = (0x32b19f38 + 1),
     // lockf$NOCANCEL+0x98
     .LIBC_MOV_SP_R4__POP_R47 = (0x32b1fcd8 + 1),
-    // filesec_discard_aclbuf+0x26 
+    // filesec_discard_aclbuf+0x26
     .LIBC_STR_R0_R4__POP_R47 = (0x32b3349a + 1),
     // malloc_default_zone+0x24
     .LIBC_LDR_R0_R0__POP_R7 = (0x32af94b4 + 1),
@@ -905,11 +867,9 @@ struct offsets offsets_iPhone3_1 =
     .SYSENT = 0x802ccbac,
     .FLUSH_DCACHE_ALL = 0x80071b0c,
     .INVALIDATE_ICACHE_ALL = 0x800719c4,
-    .SB_EVALUATE = (0x805fb0ec + 1)
-};
+    .SB_EVALUATE = (0x805fb0ec + 1)};
 
-struct constants constants_bootstrap_iPhone3_3 =
-{
+struct constants constants_bootstrap_iPhone3_3 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -920,8 +880,7 @@ struct constants constants_bootstrap_iPhone3_3 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPhone3_3 =
-{
+struct constants constants_iPhone3_3 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -932,8 +891,7 @@ struct constants constants_iPhone3_3 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPhone3_3 =
-{
+struct offsets offsets_iPhone3_3 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x3333cdc4,
     ._dsc_fstat = 0x3332d6f4,
@@ -984,7 +942,7 @@ struct offsets offsets_iPhone3_3 =
     .LIBC_BLX_R4_POP_R47 = (0x37662f38 + 1),
     // lockf$NOCANCEL+0x98
     .LIBC_MOV_SP_R4__POP_R47 = (0x37668cd8 + 1),
-    // filesec_discard_aclbuf+0x26 
+    // filesec_discard_aclbuf+0x26
     .LIBC_STR_R0_R4__POP_R47 = (0x3767c49a + 1),
     // malloc_default_zone+0x24
     .LIBC_LDR_R0_R0__POP_R7 = (0x376424b4 + 1),
@@ -1046,11 +1004,9 @@ struct offsets offsets_iPhone3_3 =
     .SYSENT = 0x802ccbac,
     .FLUSH_DCACHE_ALL = 0x80071b0c,
     .INVALIDATE_ICACHE_ALL = 0x800719c4,
-    .SB_EVALUATE = (0x805fb0ec + 1)
-};
+    .SB_EVALUATE = (0x805fb0ec + 1)};
 
-struct constants constants_bootstrap_iPad2_1 =
-{
+struct constants constants_bootstrap_iPad2_1 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -1061,8 +1017,7 @@ struct constants constants_bootstrap_iPad2_1 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPad2_1 =
-{
+struct constants constants_iPad2_1 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -1073,8 +1028,7 @@ struct constants constants_iPad2_1 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPad2_1 =
-{
+struct offsets offsets_iPad2_1 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x30278dc4,
     ._dsc_fstat = 0x302696f4,
@@ -1173,11 +1127,9 @@ struct offsets offsets_iPad2_1 =
     .SYSENT = 0x802cbbac,
     .FLUSH_DCACHE_ALL = 0x80071b44,
     .INVALIDATE_ICACHE_ALL = 0x80071a64,
-    .SB_EVALUATE = (0x805710ec + 1)
-};
+    .SB_EVALUATE = (0x805710ec + 1)};
 
-struct constants constants_bootstrap_iPad2_2 =
-{
+struct constants constants_bootstrap_iPad2_2 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -1188,8 +1140,7 @@ struct constants constants_bootstrap_iPad2_2 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPad2_2 =
-{
+struct constants constants_iPad2_2 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -1200,8 +1151,7 @@ struct constants constants_iPad2_2 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPad2_2 =
-{
+struct offsets offsets_iPad2_2 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x36833dc4,
     ._dsc_fstat = 0x368246f4,
@@ -1303,8 +1253,7 @@ struct offsets offsets_iPad2_2 =
     .SB_EVALUATE = (0x805710ec + 1),
 };
 
-struct constants constants_bootstrap_iPad2_3 =
-{
+struct constants constants_bootstrap_iPad2_3 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -1315,8 +1264,7 @@ struct constants constants_bootstrap_iPad2_3 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPad2_3 =
-{
+struct constants constants_iPad2_3 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -1327,8 +1275,7 @@ struct constants constants_iPad2_3 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPad2_3 =
-{
+struct offsets offsets_iPad2_3 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x300c7dc4,
     ._dsc_fstat = 0x300b86f4,
@@ -1430,8 +1377,7 @@ struct offsets offsets_iPad2_3 =
     .SB_EVALUATE = (0x809200ec + 1),
 };
 
-struct constants constants_bootstrap_iPod3_1 =
-{
+struct constants constants_bootstrap_iPod3_1 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -1442,8 +1388,7 @@ struct constants constants_bootstrap_iPod3_1 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPod3_1 =
-{
+struct constants constants_iPod3_1 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -1454,8 +1399,7 @@ struct constants constants_iPod3_1 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPod3_1 =
-{
+struct offsets offsets_iPod3_1 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x357c9dc4,
     ._dsc_fstat = 0x357ba6f4,
@@ -1506,7 +1450,7 @@ struct offsets offsets_iPod3_1 =
     .LIBC_BLX_R4_POP_R47 = (0x3083ff38 + 1),
     // lockf$NOCANCEL+0x98
     .LIBC_MOV_SP_R4__POP_R47 = (0x30845cd8 + 1),
-    // filesec_discard_aclbuf+0x26 
+    // filesec_discard_aclbuf+0x26
     .LIBC_STR_R0_R4__POP_R47 = (0x3085949a + 1),
     // malloc_default_zone+0x24
     .LIBC_LDR_R0_R0__POP_R7 = (0x3081f4b4 + 1),
@@ -1568,12 +1512,9 @@ struct offsets offsets_iPod3_1 =
     .SYSENT = 0x802ccbac,
     .FLUSH_DCACHE_ALL = 0x80071b0c,
     .INVALIDATE_ICACHE_ALL = 0x800719c4,
-    .SB_EVALUATE = (0x804660ec + 1)
-};
+    .SB_EVALUATE = (0x804660ec + 1)};
 
-
-struct constants constants_bootstrap_iPod4_1 =
-{
+struct constants constants_bootstrap_iPod4_1 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -1584,8 +1525,7 @@ struct constants constants_bootstrap_iPod4_1 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPod4_1 =
-{
+struct constants constants_iPod4_1 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -1596,8 +1536,7 @@ struct constants constants_iPod4_1 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPod4_1 =
-{
+struct offsets offsets_iPod4_1 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x35059dc4,
     ._dsc_fstat = 0x3504a6f4,
@@ -1648,7 +1587,7 @@ struct offsets offsets_iPod4_1 =
     .LIBC_BLX_R4_POP_R47 = (0x36f47f38 + 1),
     // lockf$NOCANCEL+0x98
     .LIBC_MOV_SP_R4__POP_R47 = (0x36f4dcd8 + 1),
-    // filesec_discard_aclbuf+0x26 
+    // filesec_discard_aclbuf+0x26
     .LIBC_STR_R0_R4__POP_R47 = (0x36f6149a + 1),
     // malloc_default_zone+0x24
     .LIBC_LDR_R0_R0__POP_R7 = (0x36f274b4 + 1),
@@ -1710,12 +1649,9 @@ struct offsets offsets_iPod4_1 =
     .SYSENT = 0x802ccbac,
     .FLUSH_DCACHE_ALL = 0x80071b0c,
     .INVALIDATE_ICACHE_ALL = 0x800719c4,
-    .SB_EVALUATE = (0x805fb0ec + 1)
-};
+    .SB_EVALUATE = (0x805fb0ec + 1)};
 
-
-struct constants constants_bootstrap_iPhone4_1 =
-{
+struct constants constants_bootstrap_iPhone4_1 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -1726,8 +1662,7 @@ struct constants constants_bootstrap_iPhone4_1 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPhone4_1 =
-{
+struct constants constants_iPhone4_1 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -1738,8 +1673,7 @@ struct constants constants_iPhone4_1 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPhone4_1 =
-{
+struct offsets offsets_iPhone4_1 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x332cfdc4,
     ._dsc_fstat = 0x332c06f4,
@@ -1838,11 +1772,9 @@ struct offsets offsets_iPhone4_1 =
     .SYSENT = 0x802CBBAC,
     .FLUSH_DCACHE_ALL = 0x80071B44,
     .INVALIDATE_ICACHE_ALL = 0x80071A64,
-    .SB_EVALUATE = (0x805690EC + 1)
-};
+    .SB_EVALUATE = (0x805690EC + 1)};
 
-struct constants constants_bootstrap_iPhone4_1_9A406 =
-{
+struct constants constants_bootstrap_iPhone4_1_9A406 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -1853,8 +1785,7 @@ struct constants constants_bootstrap_iPhone4_1_9A406 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPhone4_1_9A406 =
-{
+struct constants constants_iPhone4_1_9A406 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -1865,8 +1796,7 @@ struct constants constants_iPhone4_1_9A406 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPhone4_1_9A406 =
-{
+struct offsets offsets_iPhone4_1_9A406 = {
     // libsystem_kernel.dylib
     ._dsc_open = 0x30402dc4,
     ._dsc_fstat = 0x303f36f4,
@@ -1968,8 +1898,7 @@ struct offsets offsets_iPhone4_1_9A406 =
     .SB_EVALUATE = (0x805690ec + 1),
 };
 
-struct constants constants_bootstrap_iPhone4_1_9A334 =
-{
+struct constants constants_bootstrap_iPhone4_1_9A334 = {
     .STRLEN_FILENAME = 29,
 
     .P1 = 402,
@@ -1980,8 +1909,7 @@ struct constants constants_bootstrap_iPhone4_1_9A334 =
     .LR_ADDR_LO = 0x10,
 };
 
-struct constants constants_iPhone4_1_9A334 =
-{
+struct constants constants_iPhone4_1_9A334 = {
     .STRLEN_FILENAME = 66,
 
     .P1 = 402,
@@ -1992,159 +1920,161 @@ struct constants constants_iPhone4_1_9A334 =
     .LR_ADDR_LO = 0x30,
 };
 
-struct offsets offsets_iPhone4_1_9A334 =
-{
-    ._dsc_open = (0x00010dc4 +0+0x3099b000),
-    ._dsc_fstat = (0x000016f4 +0+0x3099b000),
-    ._dsc_chown = (0x00003518 +0+0x3099b000),
-    ._dsc_chmod = (0x00002ae0 +1+0x3099b000),
-    ._dsc_memcpy = (0x0000198c +1+0x3099b000),
-    ._dsc_munmap = (0x00010d68 +0+0x3099b000),
-    ._dsc_unlink = (0x00002eb4 +1+0x3099b000),
-    ._dsc_mkdir = (0x00003c34 +0+0x3099b000),
-    ._dsc_ftruncate = (0x00003ca0 +0+0x3099b000),
-    ._dsc_ioctl = (0x00002bf8 +1+0x3099b000),
-    ._dsc_close = (0x0000171c +0+0x3099b000),
-    ._dsc_ptrace = (0x00011394 +0+0x3099b000),
-    ._dsc_bsdthread_terminate = (0x00010228 +0+0x3099b000),
-    ._dsc_shm_open = (0x000034a8 +0+0x3099b000),
-    ._dsc_mmap = (0x00001658 +1+0x3099b000),
-    ._dsc_mach_task_self = (0x0000fd88 +1+0x3099b000),
-    ._dsc_mach_port_allocate = (0x00001e44 +1+0x3099b000),
-    ._dsc_mach_port_insert_right = (0x00001e70 +1+0x3099b000),
-    ._dsc_mach_msg = (0x000011d4 +1+0x3099b000),
-    ._dsc_mount = (0x000126e4 +0+0x3099b000),
-    ._dsc_unmount = (0x00013040 +0+0x3099b000),
-    ._dsc_syscall = (0x00011afc +0+0x3099b000),
-    ._dsc_psynch_rw_unlock = (0x000111a0 +0+0x3099b000),
+struct offsets offsets_iPhone4_1_9A334 = {
+    ._dsc_open = (0x00010dc4 + 0 + 0x3099b000),
+    ._dsc_fstat = (0x000016f4 + 0 + 0x3099b000),
+    ._dsc_chown = (0x00003518 + 0 + 0x3099b000),
+    ._dsc_chmod = (0x00002ae0 + 1 + 0x3099b000),
+    ._dsc_memcpy = (0x0000198c + 1 + 0x3099b000),
+    ._dsc_munmap = (0x00010d68 + 0 + 0x3099b000),
+    ._dsc_unlink = (0x00002eb4 + 1 + 0x3099b000),
+    ._dsc_mkdir = (0x00003c34 + 0 + 0x3099b000),
+    ._dsc_ftruncate = (0x00003ca0 + 0 + 0x3099b000),
+    ._dsc_ioctl = (0x00002bf8 + 1 + 0x3099b000),
+    ._dsc_close = (0x0000171c + 0 + 0x3099b000),
+    ._dsc_ptrace = (0x00011394 + 0 + 0x3099b000),
+    ._dsc_bsdthread_terminate = (0x00010228 + 0 + 0x3099b000),
+    ._dsc_shm_open = (0x000034a8 + 0 + 0x3099b000),
+    ._dsc_mmap = (0x00001658 + 1 + 0x3099b000),
+    ._dsc_mach_task_self = (0x0000fd88 + 1 + 0x3099b000),
+    ._dsc_mach_port_allocate = (0x00001e44 + 1 + 0x3099b000),
+    ._dsc_mach_port_insert_right = (0x00001e70 + 1 + 0x3099b000),
+    ._dsc_mach_msg = (0x000011d4 + 1 + 0x3099b000),
+    ._dsc_mount = (0x000126e4 + 0 + 0x3099b000),
+    ._dsc_unmount = (0x00013040 + 0 + 0x3099b000),
+    ._dsc_syscall = (0x00011afc + 0 + 0x3099b000),
+    ._dsc_psynch_rw_unlock = (0x000111a0 + 0 + 0x3099b000),
 
-    ._dsc_fopen = (0x00010004 +1+0x37a65000),
-    ._dsc_fread = (0x00016814 +1+0x37a65000),
-    ._dsc_fclose = (0x0001065c +1+0x37a65000),
-    ._dsc_exit = (0x000129d0 +1+0x37a65000),
-    ._dsc_syslog = (0x0000aad0 +1+0x37a65000),
-    ._dsc_sysctl = (0x00007c64 +1+0x37a65000),
-    ._dsc_malloc = (0x00007184 +1+0x37a65000),
-    ._dsc_memmem = (0x00020cf0 +1+0x37a65000),
-    ._dsc_sleep = (0x0001ea54 +1+0x37a65000),
-    ._dsc_proc_pidinfo = (0x0000f4e0 +1+0x37a65000),
-    ._dsc_execl = (0x00032cac +1+0x37a65000),
-    ._dsc_strcpy = (0x0000cd30 +0+0x37a65000),
-    ._dsc_sys_dcache_flush = (0x0001880c +0+0x37a65000),
+    ._dsc_fopen = (0x00010004 + 1 + 0x37a65000),
+    ._dsc_fread = (0x00016814 + 1 + 0x37a65000),
+    ._dsc_fclose = (0x0001065c + 1 + 0x37a65000),
+    ._dsc_exit = (0x000129d0 + 1 + 0x37a65000),
+    ._dsc_syslog = (0x0000aad0 + 1 + 0x37a65000),
+    ._dsc_sysctl = (0x00007c64 + 1 + 0x37a65000),
+    ._dsc_malloc = (0x00007184 + 1 + 0x37a65000),
+    ._dsc_memmem = (0x00020cf0 + 1 + 0x37a65000),
+    ._dsc_sleep = (0x0001ea54 + 1 + 0x37a65000),
+    ._dsc_proc_pidinfo = (0x0000f4e0 + 1 + 0x37a65000),
+    ._dsc_execl = (0x00032cac + 1 + 0x37a65000),
+    ._dsc_strcpy = (0x0000cd30 + 0 + 0x37a65000),
+    ._dsc_sys_dcache_flush = (0x0001880c + 0 + 0x37a65000),
 
-    .LIBC_POP_R0 = (0x00077340 +0+0x37a65000),
-    .LIBC_POP_R0123 = (0x00077b10 +0+0x37a65000),
-    .LIBC_POP_R47 = (0x0002af3e +1+0x37a65000),
-    .LIBC_BLX_R4_POP_R47 = (0x0002af38 +1+0x37a65000),
-    .LIBC_MOV_SP_R4__POP_R47 = (0x00030cd8 +1+0x37a65000),
-    .LIBC_STR_R0_R4__POP_R47 = (0x0004449a +1+0x37a65000),
-    .LIBC_LDR_R0_R0__POP_R7 = (0x0000a4b4 +1+0x37a65000),
-    .LIBC_SUB_R0_R4__POP_R4567 = (0x0002f246 +1+0x37a65000),
+    .LIBC_POP_R0 = (0x00077340 + 0 + 0x37a65000),
+    .LIBC_POP_R0123 = (0x00077b10 + 0 + 0x37a65000),
+    .LIBC_POP_R47 = (0x0002af3e + 1 + 0x37a65000),
+    .LIBC_BLX_R4_POP_R47 = (0x0002af38 + 1 + 0x37a65000),
+    .LIBC_MOV_SP_R4__POP_R47 = (0x00030cd8 + 1 + 0x37a65000),
+    .LIBC_STR_R0_R4__POP_R47 = (0x0004449a + 1 + 0x37a65000),
+    .LIBC_LDR_R0_R0__POP_R7 = (0x0000a4b4 + 1 + 0x37a65000),
+    .LIBC_SUB_R0_R4__POP_R4567 = (0x0002f246 + 1 + 0x37a65000),
 
-    .GADGET_MOV_SP_R4_POP8_10_11_4567 = (0x00002c82 +1+0x37a65000),
-    .GADGET_ADD_SP_120_POP8_10_4567 = (0x00057e2e +1+0x34897000),
-    .GADGET_MOV_LR_R4_MOV_R0_LR_POP47 = (0x0002001a +1+0x32847000),
+    .GADGET_MOV_SP_R4_POP8_10_11_4567 = (0x00002c82 + 1 + 0x37a65000),
+    .GADGET_ADD_SP_120_POP8_10_4567 = (0x00057e2e + 1 + 0x34897000),
+    .GADGET_MOV_LR_R4_MOV_R0_LR_POP47 = (0x0002001a + 1 + 0x32847000),
 
-    ._dsc_bootstrap_look_up = (0x00003fe8 +1+0x3696d000),
-    ._dsc_dlsym = (0x000016ec +1+0x32796000),
+    ._dsc_bootstrap_look_up = (0x00003fe8 + 1 + 0x3696d000),
+    ._dsc_dlsym = (0x000016ec + 1 + 0x32796000),
 
-    .LIBC_BLX_R4_POP_R457 = (0x0000c39c +1+0x34cfa000),
+    .LIBC_BLX_R4_POP_R457 = (0x0000c39c + 1 + 0x34cfa000),
 
-    .GADGET_SUBS_R0_R0_R1__POP7 = (0x00110748 +1+0x36b99000),
-    .GADGET_MOV_R1_R0__POP_R47 = (0x000899cc +1+0x35f78000),
-    .GADGET_MOV_R0_R1__POP_R47 = (0x00001a42 +1+0x3714d000),
-    .GADGET_MOV_R0_R4__POP_R47 = (0x00002746 +1+0x3714d000),
-    .GADGET_MOV_R1_R4__POP_R47 = (0x000580e4 +1+0x34ed3000),
-    .GADGET_ADD_R0_R0_R1__POP457 = (0x00002ae8 +0+0x34db9000),
+    .GADGET_SUBS_R0_R0_R1__POP7 = (0x00110748 + 1 + 0x36b99000),
+    .GADGET_MOV_R1_R0__POP_R47 = (0x000899cc + 1 + 0x35f78000),
+    .GADGET_MOV_R0_R1__POP_R47 = (0x00001a42 + 1 + 0x3714d000),
+    .GADGET_MOV_R0_R4__POP_R47 = (0x00002746 + 1 + 0x3714d000),
+    .GADGET_MOV_R1_R4__POP_R47 = (0x000580e4 + 1 + 0x34ed3000),
+    .GADGET_ADD_R0_R0_R1__POP457 = (0x00002ae8 + 0 + 0x34db9000),
 
-    .GADGET_HOLY = (0x00008100 +0+0x36e55000),
+    .GADGET_HOLY = (0x00008100 + 0 + 0x36e55000),
 
     .ZFREE = (0x8002f3d0 + 1),
     .SYSENT = 0x802cbbac,
     .FLUSH_DCACHE_ALL = 0x80071b44,
     .INVALIDATE_ICACHE_ALL = 0x80071a64,
-    .SB_EVALUATE = (0x805690ec + 1)
+    .SB_EVALUATE = (0x805690ec + 1)};
+
+struct constants* global_constants[MAX_FIRMWARE][MAX_DEVICE] = {
+    [FW9A334] =
+        {
+            [iPad1_1] = &constants_iPad1_1_9A334,
+            [iPhone2_1] = &constants_iPhone2_1_9A334,
+            [iPhone3_1] = &constants_iPhone3_1_9A334,
+            [iPhone4_1] = &constants_iPhone4_1_9A334,
+        },
+
+    [FW9A405] =
+        {
+            [iPad1_1] = &constants_iPad1_1,
+            [iPhone2_1] = &constants_iPhone2_1,
+            [iPhone3_1] = &constants_iPhone3_1,
+            [iPhone3_3] = &constants_iPhone3_3,
+            [iPhone4_1] = &constants_iPhone4_1,
+            [iPad2_1] = &constants_iPad2_1,
+            [iPad2_2] = &constants_iPad2_2,
+            [iPad2_3] = &constants_iPad2_3,
+            [iPod3_1] = &constants_iPod3_1,
+            [iPod4_1] = &constants_iPod4_1,
+        },
+
+    [FW9A406] =
+        {
+            [iPhone4_1] = &constants_iPhone4_1_9A406,
+        },
 };
 
-struct constants* global_constants[MAX_FIRMWARE][MAX_DEVICE] =
-{
-    [FW9A334] = {
-        [iPad1_1] = &constants_iPad1_1_9A334,
-        [iPhone2_1] = &constants_iPhone2_1_9A334,
-        [iPhone3_1] = &constants_iPhone3_1_9A334,
-        [iPhone4_1] = &constants_iPhone4_1_9A334,
-    },
+struct constants* global_constants_bootstrap[MAX_FIRMWARE][MAX_DEVICE] = {
+    [FW9A334] =
+        {
+            [iPad1_1] = &constants_bootstrap_iPad1_1_9A334,
+            [iPhone2_1] = &constants_bootstrap_iPhone2_1_9A334,
+            [iPhone3_1] = &constants_bootstrap_iPhone3_1_9A334,
+            [iPhone4_1] = &constants_bootstrap_iPhone4_1_9A334,
+        },
 
-    [FW9A405] = {
-        [iPad1_1] = &constants_iPad1_1,
-        [iPhone2_1] = &constants_iPhone2_1,
-        [iPhone3_1] = &constants_iPhone3_1,
-        [iPhone3_3] = &constants_iPhone3_3,
-        [iPhone4_1] = &constants_iPhone4_1,
-        [iPad2_1] = &constants_iPad2_1,
-        [iPad2_2] = &constants_iPad2_2,
-        [iPad2_3] = &constants_iPad2_3,
-        [iPod3_1] = &constants_iPod3_1,
-        [iPod4_1] = &constants_iPod4_1,
-    },
+    [FW9A405] =
+        {
+            [iPad1_1] = &constants_bootstrap_iPad1_1,
+            [iPhone2_1] = &constants_bootstrap_iPhone2_1,
+            [iPhone3_1] = &constants_bootstrap_iPhone3_1,
+            [iPhone3_3] = &constants_bootstrap_iPhone3_3,
+            [iPhone4_1] = &constants_bootstrap_iPhone4_1,
+            [iPad2_1] = &constants_bootstrap_iPad2_1,
+            [iPad2_2] = &constants_bootstrap_iPad2_2,
+            [iPad2_3] = &constants_bootstrap_iPad2_3,
+            [iPod3_1] = &constants_bootstrap_iPod3_1,
+            [iPod4_1] = &constants_bootstrap_iPod4_1,
+        },
 
-    [FW9A406] = {
-        [iPhone4_1] = &constants_iPhone4_1_9A406,
-    },
+    [FW9A406] =
+        {
+            [iPhone4_1] = &constants_bootstrap_iPhone4_1_9A406,
+        },
 };
 
-struct constants* global_constants_bootstrap[MAX_FIRMWARE][MAX_DEVICE] =
-{
-    [FW9A334] = {
-        [iPad1_1] = &constants_bootstrap_iPad1_1_9A334,
-        [iPhone2_1] = &constants_bootstrap_iPhone2_1_9A334,
-        [iPhone3_1] = &constants_bootstrap_iPhone3_1_9A334,
-        [iPhone4_1] = &constants_bootstrap_iPhone4_1_9A334,
-    },
+struct offsets* global_offsets[MAX_FIRMWARE][MAX_DEVICE] = {
+    [FW9A334] =
+        {
+            [iPad1_1] = &offsets_iPad1_1_9A334,
+            [iPhone2_1] = &offsets_iPhone2_1_9A334,
+            [iPhone3_1] = &offsets_iPhone3_1_9A334,
+            [iPhone4_1] = &offsets_iPhone4_1_9A334,
+        },
 
-    [FW9A405] = {
-        [iPad1_1] = &constants_bootstrap_iPad1_1,
-	[iPhone2_1] = &constants_bootstrap_iPhone2_1,
-        [iPhone3_1] = &constants_bootstrap_iPhone3_1,
-        [iPhone3_3] = &constants_bootstrap_iPhone3_3,
-        [iPhone4_1] = &constants_bootstrap_iPhone4_1,
-        [iPad2_1] = &constants_bootstrap_iPad2_1,
-        [iPad2_2] = &constants_bootstrap_iPad2_2,
-        [iPad2_3] = &constants_bootstrap_iPad2_3,
-	[iPod3_1] = &constants_bootstrap_iPod3_1,
-	[iPod4_1] = &constants_bootstrap_iPod4_1,
-    },
+    [FW9A405] =
+        {
+            [iPad1_1] = &offsets_iPad1_1,
+            [iPhone2_1] = &offsets_iPhone2_1,
+            [iPhone3_1] = &offsets_iPhone3_1,
+            [iPhone3_3] = &offsets_iPhone3_3,
+            [iPhone4_1] = &offsets_iPhone4_1,
+            [iPad2_1] = &offsets_iPad2_1,
+            [iPad2_2] = &offsets_iPad2_2,
+            [iPad2_3] = &offsets_iPad2_3,
+            [iPod3_1] = &offsets_iPod3_1,
+            [iPod4_1] = &offsets_iPod4_1,
+        },
 
-    [FW9A406] = {
-        [iPhone4_1] = &constants_bootstrap_iPhone4_1_9A406,
-    },
+    [FW9A406] =
+        {
+            [iPhone4_1] = &offsets_iPhone4_1_9A406,
+        },
 };
-
-struct offsets* global_offsets[MAX_FIRMWARE][MAX_DEVICE] =
-{
-    [FW9A334] = {
-        [iPad1_1] = &offsets_iPad1_1_9A334,
-        [iPhone2_1] = &offsets_iPhone2_1_9A334,
-        [iPhone3_1] = &offsets_iPhone3_1_9A334,
-        [iPhone4_1] = &offsets_iPhone4_1_9A334,
-    },
-
-    [FW9A405] = {
-        [iPad1_1] = &offsets_iPad1_1,
-	[iPhone2_1] = &offsets_iPhone2_1,
-        [iPhone3_1] = &offsets_iPhone3_1,
-        [iPhone3_3] = &offsets_iPhone3_3,
-        [iPhone4_1] = &offsets_iPhone4_1,
-        [iPad2_1] = &offsets_iPad2_1,
-        [iPad2_2] = &offsets_iPad2_2,
-        [iPad2_3] = &offsets_iPad2_3,
-	[iPod3_1] = &offsets_iPod3_1,
-	[iPod4_1] = &offsets_iPod4_1,
-    },
-
-    [FW9A406] = {
-        [iPhone4_1] = &offsets_iPhone4_1_9A406,
-    },
-};
-
-#endif

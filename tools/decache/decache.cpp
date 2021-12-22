@@ -12,17 +12,17 @@
 int main(int argc, char* argv[])
 {
     int err = 0;
-    char* cache = NULL;            // The path the dyldcache
-    char* dylib = NULL;            // The name of the dylib to extract
+    std::string cache;             // The path the dyldcache
+    std::string dylib;             // The name of the dylib to extract
     dyldcache_t* dyldcache = NULL; // Handle to dyld cache
     dyldimage_t* dyldimage = NULL; // Handle to dyld image
 
     if (argc == 2) {
         // We need to free this when we're done with it
-        cache = strdup(argv[1]);
+        cache = argv[1];
     } else if (argc == 3) {
         // We need to free this when we're done with it
-        dylib = strdup(argv[2]);
+        dylib = argv[2];
     } else {
         printf("usage: ./decache <dyldcache>");
         printf("       ./decache <dyldcache> <dylib>");

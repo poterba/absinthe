@@ -35,7 +35,7 @@ class Reporter final
   public:
     Reporter(std::shared_ptr<util::Device> device);
     Reporter(std::shared_ptr<util::Device> device, uint16_t port);
-    std::unique_ptr<Report> last_crash();
+    std::shared_ptr<Report> last_crash();
 
   private:
     // std::shared_ptr< AFC > _afc;

@@ -46,7 +46,7 @@ macho_segment_t* macho_segment_load(unsigned char* data, unsigned int offset)
             macho_segment_free(segment);
             return NULL;
         }
-        segment->name = strdup(segment->command->segname);
+        segment->name = segment->command->segname;
         segment->size = segment->command->filesize;
         segment->offset = segment->command->fileoff;
         segment->address = segment->command->vmaddr;

@@ -36,16 +36,14 @@ namespace util {
 
 Device::Device(const std::string& udid) : _udid(udid)
 {
-    idevice_error_t err = 0;
-
-    if (_udid == NULL) {
-        err = idevice_new(&_client, NULL);
-        if (err != IDEVICE_E_SUCCESS) {
+    if (_udid.empty()) {
+        if (idevice_new(&_client, NULL) != IDEVICE_E_SUCCESS) {
             // TODO: add udid to log
             throw std::runtime_error("No device found with udid {}, is it plugged in?");
         }
         idevice_get_udid(_client, (char**) &_udid);
     } else {
+        idevice_error_t err; // = 0;
         const auto retries = 5;
         for (auto i = 0; i < retries; ++i) {
             err = idevice_new(&_client, _udid.data());
@@ -57,7 +55,7 @@ Device::Device(const std::string& udid) : _udid(udid)
 
         if (err != IDEVICE_E_SUCCESS) {
             // TODO: add udid to log
-            throw std::runtime_error("No device found with udid {}, is it plugged in?", );
+            throw std::runtime_error("No device found with udid {}, is it plugged in?");
         }
     }
 }
@@ -73,7 +71,7 @@ void Device::enable_debug() { idevice_set_debug_level(3); }
 
 const idevice_t& Device::client() const { return _client; }
 
-const std::string& udid() const { return _udid; }
+const std::string& Device::udid() const { return _udid; }
 
 } // namespace util
 } // namespace absinthe

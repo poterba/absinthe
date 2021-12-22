@@ -11,9 +11,9 @@ class AbsintheMainWnd;
 class AbsintheWorker
 {
   private:
-    AbsintheMainWnd* mainWnd;
-    int device_count;
-    char* current_udid;
+    AbsintheMainWnd* _mainWnd;
+    int _device_count;
+    std::string _current_udid;
 
   public:
     AbsintheWorker(AbsintheMainWnd* main);

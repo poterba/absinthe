@@ -40,7 +40,7 @@ void file_close(file_t* file);
 void file_free(file_t* file);
 file_t* file_open(const std::string& path);
 
-int file_read(const std::string& file, unsigned char** buf, unsigned int* length);
+int file_read(const std::string& file, std::string& buf, unsigned int* length);
 int file_write(const std::string& file, unsigned char* buf, unsigned int length);
 int file_copy(const std::string& from, const std::string& to);
 

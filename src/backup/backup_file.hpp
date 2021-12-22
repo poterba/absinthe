@@ -24,46 +24,47 @@
 
 namespace absinthe {
 namespace backup {
-namespace backup_file {
 
-typedef struct backup_file_t
+class MBDBRecord;
+
+struct File
 {
+  public:
+    File(const std::string& filepath);
+    File(const std::vector<unsigned char>& data, int copy);
+    File(std::shared_ptr<MBDBRecord> mbdb_record);
+
+    void assign_file_data(const std::vector<unsigned char>& data, int copy);
+    void assign_file_path(const std::string& path);
+
+    void set_domain(const std::string& domain);
+    void set_path(const std::string& path);
+    void set_target(const std::string& target);
+    void update_hash();
+    void disable_hash();
+    // void set_unknown1(const char* data, unsigned short size);
+    void set_mode(unsigned short mode);
+    // void set_unknown2(unsigned int unknown2);
+    void set_inode(unsigned int inode);
+    void set_uid(unsigned int uid);
+    void set_gid(unsigned int gid);
+    void set_time1(unsigned int time1);
+    void set_time2(unsigned int time2);
+    void set_time3(unsigned int time3);
+    void set_length(unsigned long long length);
+    void set_flag(unsigned char flag);
+
+    int get_record_data(unsigned char** data, unsigned int* size);
+
+  private:
     // mbdx_record_t* mbdx_record;
-    mbdb_record::mbdb_record_t* mbdb_record;
-    char* filepath;
-    unsigned char* data;
-    unsigned int size;
-    int free_data;
-} backup_file_t;
+    std::shared_ptr<MBDBRecord> _mbdb_record;
+    std::string _filepath;
 
-backup_file_t* create(const char* filepath);
-backup_file_t* create_with_data(unsigned char* data, unsigned int size, int copy);
-backup_file_t* create_from_record(mbdb_record::mbdb_record_t* record);
+    std::vector<unsigned char> _data;
+    unsigned int _size;
+    int _free_data;
+};
 
-void assign_file_data(backup_file_t* bfile, unsigned char* data, unsigned int size, int copy);
-void assign_file_path(backup_file_t* bfile, unsigned char* path);
-
-void set_domain(backup_file_t* bfile, const char* domain);
-void set_path(backup_file_t* bfile, const char* path);
-void set_target(backup_file_t* bfile, const char* target);
-void update_hash(backup_file_t* bfile);
-void disable_hash(backup_file_t* bfile);
-// void set_unknown1(backup_file_t* bfile, const char* data, unsigned short size);
-void set_mode(backup_file_t* bfile, unsigned short mode);
-// void set_unknown2(backup_file_t* bfile, unsigned int unknown2);
-void set_inode(backup_file_t* bfile, unsigned int inode);
-void set_uid(backup_file_t* bfile, unsigned int uid);
-void set_gid(backup_file_t* bfile, unsigned int gid);
-void set_time1(backup_file_t* bfile, unsigned int time1);
-void set_time2(backup_file_t* bfile, unsigned int time2);
-void set_time3(backup_file_t* bfile, unsigned int time3);
-void set_length(backup_file_t* bfile, unsigned long long length);
-void set_flag(backup_file_t* bfile, unsigned char flag);
-
-void free(backup_file_t* file);
-
-int get_record_data(backup_file_t* bfile, unsigned char** data, unsigned int* size);
-
-} // namespace backup_file
 } // namespace backup
 } // namespace absinthe

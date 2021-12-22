@@ -24,15 +24,7 @@
 #include "dyldmap.hpp"
 #include "endianness.hpp"
 #include "file.hpp"
-
-#define DYLDCACHE_DIR "/var/db/dyld"
-#define DYLDCACHE_NAME "dyld_shared_cache"
-
-#define DYLDARCH_PPC "ppc"
-#define DYLDARCH_I386 "i386"
-#define DYLDARCH_X86_64 "x86_64"
-#define DYLDARCH_ARMV6 "armv6"
-#define DYLDARCH_ARMV7 "armv7"
+#include <vector>
 
 namespace absinthe {
 namespace dyld {
@@ -56,14 +48,18 @@ class Cache final
 
     struct Architecture
     {
-        char* name;
+        Architecture(unsigned char* data);
+
+        std::string name;
         endian_t cpu_endian;
-        cpu_type_t cpu_type;
-        cpu_subtype_t cpu_subtype;
+        CPUType cpu_type;
+        CPUSubType cpu_subtype;
     };
 
     struct Header
     {
+        Header(unsigned char* data);
+
         char magic[16];
         uint32_t mapping_offset;
         uint32_t mapping_count;
@@ -74,62 +70,33 @@ class Cache final
         uint64_t codesign_size;
     };
 
-    /*
-     * Dyldcache Functions
-     */
-    dyldcache_t* open(const char* path);
-    map::dyldmap_t* map_image(dyldcache_t* cache, image::dyldimage_t* image);
-    map::dyldmap_t* map_address(dyldcache_t* cache, uint64_t address);
-    image::dyldimage_t* get_image(dyldcache_t* cache, const char* dylib);
-    image::dyldimage_t* first_image(dyldcache_t* cache);
-    image::dyldimage_t* next_image(dyldcache_t* cache, image::dyldimage_t* image);
-    void _debug(dyldcache_t* cache);
-    void free(dyldcache_t* cache);
+    Cache(const char* path);
+    ~Cache() = default;
 
-    /*
-     * Dyldcache Architecture Functions
-     */
-    architecture_t* architecture_create();
-    architecture_t* architecture_load(dyldcache_t* cache);
-    void architecture_debug(architecture_t* arch);
-    void architecture_free(architecture_t* arch);
+    std::shared_ptr<Map> map_image(const std::shared_ptr<Image>& image);
+    std::shared_ptr<Map> map_address(uint64_t address);
+    std::shared_ptr<Image> get_image(const char* dylib);
+    std::shared_ptr<Image> first_image();
+    std::shared_ptr<Image> next_image(const std::shared_ptr<Image>& image);
 
-    /*
-     * Dyldcache Header Functions
-     */
-    header_t* header_create();
-    header_t* header_load(dyldcache_t* cache);
-    void header_debug(header_t* header);
-    void header_free(header_t* header);
+    std::vector<std::shared_ptr<Image>> images_create(uint32_t count);
+    void images_debug(std::vector<std::shared_ptr<Image>> images);
+    void images_free(std::vector<std::shared_ptr<Image>> images);
 
-    /*
-     * Dyldcache Images Functions
-     */
-    image::dyldimage_t** images_create(uint32_t count);
-    image::dyldimage_t** images_load(dyldcache_t* cache);
-    void images_debug(image::dyldimage_t** images);
-    void images_free(image::dyldimage_t** images);
-
-    /*
-     * Dyldcache Maps Functions
-     */
-    map::dyldmap_t** maps_create(uint32_t count);
-    map::dyldmap_t** maps_load(dyldcache_t* cache);
-    void maps_debug(map::dyldmap_t** maps);
-    void maps_free(map::dyldmap_t** maps);
+    std::vector<std::shared_ptr<Map>> maps_create(uint32_t count);
+    std::vector<std::shared_ptr<Map>> maps_load();
 
   private:
-    std::shared_ptr<Header> header;
-    std::shared_ptr<Architecture> arch;
-    image::dyldimage_t** images;
-    map::dyldmap_t** maps;
-    util::file_t* file;
-    uint32_t offset;
-    uint32_t count;
-    unsigned int size;
-    unsigned char* data;
+    std::shared_ptr<Header> _header;
+    std::shared_ptr<Architecture> _arch;
+    std::vector<std::shared_ptr<Image>> _images;
+    std::vector<std::shared_ptr<Map>> _maps;
+    util::file_t* _file;
+    uint32_t _offset;
+    uint32_t _count;
+    unsigned int _size;
+    unsigned char* _data;
 };
 
-} // namespace cache
 } // namespace dyld
 } // namespace absinthe

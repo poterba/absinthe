@@ -94,7 +94,7 @@ void AbsintheWorker::setUDID(const char* udid)
         this->current_udid = NULL;
     }
     if (udid) {
-        this->current_udid = strdup(udid);
+        this->current_udid = udid;
     }
 }
 

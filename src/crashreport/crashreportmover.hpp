@@ -21,6 +21,9 @@
 
 #include <libimobiledevice/libimobiledevice.h>
 
+#include <memory>
+#include <optional>
+
 namespace absinthe {
 namespace util {
 class Device;
@@ -30,14 +33,14 @@ namespace crashreport {
 class Mover final
 {
   public:
-    Mover(std::shared_ptr<util::Device> device);
-    Mover(std::shared_ptr<util::Device> device, uint16_t port);
+    Mover(std::shared_ptr<util::Device> device, std::optional<uint16_t> port);
+    ~Mover();
     int close();
 
   private:
-    uint16_t port;
-    std::shared_ptr<util::Device> device;
-    idevice_connection_t connection;
+    uint16_t _port;
+    std::shared_ptr<util::Device> _device;
+    idevice_connection_t _connection;
 };
 
 } // namespace crashreport

@@ -21,47 +21,40 @@
 
 #include "common.hpp"
 
-#define DYLDMAP_EXEC 1
-#define DYLDMAP_WRITE 2
-#define DYLDMAP_READ 4
+#include <memory>
 
 namespace absinthe {
 namespace dyld {
-namespace map {
-
-typedef struct info_t
-{
-    uint64_t address;
-    uint64_t size;
-    uint64_t offset;
-    uint32_t maxProt;
-    uint32_t initProt;
-} info_t;
-
-typedef struct dyldmap_t
-{
-    uint64_t address;
-    uint64_t size;
-    uint64_t offset;
-    info_t* info;
-} dyldmap_t;
 
 /*
- * Dyldcache Map Functions
+ * Dyldcache Map
  */
-dyldmap_t* parse(unsigned char* data, uint32_t offset);
-bool contains(dyldmap_t* map, uint64_t address);
-void _debug(dyldmap_t* image);
-void free(dyldmap_t* map);
+class Map final
+{
+  public:
+    struct Info
+    {
+        Info(unsigned char* data, uint32_t offset);
+        void _debug();
 
-/*
- * Dyldcache Map Info Functions
- */
-info_t* info_create();
-info_t* info_parse(unsigned char* data, uint32_t offset);
-void info_debug(info_t* map);
-void info_free(info_t* map);
+        uint64_t address;
+        uint64_t size;
+        uint64_t offset;
+        uint32_t maxProt;
+        uint32_t initProt;
+    };
 
-} // namespace map
+    Map(unsigned char* data, uint32_t offset);
+    ~Map();
+
+    bool contains(uint64_t address);
+
+  private:
+    uint64_t _address;
+    uint64_t _size;
+    uint64_t _offset;
+    std::unique_ptr<Info> _info;
+};
+
 } // namespace dyld
 } // namespace absinthe

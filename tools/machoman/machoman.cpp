@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
                 print_usage(argc, argv);
                 return 0;
             }
-            search = strdup(argv[i]);
+            search = argv[i];
             search_len = strlen(search);
             mode = OP_SEARCH;
             continue;

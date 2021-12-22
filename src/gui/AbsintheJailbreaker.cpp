@@ -26,7 +26,7 @@ void AbsintheJailbreaker::statusCallback(const char* message, int progress)
 
 void* AbsintheJailbreaker::Entry(void* data)
 {
-    char* udid = strdup(worker->getUDID());
+    std::string udid = worker->getUDID();
     jailbreak(udid, status_cb);
     free(udid);
 

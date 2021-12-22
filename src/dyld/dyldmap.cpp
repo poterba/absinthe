@@ -27,92 +27,32 @@
 
 namespace absinthe {
 namespace dyld {
-namespace map {
 
-dyldmap_t* parse(unsigned char* data, uint32_t offset)
+Map::Info::Info(unsigned char* data, uint32_t offset) { memcpy(this, &data[offset], sizeof(Info)); }
+
+void Map::Info::_debug()
 {
-    unsigned char* buffer = &data[offset];
-    dyldmap_t* map = create();
-    if (map) {
-        map->info = info_parse(data, offset);
-        if (map->info == NULL) {
-            throw std::runtime_error("Unable to allocate data for dyld map info");
-            return NULL;
-        }
-        map->address = map->info->address;
-        map->size = map->info->size;
-        map->offset = map->info->offset;
-    }
-    return map;
+    debug("\t\tInfo {");
+    debug("\t\t\t address = 0x%08x", (uint32_t) _address);
+    debug("\t\t\t    size = 0x%08x", (uint32_t) _size);
+    debug("\t\t\t  offset = 0x%08x", (uint32_t) _offset);
+    debug("\t\t\t maxProt = %s", prot2str(_maxProt));
+    debug("\t\t\tinitProt = %s", prot2str(_initProt));
+    debug("\t\t}");
 }
 
-bool contains(dyldmap_t* map, uint64_t address)
+Map::Map(unsigned char* data, uint32_t offset)
 {
-    if (address >= map->address && address < (map->address + map->size)) {
-        return true;
-    }
-    return false;
+    _info = std::make_unique<Info>(data, offset);
+    _address = _info->address;
+    _size = _info->size;
+    _offset = _info->offset;
 }
 
-void free(dyldmap_t* map)
+bool Map::contains(uint64_t address)
 {
-    if (map) {
-        if (map->info) {
-            dyldmap_info_free(map->info);
-        }
-        free(map);
-    }
+    return (address >= _address && address < (_address + _size));
 }
 
-void _debug(dyldmap_t* map)
-{
-    if (map) {
-        debug("\tMap:");
-        debug("\t");
-    }
-}
-
-/*
- * Dyldcache Map Info Functions
- */
-dyldmap_info_t* info_create()
-{
-    dyldmap_info_t* info = (dyldmap_info_t*) malloc(sizeof(dyldmap_info_t));
-    if (info) {
-        memset(info, '\0', sizeof(dyldmap_info_t));
-    }
-    return info;
-}
-
-dyldmap_info_t* info_parse(unsigned char* data, uint32_t offset)
-{
-    dyldmap_info_t* info = info_create();
-    if (info) {
-        memcpy(info, &data[offset], sizeof(dyldmap_info_t));
-    }
-    return info;
-}
-
-void info_debug(dyldmap_info_t* info)
-{
-    if (info) {
-        debug("\t\tInfo {");
-        debug("\t\t\t address = 0x%08x", (uint32_t) info->address);
-        debug("\t\t\t    size = 0x%08x", (uint32_t) info->size);
-        debug("\t\t\t  offset = 0x%08x", (uint32_t) info->offset);
-        debug("\t\t\t maxProt = %s", prot2str(info->maxProt));
-        debug("\t\t\tinitProt = %s", prot2str(info->initProt));
-        debug("\t\t}");
-    }
-}
-
-void info_free(dyldmap_info_t* info)
-{
-    if (info) {
-        free(info);
-    }
-}
-
-} // namespace map
 } // namespace dyld
 } // namespace absinthe

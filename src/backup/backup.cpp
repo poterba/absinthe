@@ -18,13 +18,10 @@
  **/
 
 #include "backup.hpp"
-
 #include "common.hpp"
 #include "debug.hpp"
 #include "file.hpp"
-
 #include <openssl/sha.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,55 +30,33 @@
 namespace absinthe {
 namespace backup {
 
-backup_t* backup_open(const char* backupdir, const char* uuid)
+Backup::Backup(const std::string& backupdir, const std::string& uuid)
 {
-    if (!backupdir || !uuid) {
-        return NULL;
+    if (backupdir.empty() || uuid.empty()) {
+        throw std::runtime_error("non valid backup");
     }
 
-    char* backup_path = (char*) malloc(strlen(backupdir) + 1 + strlen(uuid) + 1 + 4);
-    strcpy(backup_path, backupdir);
-    strcat(backup_path, "/");
-    strcat(backup_path, uuid);
+    std::string backup_path = backupdir + "/" + uuid;
+    std::string mbdb_path = backup_path + "/Manifest.mbdb";
 
-    char* mbdb_path = (char*) malloc(strlen(backup_path) + 1 + strlen("Manifest.mbdb") + 1 + 4);
-    strcpy(mbdb_path, backup_path);
-    strcat(mbdb_path, "/");
-    strcat(mbdb_path, "Manifest.mbdb");
-
-    mbdb::mbdb_t* mbdb = mbdb::open(mbdb_path);
-    if (mbdb) {
-        debug("Manifest.mbdb opened, %d records", mbdb->num_records);
+    _mbdb = std::make_shared<MBDB>(mbdb_path);
+    if (_mbdb) {
+        debug("Manifest.mbdb opened, %d records", _mbdb->num_records);
     } else {
-        throw std::runtime_error("ERROR: could not open %s", mbdb_path);
-        free(mbdb_path);
-        return NULL;
+        throw std::runtime_error("ERROR: could not open " + mbdb_path);
     }
-    free(mbdb_path);
-
-    backup_t* backup = (backup_t*) malloc(sizeof(backup_t));
-    if (backup == NULL) {
-        free(mbdb);
-        return NULL;
-    }
-    memset(backup, '\0', sizeof(backup_t));
-
-    backup->mbdb = mbdb;
-    backup->path = backup_path;
-
-    return backup;
 }
 
-int backup_get_file_index(backup_t* backup, const char* domain, const char* path)
+int Backup::get_file_index(const std::string& domain, const std::string& path)
 {
-    if (!backup || !backup->mbdb) {
+    if (!_mbdb) {
         return -1;
     }
     int i = 0;
     int found = 0;
-    mbdb_record_t* rec = NULL;
-    for (i = 0; i < backup->mbdb->num_records; i++) {
-        rec = backup->mbdb->records[i];
+    MBDBRecord* rec = NULL;
+    for (i = 0; i < _mbdb->num_records; i++) {
+        rec = _mbdb->records[i];
         if (rec->domain && !strcmp(rec->domain, domain) && rec->path && !strcmp(rec->path, path)) {
             found = 1;
             break;
@@ -90,50 +65,42 @@ int backup_get_file_index(backup_t* backup, const char* domain, const char* path
     return (found) ? i : -1;
 }
 
-backup_file_t* backup_get_file(backup_t* backup, const char* domain, const char* path)
+std::shared_ptr<File> Backup::get_file(const std::string& domain, const std::string& path)
 {
-    if (!backup || !backup->mbdb) {
+    if (!_mbdb) {
         return NULL;
     }
-    int idx = backup_get_file_index(backup, domain, path);
+    int idx = get_file_index(domain, path);
     if (idx < 0) {
         // not found
         return NULL;
     }
-    mbdb_record_t* rec = backup->mbdb->records[idx];
-    return backup_file_create_from_record(rec);
+    return std::make_shared<File>(_mbdb->records[idx]);
 }
 
-char* backup_get_file_path(backup_t* backup, backup_file_t* bfile)
+char* Backup::get_file_path(std::shared_ptr<File> bfile)
 {
     int res = 0;
 
-    if (!backup || !bfile) {
+    if (!bfile) {
         return NULL;
     }
-    if (!backup->mbdb) {
-        throw std::runtime_error("%s: ERROR: no mbdb in given backup_t", __func__);
-        return NULL;
+    if (!_mbdb) {
+        throw std::runtime_error("ERROR: no mbdb in given backup");
     }
 
-    char* bfntmp =
-        (char*) malloc(bfile->mbdb_record->domain_size + 1 + bfile->mbdb_record->path_size + 1 + 4);
-    strcpy(bfntmp, bfile->mbdb_record->domain);
-    strcat(bfntmp, "-");
-    strcat(bfntmp, bfile->mbdb_record->path);
-
-    char* backupfname = (char*) malloc(strlen(backup->path) + 1 + 40 + 1);
+    std::string bfntmp = bfile->mbdb_record->domain + "-" + bfile->mbdb_record->path;
+    char* backupfname = (char*) malloc(strlen(_path) + 1 + 40 + 1);
     unsigned char sha1[20] = {
         0,
     };
     SHA1(bfntmp, strlen(bfntmp), sha1);
     free(bfntmp);
 
-    strcpy(backupfname, backup->path);
-    strcat(backupfname, "/");
+    std::string backupfname = _path + "/";
 
     int i;
-    char* p = backupfname + strlen(backup->path) + 1;
+    char* p = backupfname + strlen(_path) + 1;
     for (i = 0; i < 20; i++) {
         sprintf(p + i * 2, "%02x", sha1[i]);
     }
@@ -143,49 +110,47 @@ char* backup_get_file_path(backup_t* backup, backup_file_t* bfile)
     return backupfname;
 }
 
-int backup_update_file(backup_t* backup, backup_file_t* bfile)
+int Backup::update_file(std::shared_ptr<File> bfile)
 {
     int res = 0;
 
-    if (!backup || !bfile) {
+    if (!bfile) {
         return -1;
     }
-    if (!backup->mbdb) {
+    if (!_mbdb) {
         throw std::runtime_error("%s: ERROR: no mbdb in given backup_t", __func__);
-        return -1;
     }
 
     unsigned char* rec = NULL;
     unsigned int rec_size = 0;
 
-    if (backup_file_get_record_data(bfile, &rec, &rec_size) < 0) {
+    if (bfile->get_record_data(&rec, &rec_size) < 0) {
         throw std::runtime_error("%s: ERROR: could not build mbdb_record data", __func__);
-        return -1;
     }
 
     unsigned int newsize = 0;
     unsigned char* newdata = NULL;
 
     // find record
-    int idx = backup_get_file_index(backup, bfile->mbdb_record->domain, bfile->mbdb_record->path);
+    int idx = get_file_index(bfile->mbdb_record->domain, bfile->mbdb_record->path);
     if (idx < 0) {
         // append record to mbdb
-        newsize = backup->mbdb->size + rec_size;
+        newsize = _mbdb->size + rec_size;
         newdata = (unsigned char*) malloc(newsize);
 
-        memcpy(newdata, backup->mbdb->data, backup->mbdb->size);
-        memcpy(newdata + backup->mbdb->size, rec, rec_size);
+        memcpy(newdata, _mbdb->data, _mbdb->size);
+        memcpy(newdata + _mbdb->size, rec, rec_size);
     } else {
         // update record in mbdb
-        backup_file_t* oldfile = backup_file_create_from_record(backup->mbdb->records[idx]);
+        std::shared_ptr<File> oldfile = std::make_shared<File>(_mbdb->records[idx]);
         unsigned int oldsize = oldfile->mbdb_record->this_size;
-        backup_file_free(oldfile);
+        file_free(oldfile);
 
-        newsize = backup->mbdb->size - oldsize + rec_size;
+        newsize = _mbdb->size - oldsize + rec_size;
         newdata = (unsigned char*) malloc(newsize);
 
         char* p = newdata;
-        memcpy(p, backup->mbdb->data, sizeof(mbdb_header_t));
+        memcpy(p, _mbdb->data, sizeof(mbdb_header_t));
         p += sizeof(mbdb_header_t);
 
         mbdb_record_t* r;
@@ -194,7 +159,7 @@ int backup_update_file(backup_t* backup, backup_file_t* bfile)
         int i;
 
         for (i = 0; i < idx; i++) {
-            r = backup->mbdb->records[i];
+            r = _mbdb->records[i];
             rd = NULL;
             rs = 0;
             mbdb_record_build(r, &rd, &rs);
@@ -204,8 +169,8 @@ int backup_update_file(backup_t* backup, backup_file_t* bfile)
         }
         memcpy(p, rec, rec_size);
         p += rec_size;
-        for (i = idx + 1; i < backup->mbdb->num_records; i++) {
-            r = backup->mbdb->records[i];
+        for (i = idx + 1; i < _mbdb->num_records; i++) {
+            r = _mbdb->records[i];
             rd = NULL;
             rs = 0;
             mbdb_record_build(r, &rd, &rs);
@@ -220,11 +185,11 @@ int backup_update_file(backup_t* backup, backup_file_t* bfile)
         return -1;
     }
 
-    mbdb_free(backup->mbdb);
+    mbdb_free(_mbdb);
     free(rec);
 
     // parse the new data
-    backup->mbdb = mbdb_parse(newdata, newsize);
+    _mbdb = mbdb_parse(newdata, newsize);
     free(newdata);
 
     // write out the file data
@@ -234,18 +199,18 @@ int backup_update_file(backup_t* backup, backup_file_t* bfile)
     strcat(bfntmp, "-");
     strcat(bfntmp, bfile->mbdb_record->path);
 
-    char* backupfname = (char*) malloc(strlen(backup->path) + 1 + 40 + 1);
+    char* backupfname = (char*) malloc(strlen(_path) + 1 + 40 + 1);
     unsigned char sha1[20] = {
         0,
     };
     SHA1(bfntmp, strlen(bfntmp), sha1);
     free(bfntmp);
 
-    strcpy(backupfname, backup->path);
+    strcpy(backupfname, _path);
     strcat(backupfname, "/");
 
     int i;
-    char* p = backupfname + strlen(backup->path) + 1;
+    char* p = backupfname + strlen(_path) + 1;
     for (i = 0; i < 20; i++) {
         sprintf(p + i * 2, "%02x", sha1[i]);
     }
@@ -277,23 +242,22 @@ int backup_update_file(backup_t* backup, backup_file_t* bfile)
     return res;
 }
 
-int backup_remove_file(backup_t* backup, backup_file_t* bfile)
+int Backup::remove_file(std::shared_ptr<File> bfile)
 {
     int res = 0;
 
-    if (!backup || !bfile) {
+    if (!bfile) {
         return -1;
     }
-    if (!backup->mbdb) {
-        throw std::runtime_error("%s: ERROR: no mbdb in given backup_t", __func__);
-        return -1;
+    if (!_mbdb) {
+        throw std::runtime_error("no mbdb in given backup");
     }
 
     unsigned int newsize = 0;
     unsigned char* newdata = NULL;
 
     // find record
-    int idx = backup_get_file_index(backup, bfile->mbdb_record->domain, bfile->mbdb_record->path);
+    int idx = get_file_index(bfile->mbdb_record->domain, bfile->mbdb_record->path);
     if (idx < 0) {
         debug(
             "file %s-%s not found in backup so not removed.", bfile->mbdb_record->domain,
@@ -301,15 +265,15 @@ int backup_remove_file(backup_t* backup, backup_file_t* bfile)
         return -1;
     } else {
         // remove record from mbdb
-        backup_file_t* oldfile = backup_file_create_from_record(backup->mbdb->records[idx]);
+        std::shared_ptr<File> oldfile = file_create_from_record(_mbdb->records[idx]);
         unsigned int oldsize = oldfile->mbdb_record->this_size;
-        backup_file_free(oldfile);
+        file_free(oldfile);
 
-        newsize = backup->mbdb->size - oldsize;
+        newsize = _mbdb->size - oldsize;
         newdata = (unsigned char*) malloc(newsize);
 
         char* p = newdata;
-        memcpy(p, backup->mbdb->data, sizeof(mbdb_header_t));
+        memcpy(p, _mbdb->data, sizeof(mbdb_header_t));
         p += sizeof(mbdb_header_t);
 
         mbdb_record_t* r;
@@ -318,7 +282,7 @@ int backup_remove_file(backup_t* backup, backup_file_t* bfile)
         int i;
 
         for (i = 0; i < idx; i++) {
-            r = backup->mbdb->records[i];
+            r = _mbdb->records[i];
             rd = NULL;
             rs = 0;
             mbdb_record_build(r, &rd, &rs);
@@ -326,8 +290,8 @@ int backup_remove_file(backup_t* backup, backup_file_t* bfile)
             free(rd);
             p += rs;
         }
-        for (i = idx + 1; i < backup->mbdb->num_records; i++) {
-            r = backup->mbdb->records[i];
+        for (i = idx + 1; i < _mbdb->num_records; i++) {
+            r = _mbdb->records[i];
             rd = NULL;
             rs = 0;
             mbdb_record_build(r, &rd, &rs);
@@ -342,10 +306,8 @@ int backup_remove_file(backup_t* backup, backup_file_t* bfile)
         return -1;
     }
 
-    mbdb_free(backup->mbdb);
-
     // parse the new data
-    backup->mbdb = mbdb_parse(newdata, newsize);
+    _mbdb = mbdb_parse(newdata, newsize);
     free(newdata);
 
     // write out the file data
@@ -355,18 +317,18 @@ int backup_remove_file(backup_t* backup, backup_file_t* bfile)
     strcat(bfntmp, "-");
     strcat(bfntmp, bfile->mbdb_record->path);
 
-    char* backupfname = (char*) malloc(strlen(backup->path) + 1 + 40 + 1);
+    char* backupfname = (char*) malloc(strlen(_path) + 1 + 40 + 1);
     unsigned char sha1[20] = {
         0,
     };
     SHA1(bfntmp, strlen(bfntmp), sha1);
     free(bfntmp);
 
-    strcpy(backupfname, backup->path);
+    strcpy(backupfname, _path);
     strcat(backupfname, "/");
 
     int i;
-    char* p = backupfname + strlen(backup->path) + 1;
+    char* p = backupfname + strlen(_path) + 1;
     for (i = 0; i < 20; i++) {
         sprintf(p + i * 2, "%02x", sha1[i]);
     }
@@ -381,106 +343,87 @@ int backup_remove_file(backup_t* backup, backup_file_t* bfile)
     return res;
 }
 
-int backup_write_mbdb(backup_t* backup)
+int Backup::write_mbdb()
 {
-    if (!backup || !backup->path || !backup->mbdb) {
+    if (!_path || !_mbdb) {
         return -1;
     }
 
-    char* mbdb_path = (char*) malloc(strlen(backup->path) + 1 + strlen("Manifest.mbdb") + 1);
-    strcpy(mbdb_path, backup->path);
-    strcat(mbdb_path, "/");
-    strcat(mbdb_path, "Manifest.mbdb");
+    std::sting mbdb_path = _path + "/Manifest.mbdb";
 
-    int res = file_write(mbdb_path, backup->mbdb->data, backup->mbdb->size);
-    free(mbdb_path);
-    return res;
-}
-
-void backup_free(backup_t* backup)
-{
-    if (backup) {
-        if (backup->mbdb) {
-            mbdb_free(backup->mbdb);
-        }
-        if (backup->path) {
-            free(backup->path);
-        }
-        free(backup);
-    }
+    return file_write(mbdb_path, _mbdb->data, _mbdb->size);
 }
 
 int inode_start = 54327; /* Whatever. */
 
-int backup_mkdir(backup_t* backup, char* domain, char* path, int mode, int uid, int gid, int flag)
+int Backup::mkdir(char* domain, char* path, int mode, int uid, int gid, int flag)
 {
     int ret = -1;
-    backup_file_t* file = backup_file_create(NULL);
+    std::shared_ptr<File> file = file_create(NULL);
 
     debug("[backup] MKDIR: (%s):%s", domain, path);
 
     if (file) {
-        backup_file_set_domain(file, domain);
-        backup_file_set_path(file, path);
-        backup_file_set_mode(file, mode | 040000);
+        file_set_domain(file, domain);
+        file_set_path(file, path);
+        file_set_mode(file, mode | 040000);
         inode_start++;
 
-        backup_file_set_inode(file, inode_start);
-        backup_file_set_uid(file, uid);
-        backup_file_set_gid(file, gid);
-        backup_file_set_time1(file, time(NULL));
-        backup_file_set_time2(file, time(NULL));
-        backup_file_set_time3(file, time(NULL));
-        backup_file_set_flag(file, flag);
+        file_set_inode(file, inode_start);
+        file_set_uid(file, uid);
+        file_set_gid(file, gid);
+        file_set_time1(file, time(NULL));
+        file_set_time2(file, time(NULL));
+        file_set_time3(file, time(NULL));
+        file_set_flag(file, flag);
 
-        if (backup_update_file(backup, file) >= 0)
+        if (update_file(backup, file) >= 0)
             ret = 0;
         else
             ret = -1;
-        backup_file_free(file);
+        file_free(file);
 
         if (!ret)
-            backup_write_mbdb(backup);
+            write_mbdb(backup);
     }
     return ret;
 }
 
-int backup_symlink(backup_t* backup, char* domain, char* path, char* to, int uid, int gid, int flag)
+int Backup::symlink(char* domain, char* path, char* to, int uid, int gid, int flag)
 {
     int ret = -1;
-    backup_file_t* file = backup_file_create(NULL);
+    std::shared_ptr<File> file = file_create(NULL);
 
     debug("[backup] SYMLINK: (%s):%s => %s", domain, path, to);
 
     if (file) {
-        backup_file_set_domain(file, domain);
-        backup_file_set_path(file, path);
-        backup_file_set_target(file, to);
-        backup_file_set_mode(file, 0120644);
+        file_set_domain(file, domain);
+        file_set_path(file, path);
+        file_set_target(file, to);
+        file_set_mode(file, 0120644);
         inode_start++;
 
-        backup_file_set_inode(file, inode_start);
-        backup_file_set_uid(file, uid);
-        backup_file_set_gid(file, gid);
-        backup_file_set_time1(file, time(NULL));
-        backup_file_set_time2(file, time(NULL));
-        backup_file_set_time3(file, time(NULL));
-        backup_file_set_flag(file, flag);
+        file_set_inode(file, inode_start);
+        file_set_uid(file, uid);
+        file_set_gid(file, gid);
+        file_set_time1(file, time(NULL));
+        file_set_time2(file, time(NULL));
+        file_set_time3(file, time(NULL));
+        file_set_flag(file, flag);
 
-        if (backup_update_file(backup, file) >= 0)
+        if (update_file(file) >= 0)
             ret = 0;
         else
             ret = -1;
-        backup_file_free(file);
+        file_free(file);
 
         if (!ret)
-            backup_write_mbdb(backup);
+            write_mbdb(backup);
     }
     return ret;
 }
 
-int backup_add_file_from_path(
-    backup_t* backup,
+int Backup::add_file_from_path(
     char* domain,
     char* localpath,
     char* path,
@@ -501,38 +444,37 @@ int backup_add_file_from_path(
 
     debug("[backup] FILE: (%s):%s", domain, path);
 
-    backup_file_t* file = backup_file_create_with_data(data, size, 0);
+    std::shared_ptr<File> file = file_create_with_data(data, size, 0);
 
     if (file) {
-        backup_file_set_domain(file, domain);
-        backup_file_set_path(file, path);
-        backup_file_set_mode(file, mode | 0100000);
+        file_set_domain(file, domain);
+        file_set_path(file, path);
+        file_set_mode(file, mode | 0100000);
         inode_start++;
 
-        backup_file_set_inode(file, inode_start);
-        backup_file_set_uid(file, uid);
-        backup_file_set_gid(file, gid);
-        backup_file_set_time1(file, time(NULL));
-        backup_file_set_time2(file, time(NULL));
-        backup_file_set_time3(file, time(NULL));
-        backup_file_set_flag(file, flag);
+        file_set_inode(file, inode_start);
+        file_set_uid(file, uid);
+        file_set_gid(file, gid);
+        file_set_time1(file, time(NULL));
+        file_set_time2(file, time(NULL));
+        file_set_time3(file, time(NULL));
+        file_set_flag(file, flag);
 
-        backup_file_set_length(file, size);
+        file_set_length(file, size);
 
-        if (backup_update_file(backup, file) >= 0)
+        if (update_file(backup, file) >= 0)
             ret = 0;
         else
             ret = -1;
-        backup_file_free(file);
+        file_free(file);
 
         if (!ret)
-            backup_write_mbdb(backup);
+            write_mbdb(backup);
     }
     return ret;
 }
 
-int backup_add_file_from_data(
-    backup_t* backup,
+int Backup::add_file_from_data(
     char* domain,
     char* data,
     unsigned int size,
@@ -543,32 +485,32 @@ int backup_add_file_from_data(
     int flag)
 {
     int ret = -1;
-    backup_file_t* file = backup_file_create_with_data(data, size, 0);
+    std::shared_ptr<File> file = file_create_with_data(data, size, 0);
 
     if (file) {
-        backup_file_set_domain(file, domain);
-        backup_file_set_path(file, path);
-        backup_file_set_mode(file, mode | 0100000);
+        file_set_domain(file, domain);
+        file_set_path(file, path);
+        file_set_mode(file, mode | 0100000);
         inode_start++;
 
-        backup_file_set_inode(file, inode_start);
-        backup_file_set_uid(file, uid);
-        backup_file_set_gid(file, gid);
-        backup_file_set_time1(file, time(NULL));
-        backup_file_set_time2(file, time(NULL));
-        backup_file_set_time3(file, time(NULL));
-        backup_file_set_flag(file, flag);
+        file_set_inode(file, inode_start);
+        file_set_uid(file, uid);
+        file_set_gid(file, gid);
+        file_set_time1(file, time(NULL));
+        file_set_time2(file, time(NULL));
+        file_set_time3(file, time(NULL));
+        file_set_flag(file, flag);
 
-        backup_file_set_length(file, size);
+        file_set_length(file, size);
 
-        if (backup_update_file(backup, file) >= 0)
+        if (update_file(backup, file) >= 0)
             ret = 0;
         else
             ret = -1;
-        backup_file_free(file);
+        file_free(file);
 
         if (!ret)
-            backup_write_mbdb(backup);
+            write_mbdb(backup);
     }
     return ret;
 }

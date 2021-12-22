@@ -22,6 +22,7 @@
 #include "dyldmap.hpp"
 
 #include <stdint.h>
+#include <string>
 
 namespace absinthe {
 namespace dyld {
@@ -31,13 +32,8 @@ class Image final
 
     struct Info
     {
-        /*
-         * Dyld Image Info Functions
-         */
-        Info();
         Info(unsigned char* data, uint32_t offset);
-        ~Info();
-        void debug(info_t* info);
+        void _debug();
 
         uint64_t address;
         uint64_t modtime;
@@ -46,25 +42,23 @@ class Image final
         uint32_t pad;
     };
 
-    /*
-     * Dyld Image Functions
-     */
-    dyldimage_t* parse(unsigned char* data, uint32_t offset);
-    char* get_name(dyldimage_t* image);
-    void save(dyldimage_t* image, const char* path);
-    void free(dyldimage_t* image);
-    void _debug(dyldimage_t* image);
+    Image(unsigned char* data, uint32_t offset);
+    ~Image();
 
-  private:
-    char* name;
-    char* path;
-    uint8_t* data;
-    uint32_t size;
-    uint32_t index;
-    uint32_t offset;
-    uint64_t address;
-    map::dyldmap_t* map;
-    image::info_t* info;
+    const std::string& get_name();
+    void save(const std::string& path);
+    void _debug();
+
+  public:
+    std::string _name;
+    std::string _path;
+    uint8_t* _data;
+    uint32_t _size;
+    uint32_t _index;
+    uint32_t _offset;
+    uint64_t _address;
+    std::unique_ptr<Info> _info;
+    std::unique_ptr<Map> map;
 };
 
 } // namespace dyld

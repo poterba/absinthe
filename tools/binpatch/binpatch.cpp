@@ -10,15 +10,15 @@
 
 int main(int argc, char* argv[])
 {
-    int err = 0;              // Error to return
-    bpatch_t* patch = NULL;   // Handle to our patch file
-    char* patch_path = NULL;  // Path to the patch file
-    char* target_path = NULL; // Path to the target file
+    int err = 0;             // Error to return
+    bpatch_t* patch = NULL;  // Handle to our patch file
+    std::string patch_path;  // Path to the patch file
+    std::string target_path; // Path to the target file
 
     // Check for required arguments
     if (argc == 3) {
-        target_path = strdup(argv[1]);
-        patch_path = strdup(argv[2]);
+        target_path = argv[1];
+        patch_path = argv[2];
     } else {
         printf("usage: ./binpatch <target> <patch>");
         return -1;

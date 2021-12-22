@@ -19,23 +19,23 @@
 
 #pragma once
 
-#include <errno.h>
-#include <libgen.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
+// #include <errno.h>
+// #include <libgen.h>
+// #include <stdarg.h>
+// #include <stdbool.h>
+// #include <stdint.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+#include <string>
+// #include <sys/stat.h>
 
 #define BUFSMALL 0x40
 #define BUFMEDIUM 0x400
 #define BUFLARGE 0x4000
 
-int mkdir_with_parents(const char* dir, int mode);
-char* build_path(const char* elem, ...);
-char* prot2str(uint32_t prot);
+int mkdir_with_parents(const std::string& dir, int mode);
+std::string build_path(const std::string& elem, ...);
+std::string prot2str(uint32_t prot);
 void hexdump(unsigned char* buf, unsigned int len);
-void rmdir_recursive(const char* path);
-int __mkdir(const char* path, int mode);
+void rmdir_recursive(const std::string& path);
+int __mkdir(const std::string& path, int mode);

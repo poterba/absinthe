@@ -211,7 +211,7 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
                         if (strcmp(uname_str, CONNECTION_NAME) == 0) {
                             // entry found
                             found++;
-                            guid = strdup(key);
+                            guid = key;
                             printf(
                                 "removing /NetworkServices/%s (UserDefinedName: %s)", key,
                                 uname_str);

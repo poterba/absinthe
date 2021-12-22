@@ -183,9 +183,9 @@ static uint32_t get_libcopyfile_vmaddr(const char* product, const char* build)
     // find product type and build version
     int i = 0;
     uint32_t vmaddr = 0;
-    while (devices_vmaddr_libcopyfile[i].product) {
-        if (!strcmp(product, devices_vmaddr_libcopyfile[i].product) &&
-            !strcmp(build, devices_vmaddr_libcopyfile[i].build)) {
+    while (!devices_vmaddr_libcopyfile[i].product.empty()) {
+        if (product != devices_vmaddr_libcopyfile[i].product &&
+            build != devices_vmaddr_libcopyfile[i].build) {
             vmaddr = devices_vmaddr_libcopyfile[i].vmaddr;
             break;
         }
@@ -243,25 +243,20 @@ int jb_check_consistency(const char* product, const char* build)
     }
 }
 
-crashreport::crashreport_t* fetch_crashreport(std::shared_ptr<util::Device> device)
+crashreport::Report* fetch_crashreport(std::shared_ptr<util::Device> device)
 {
     // We open crashreporter so we can download the mobilebackup2 crashreport
     //  and parse the "random" dylib addresses. Thank you ASLR for nothing. ;P
     debug("Opening connection to CrashReporter service");
-    crashreport::crashreporter_t* reporter = crashreport::Reporter(device);
-    if (reporter == NULL) {
-        throw std::runtime_error("Unable to open connection to crash reporter");
-        return NULL;
-    }
+    auto reporter{std::make_unique<crashreport::Reporter>(device)};
 
     // Read in the last crash since that's probably our fault anyways. Since dylib
     //  addresses are only randomized on boot, we now have base addresses to
     //  calculate the addresses of our ROP gadgets we need.
     debug("Reading in crash reports from mobile backup");
-    crashreport::crashreport_t* crash = crashreport::crashreporter_last_crash(reporter);
-    if (crash == NULL) {
+    auto crash = reporter->last_crash();
+    if (!crash) {
         throw std::runtime_error("Unable to read last crash");
-        return NULL;
     }
     return crash;
 }
@@ -409,7 +404,7 @@ static void prefs_remove_entry_if_present(plist_t* pl) /*{{{*/
                         if (strcmp(uname_str, CONNECTION_NAME) == 0) {
                             // entry found
                             found++;
-                            guid = strdup(key);
+                            guid = key;
                             printf(
                                 "removing /NetworkServices/%s "
                                 "(UserDefinedName: %s)",
@@ -937,7 +932,7 @@ static int jailbreak_50(
 
             plist_to_bin(pl, (char**) &prefs, &plen);
 
-            backup_file::assign_file_data(bf, prefs, plen, 1);
+            bf->assign_file_data(prefs, plen, 1);
             free(prefs);
             prefs = NULL;
             backup_file::set_length(bf, plen);
@@ -1317,9 +1312,9 @@ static int jailbreak_50(
             backup, "SystemPreferencesDomain", "SystemConfiguration/com.apple.ipsec.plist");
         if (bf) {
             debug("com.apple.ipsec.plist already present, replacing");
-            backup_file::assign_file_data(bf, ipsec_plist, ipsec_plist_size, 0);
-            backup_file::set_length(bf, ipsec_plist_size);
-            backup_file::update_hash(bf);
+            bf->assign_file_data(ipsec_plist, ipsec_plist_size, 0);
+            bf->set_length(ipsec_plist_size);
+            bf->update_hash();
 
             if (backup_update_file(backup, bf) < 0) {
                 throw std::runtime_error("ERROR: could not add file to backup");
@@ -1417,7 +1412,7 @@ fix_all:
 
             plist_to_bin(pl, (char**) &prefs, &plen);
 
-            backup_file::assign_file_data(bf, prefs, plen, 1);
+            bf->assign_file_data(prefs, plen, 1);
             free(prefs);
             prefs = NULL;
             backup_file::set_length(bf, plen);
@@ -1945,19 +1940,19 @@ static int jailbreak_51(
         char* key_data = NULL;
         uint64_t key_size = 0;
         plist_get_data_val(device_public_key, &key_data, &key_size);
-        backup_file::assign_file_data(bf, (unsigned char*) key_data, key_size, 0);
-        backup_file::set_target(bf, NULL);
-        backup_file::set_mode(bf, 0100644);
-        backup_file::set_inode(bf, 54327);
-        backup_file::set_uid(bf, 0);
-        backup_file::set_gid(bf, 0);
+        bf->assign_file_data((unsigned char*) key_data, key_size, 0);
+        bf->set_target(NULL);
+        bf->set_mode(0100644);
+        bf->set_inode(54327);
+        bf->set_uid(0);
+        bf->set_gid(0);
         unsigned int tm = (unsigned int) (time(NULL));
-        backup_file::set_time1(bf, tm);
-        backup_file::set_time2(bf, tm);
-        backup_file::set_time3(bf, tm);
-        backup_file::set_length(bf, key_size);
-        backup_file::set_flag(bf, 4);
-        backup_file::update_hash(bf);
+        bf->set_time1(tm);
+        bf->set_time2(tm);
+        bf->set_time3(tm);
+        bf->set_length(key_size);
+        bf->set_flag(4);
+        bf->update_hash();
 
         if (backup_update_file(backup, bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");

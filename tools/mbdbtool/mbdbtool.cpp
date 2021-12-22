@@ -23,13 +23,13 @@ int main(int argc, char* argv[])
         printf("Unable to find device, make sure it's connected");
         return 0;
     }
-    char* udid = strdup(device->udid);
+    std::string udid = device->udid;
     device_free(device);
     printf("Found device with UUID %s", udid);
 
-    char* dir = strdup(argv[1]);
-    char* dom = strdup(argv[2]);
-    char* cmd = strdup(argv[3]);
+    std::string dir = argv[1];
+    std::string dom = argv[2];
+    std::string cmd = argv[3];
 
     if (strcmp(cmd, "ls") == 0) {
         if (argc != 4) {

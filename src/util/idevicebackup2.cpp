@@ -173,7 +173,7 @@ static void mobilebackup_afc_get_file_contents(
 
 static char* str_toupper(char* str)
 {
-    char* res = strdup(str);
+    char* res = str;
     unsigned int i;
     for (i = 0; i < strlen(res); i++) {
         res[i] = toupper(res[i]);
@@ -197,7 +197,8 @@ static char* format_size_for_display(uint64_t size)
     } else {
         sprintf(buf, "%d Bytes", (int) size);
     }
-    return strdup(buf);
+    // TODO: it was copy
+    return buf;
 }
 
 static plist_t
@@ -1198,7 +1199,7 @@ int idevicebackup2(int argc, char* argv[])
                 print_usage(argc, argv);
                 return 0;
             }
-            udid = strdup(argv[i]);
+            udid = argv[i];
             continue;
         } else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
             print_usage(argc, argv);

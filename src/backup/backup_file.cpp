@@ -31,162 +31,45 @@
 
 namespace absinthe {
 namespace backup {
-namespace backup_file {
 
-static backup_file_t* backup_file_new()
+File::File(const std::string& filepath)
 {
-    backup_file_t* file = (backup_file_t*) malloc(sizeof(backup_file_t));
-    if (file == NULL) {
-        throw std::runtime_error("Allocation Error");
-        return NULL;
+    if (!filepath.empty()) {
+        _filepath = filepath;
     }
-    memset(file, '\0', sizeof(backup_file_t));
-    return file;
+    _mbdb_record = std::make_shared<MBDBRecord>();
+    _mbdb_record->init();
 }
 
-backup_file_t* create(const char* filepath)
+File::File(const std::vector<unsigned char>& data, int copy)
 {
-    backup_file_t* file = backup_file_new();
-    if (filepath) {
-        file->filepath = strdup(filepath);
-    }
-    file->mbdb_record = new mbdb_record::mbdb_record_t();
-    mbdb_record::init(file->mbdb_record);
-    return file;
+    _mbdb_record = std::make_shared<MBDBRecord>();
+    _mbdb_record->init();
+    assign_file_data(data, copy);
 }
 
-backup_file_t* backup_file_create_with_data(unsigned char* data, unsigned int size, int copy)
+File::File(std::shared_ptr<MBDBRecord> record) : _mbdb_record(record) {}
+
+void File::assign_file_data(const std::vector<unsigned char>& data, int copy)
 {
-    backup_file_t* file = backup_file_new();
-    if (!file) {
-        return NULL;
-    }
-    file->mbdb_record = new mbdb_record::mbdb_record_t();
-    mbdb_record::init(file->mbdb_record);
-    assign_file_data(file, data, size, copy);
-    return file;
+    _data = data;
+    _filepath = {};
 }
 
-backup_file_t* create_from_record(mbdb_record::mbdb_record_t* record)
+void File::assign_file_path(const std::string& path)
 {
-    if (!record) {
-        return NULL;
+    if (!_data.empty() && _free_data) {
+        _data = {};
+        _free_data = 0;
     }
-    backup_file_t* file = backup_file_new();
-    if (!file)
-        return NULL;
-
-    file->mbdb_record = (mbdb_record::mbdb_record_t*) malloc(sizeof(mbdb_record::mbdb_record_t));
-    if (file->mbdb_record == NULL) {
-        throw std::runtime_error("Allocation Error");
-        return NULL;
-    }
-
-    // we need to make a real copy of the record
-    memcpy(file->mbdb_record, record, sizeof(mbdb_record::mbdb_record_t));
-    if (record->domain) {
-        file->mbdb_record->domain = strdup(record->domain);
-    }
-    if (record->path) {
-        file->mbdb_record->path = strdup(record->path);
-    }
-    if (record->target) {
-        file->mbdb_record->target = strdup(record->target);
-    }
-    if (record->datahash) {
-        file->mbdb_record->datahash = (char*) malloc(record->datahash_size);
-        memcpy(file->mbdb_record->datahash, record->datahash, record->datahash_size);
-    }
-    if (record->unknown1) {
-        file->mbdb_record->unknown1 = (char*) malloc(record->unknown1_size);
-        memcpy(file->mbdb_record->unknown1, record->unknown1, record->unknown1_size);
-    }
-    if (record->property_count > 0) {
-        file->mbdb_record->properties = (mbdb_record::property_t**) malloc(
-            sizeof(mbdb_record::property_t*) * record->property_count);
-        int i;
-        for (i = 0; i < record->property_count; i++) {
-            mbdb_record::property_t* prop =
-                new mbdb_record::property_t(); // malloc(sizeof(mbdb_record::property_t));
-            prop->name_size = record->properties[i]->name_size;
-            prop->name = (char*) malloc(prop->name_size + 1);
-            memcpy(prop->name, record->properties[i]->name, prop->name_size);
-            prop->value_size = record->properties[i]->value_size;
-            prop->value = (char*) malloc(prop->value_size + 1);
-            memcpy(prop->value, record->properties[i]->value, prop->value_size);
-        }
-    }
-
-    return file;
+    _filepath = path;
 }
 
-void assign_file_data(backup_file_t* bfile, unsigned char* data, unsigned int size, int copy)
-{
-    if (copy) {
-        bfile->data = malloc(size);
-        memcpy(bfile->data, data, size);
-        bfile->size = size;
-        bfile->free_data = 1;
-    } else {
-        bfile->data = data;
-        bfile->size = size;
-        bfile->free_data = 0;
-    }
-    if (bfile->filepath) {
-        free(bfile->filepath);
-        bfile->filepath = NULL;
-    }
-}
+void File::set_domain(const std::string& domain) { _mbdb_record->set_domain(domain); }
 
-void assign_file_path(backup_file_t* bfile, unsigned char* path)
-{
-    if (bfile->data && bfile->free_data) {
-        free(bfile->data);
-        bfile->data = NULL;
-        bfile->free_data = 0;
-    }
-    if (bfile->filepath) {
-        free(bfile->filepath);
-    }
-    bfile->filepath = strdup(path);
-}
+void File::set_path(const std::string& path) { _mbdb_record->set_path(path); }
 
-void free(backup_file_t* file)
-{
-    if (file) {
-        if (file->mbdb_record) {
-            mbdb_record::free(file->mbdb_record);
-        }
-        if (file->filepath) {
-            free(file->filepath);
-        }
-        if (file->data && file->free_data) {
-            free(file->data);
-        }
-        free(file);
-    }
-}
-
-void set_domain(backup_file_t* bfile, const char* domain)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_domain(bfile->mbdb_record, domain);
-}
-
-void set_path(backup_file_t* bfile, const char* path)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_path(bfile->mbdb_record, path);
-}
-
-void set_target(backup_file_t* bfile, const char* target)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_target(bfile->mbdb_record, target);
-}
+void File::set_target(const std::string& target) { _mbdb_record->set_target(target); }
 
 static void debug_hash(const unsigned char* hash, int len)
 {
@@ -197,15 +80,12 @@ static void debug_hash(const unsigned char* hash, int len)
     debug("");
 }
 
-void update_hash(backup_file_t* bfile)
+void File::update_hash()
 {
-    if (!bfile)
-        return;
-    if (bfile->filepath) {
-        FILE* f = fopen(bfile->filepath, "rb");
+    if (_filepath) {
+        FILE* f = fopen(_filepath, "rb");
         if (!f) {
-            throw std::runtime_error(
-                "%s: ERROR: Could not open file '%s'", __func__, bfile->filepath);
+            throw std::runtime_error("%s: ERROR: Could not open file '%s'", __func__, _filepath);
         }
         unsigned char buf[8192];
         size_t bytes;
@@ -224,104 +104,50 @@ void update_hash(backup_file_t* bfile)
         fclose(f);
         debug("setting datahash to ");
         debug_hash(sha1, 20);
-        mbdb_record::set_datahash(bfile->mbdb_record, sha1, 20);
-    } else if (bfile->data) {
+        _mbdb_record->set_datahash(sha1, 20);
+    } else if (_data) {
         unsigned char sha1[20] = {
             0,
         };
-        SHA1(bfile->data, bfile->size, sha1);
+        SHA1(_data, _size, sha1);
         debug("setting datahash to ");
         debug_hash(sha1, 20);
-        mbdb_record::set_datahash(bfile->mbdb_record, sha1, 20);
+        _mbdb_record->set_datahash(sha1, 20);
     } else {
         throw std::runtime_error(
             "%s: ERROR: neither filename nor data given, setting hash to N/A", __func__);
-        mbdb_record::set_datahash(bfile->mbdb_record, NULL, 0);
+        _mbdb_record->set_datahash(NULL, 0);
     }
 }
 
-void disable_hash(backup_file_t* bfile)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_datahash(bfile->mbdb_record, NULL, 0);
-}
+void File::disable_hash() { mbdb_record->set_datahash(NULL, 0); }
 
-void set_mode(backup_file_t* bfile, unsigned short mode)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_mode(bfile->mbdb_record, mode);
-}
+void File::set_mode(unsigned short mode) { _mbdb_record->set_mode(mode); }
 
-void set_inode(backup_file_t* bfile, unsigned int inode)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_inode(bfile->mbdb_record, inode);
-}
+void File::set_inode(unsigned int inode) { _mbdb_record->set_inode(inode); }
 
-void set_uid(backup_file_t* bfile, unsigned int uid)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_uid(bfile->mbdb_record, uid);
-}
+void File::set_uid(unsigned int uid) { _mbdb_record->set_uid(uid); }
 
-void set_gid(backup_file_t* bfile, unsigned int gid)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_gid(bfile->mbdb_record, gid);
-}
+void File::set_gid(unsigned int gid) { _mbdb_record->set_gid(gid); }
 
-void set_time1(backup_file_t* bfile, unsigned int time1)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_time1(bfile->mbdb_record, time1);
-}
+void File::set_time1(unsigned int time1) { mbdb_record::set_time1(_mbdb_record, time1); }
 
-void set_time2(backup_file_t* bfile, unsigned int time2)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_time2(bfile->mbdb_record, time2);
-}
+void File::set_time2(unsigned int time2) { _mbdb_record->set_time2(time2); }
 
-void set_time3(backup_file_t* bfile, unsigned int time3)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_time3(bfile->mbdb_record, time3);
-}
+void File::set_time3(unsigned int time3) { _mbdb_record->set_time3(time3); }
 
-void set_length(backup_file_t* bfile, unsigned long long length)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_length(bfile->mbdb_record, length);
-}
+void File::set_length(unsigned long long length) { _mbdb_record->set_length(length); }
 
-void set_flag(backup_file_t* bfile, unsigned char flag)
-{
-    if (!bfile)
-        return;
-    mbdb_record::set_flag(bfile->mbdb_record, flag);
-}
+void File::set_flag(unsigned char flag) { _mbdb_record->set_flag(flag); }
 
-int get_record_data(backup_file_t* bfile, unsigned char** data, unsigned int* size)
+int File::get_record_data(unsigned char** data, unsigned int* size)
 {
-    if (!bfile)
-        return -1;
-    if (!bfile->mbdb_record) {
+    if (!_mbdb_record) {
         throw std::runtime_error("%s: ERROR: no mbdb_record present", __func__);
-        return -1;
     }
 
-    if (mbdb_record::build(bfile->mbdb_record, data, size) < 0) {
+    if (_mbdb_record->build(data, size) < 0) {
         throw std::runtime_error("%s: ERROR: could not build mbdb_record data", __func__);
-        return -1;
     }
 
     return 0;

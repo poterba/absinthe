@@ -25,42 +25,54 @@
 namespace absinthe {
 namespace backup {
 
-typedef struct backup_t
+class Backup
 {
-    char* path;
-    std::shared_ptr<MBDB> mbdb;
-} backup_t;
+  public:
+    Backup(const std::string& directory, const std::string& uuid);
+    ~Backup();
 
-backup_t* backup_open(const char* directory, const char* uuid);
-int get_file_index(backup_t* backup, const char* domain, const char* path);
-char* backup_get_file_path(backup_t* backup, backup_file::backup_file_t* bfile);
-backup_file::backup_file_t* backup_get_file(backup_t* backup, const char* domain, const char* path);
-int update_file(backup_t* backup, backup_file::backup_file_t* bfile);
-int remove_file(backup_t* backup, backup_file::backup_file_t* bfile);
-void free(backup_t* backup);
-int mkdir(backup_t* backup, char* domain, char* path, int mode, int uid, int gid, int flag);
-int symlink(backup_t* backup, char* domain, char* path, char* to, int uid, int gid, int flag);
-int add_file_from_path(
-    backup_t* backup,
-    char* domain,
-    char* localpath,
-    char* path,
-    int mode,
-    int uid,
-    int gid,
-    int flag);
-int add_file_from_data(
-    backup_t* backup,
-    char* domain,
-    char* data,
-    unsigned int size,
-    char* path,
-    int mode,
-    int uid,
-    int gid,
-    int flag);
+    int get_file_index(const std::string& domain, const std::string& path);
+    char* get_file_path(std::shared_ptr<File> bfile);
+    std::shared_ptr<File> get_file(const std::string& domain, const std::string& path);
+    int update_file(std::shared_ptr<File> bfile);
+    int remove_file(std::shared_ptr<File> bfile);
 
-int write_mbdb(backup_t* backup);
+    int
+    mkdir(const std::string& domain, const std::string& path, int mode, int uid, int gid, int flag);
+
+    int symlink(
+        const std::string& domain,
+        const std::string& path,
+        const std::string& to,
+        int uid,
+        int gid,
+        int flag);
+
+    int add_file_from_path(
+        const std::string& domain,
+        const std::string& localpath,
+        const std::string& path,
+        int mode,
+        int uid,
+        int gid,
+        int flag);
+
+    int add_file_from_data(
+        const std::string& domain,
+        const std::string& data,
+        unsigned int size,
+        const std::string& path,
+        int mode,
+        int uid,
+        int gid,
+        int flag);
+
+    int write_mbdb();
+
+  private:
+    std::string _path;
+    std::shared_ptr<MBDB> _mbdb;
+};
 
 } // namespace backup
 } // namespace absinthe

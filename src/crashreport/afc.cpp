@@ -131,7 +131,7 @@ int AFC::send_file(const char* local, const char* remote)
 
     afc_file_open(_client, remote, AFC_FOPEN_WR, &my_file);
     if (my_file) {
-        // char *outdatafile = strdup("THIS IS HOW WE DO IT, WHORE");
+        // std::string outdatafile = "THIS IS HOW WE DO IT, WHORE";
 
         // FIXME: right here its just sending "local/file.txt, rather than the
         // contents of the file.

@@ -29,56 +29,34 @@
 namespace absinthe {
 namespace crashreport {
 
-Mover::Mover(device_t* device)
+Mover::Mover(std::shared_ptr<util::Device> device, std::optional<uint16_t> port)
 {
-    int err = 0;
-    uint16_t port = 0;
-    crashreportmover_t* mover = NULL;
-    lockdown_t* lockdown = NULL;
+    if (port) {
+        _port = *port;
+    } else {
+        auto lockdown = std::make_unique<util::Lockdown>(device);
 
-    lockdown = lockdown_open(device);
-    if (lockdown == NULL) {
-        throw std::runtime_errpr("Unable to open connection to lockdown");
+        if (lockdown->start_service("com.apple.crashreportmover", &_port) < 0) {
+            throw std::runtime_error("Unable to start crash report mover service");
+        }
     }
 
-    err = lockdown_start_service(lockdown, "com.apple.crashreportmover", &port);
-    if (err < 0) {
-        throw std::runtime_error("Unable to start crash report mover service");
-        return NULL;
-    }
-
-    mover = crashreportmover_open(device, port);
-    if (mover == NULL) {
-        throw std::runtime_error("Unable to open connection to crash report mover service");
-        return NULL;
-    }
-    lockdown_close(lockdown);
-    lockdown_free(lockdown);
-
-    return mover;
-}
-
-Mover::Mover(device_t* device, uint16_t port)
-{
-    int err = idevice_connect(device->client, port, &(mover->connection));
+    int err = idevice_connect(device->client(), _port, &_connection);
     if (err < 0) {
         throw std::exception();
     }
 }
 
-int crashreportmover_close(crashreportmover_t* mover)
+Mover::~Mover() { close(); }
+
+int Mover::close()
 {
-    if (mover->connection) {
-        idevice_disconnect(mover->connection);
-        mover->connection = NULL;
+    if (_connection) {
+        idevice_disconnect(_connection);
+        _connection = NULL;
     }
     return 0;
 }
 
-void crashreportmover_free(crashreportmover_t* mover)
-{
-    if (mover) {
-        crashreportmover_close(mover);
-        free(mover);
-    }
-}
+} // namespace crashreport
+} // namespace absinthe

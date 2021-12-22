@@ -22,6 +22,8 @@
 #include <dirent.h>
 // #include "fswrapper.hpp"
 
+#include <string>
+
 int __mkdir(const char* path, int mode)
 {
 #ifdef WIN32
@@ -31,7 +33,7 @@ int __mkdir(const char* path, int mode)
 #endif
 }
 
-int mkdir_with_parents(const char* dir, int mode)
+int mkdir_with_parents(const std::string& dir, int mode)
 {
     if (!dir)
         return -1;
@@ -42,21 +44,20 @@ int mkdir_with_parents(const char* dir, int mode)
             return 0;
     }
     int res;
-    char* parent = strdup(dir);
-    parent = dirname(parent);
-    if (parent) {
+    std::string parent = dir;
+    parent = dirname(parent.c_str());
+    if (!parent.empty()) {
         res = mkdir_with_parents(parent, mode);
     } else {
         res = -1;
     }
-    free(parent);
     if (res == 0) {
         mkdir_with_parents(dir, mode);
     }
     return res;
 }
 
-char* build_path(const char* elem, ...)
+std::string build_path(const std::string& elem, ...)
 {
     if (!elem)
         return NULL;
@@ -184,7 +185,7 @@ void hexdump(unsigned char* buf, unsigned int len)
 }
 
 /* recursively remove path, including path */
-void rmdir_recursive(const char* path) /*{{{*/
+void rmdir_recursive(const std::string& path) /*{{{*/
 {
     // TODO
     // std::error_code ec;

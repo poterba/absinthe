@@ -46,7 +46,7 @@ file_t* file_open(const char* path)
             return NULL;
         }
 
-        file->path = strdup(path);
+        file->path = path;
         if (file->path == NULL) {
             fprintf(stderr, "Unable to allocate memory for file path");
             file_free(file);
@@ -116,7 +116,7 @@ void file_free(file_t* file)
     }
 }
 
-int file_read(const std::string& file, unsigned char** buf, unsigned int* length)
+int file_read(const std::string& file, std::string& buf, unsigned int* length)
 {
     FILE* fd = NULL;
     fd = fopen(file, "rb");
@@ -137,12 +137,12 @@ int file_read(const std::string& file, unsigned char** buf, unsigned int* length
     }
     fclose(fd);
 
-    *buf = data;
+    buf = data;
     *length = bytes;
     return bytes;
 }
 
-int file_write(const char* file, unsigned char* buf, unsigned int length)
+int file_write(const std::string& file, unsigned char* buf, unsigned int length)
 {
     FILE* fd = NULL;
     fd = fopen(file, "wb");

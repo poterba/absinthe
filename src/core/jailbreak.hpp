@@ -3,9 +3,9 @@
 
 // #include <libimobiledevice/afc.h>
 // #include <libimobiledevice/sbservices.h>
-#include <libimobiledevice/file_relay.h>
-
 #include <cstdint>
+#include <libimobiledevice/file_relay.h>
+#include <string>
 
 #define CONNECTION_NAME "jailbreak"
 #define VPN_TRIGGER_ADDRESS "127.0.0.1"
@@ -15,8 +15,8 @@ namespace absinthe {
 namespace core {
 struct dev_vmaddr
 {
-    const char* product;
-    const char* build;
+    const std::string product;
+    const std::string build;
     uint32_t vmaddr;
 };
 
