@@ -62,7 +62,7 @@ MBDBRecord::MBDBRecord(unsigned char* data)
         _path = {};
         offset += 2;
     }
-    path_size = strsize;
+    _path_size = strsize;
 
     // Parse Target
     strsize = be16toh(*((unsigned short*) &data[offset]));
