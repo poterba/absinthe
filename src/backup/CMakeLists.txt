@@ -4,7 +4,7 @@ add_library(absinthe_backup ${SRC_FILES})
 target_link_libraries(absinthe_backup
   PRIVATE
     absinthe_util
-    OpenSSL::OpenSSL)
+    OpenSSL::SSL)
 
 target_include_directories(absinthe_backup
   PRIVATE

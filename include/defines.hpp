@@ -196,5 +196,3 @@ struct hfs_mount_args
 #define CTL_KERN 1      /* "high kernel": proc, limits */
 #define KERN_PROC 14    /* struct: process entries */
 #define KERN_PROC_ALL 0 /* everything */
-
-#define RTLD_DEFAULT ((__32bit_ptr) -2) /* Use default search algorithm. */

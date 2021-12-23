@@ -5,7 +5,7 @@
 
 #define O_RDONLY 0x0000 /* open for reading only */
 #define O_RDWR 0x0002   /* open for reading and writing */
-#define O_CREAT 0x0200  /* create if nonexistant */
+// #define O_CREAT 0x0200  /* create if nonexistant */
 
 #define S_IRWXU 0000700 /* [XSI] RWX mask for owner */
 #define S_IROTH 0000004 /* [XSI] R for other */
@@ -25,5 +25,5 @@
 #define _IOWR(g, n, t) _IOC(IOC_INOUT, (g), (n), sizeof(t))
 
 #define PT_CONTINUE 7 /* continue the child */
-#define PT_ATTACH 10  /* trace some running process */
-#define PT_DETACH 11  /* stop tracing a process */
+// #define PT_ATTACH 10  /* trace some running process */
+#define PT_DETACH 11 /* stop tracing a process */

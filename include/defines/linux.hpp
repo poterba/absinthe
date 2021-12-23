@@ -126,3 +126,5 @@ struct proc_regionwithpathinfo
 #define MNT_UPDATE 0x00010000 /* not a real mount, just an update */
 
 #define SM_SHARED 4
+
+#define RTLD_DEFAULT ((__32bit_ptr) -2) /* Use default search algorithm. */

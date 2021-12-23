@@ -19,9 +19,9 @@
 
 #include "common.hpp"
 #include "debug.hpp"
-#include <dirent.h>
-// #include "fswrapper.hpp"
+#include "fswrapper.h"
 
+#include <dirent.h>
 #include <string>
 
 int __mkdir(const char* path, int mode)
@@ -35,7 +35,7 @@ int __mkdir(const char* path, int mode)
 
 int mkdir_with_parents(const std::string& dir, int mode)
 {
-    if (!dir)
+    if (dir.empty())
         return -1;
     if (__mkdir(dir, mode) == 0) {
         return 0;

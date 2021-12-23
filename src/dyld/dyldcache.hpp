@@ -48,7 +48,7 @@ class Cache final
 
     struct Architecture
     {
-        Architecture(unsigned char* data);
+        Architecture(const std::string& data);
 
         std::string name;
         endian_t cpu_endian;

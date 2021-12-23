@@ -33,9 +33,15 @@
 #define BUFMEDIUM 0x400
 #define BUFLARGE 0x4000
 
+namespace absinthe {
+namespace util {
+
 int mkdir_with_parents(const std::string& dir, int mode);
 std::string build_path(const std::string& elem, ...);
 std::string prot2str(uint32_t prot);
 void hexdump(unsigned char* buf, unsigned int len);
 void rmdir_recursive(const std::string& path);
 int __mkdir(const std::string& path, int mode);
+
+} // namespace util
+} // namespace absinthe

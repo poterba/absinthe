@@ -40,19 +40,18 @@ SUPPORTED FIRMWARE: 5.1.1
 
 # Development environment setup
 
-- libimobiledevice
-- conan
+- libimobiledevice + libplist
+- openssl
 
 macOS:
 ```bash
-brew install libimobiledevice conan
+brew install openssl libimobiledevice
+brew link openssl --force
 ```
 
 Debian/Ubuntu:
 ```bash
-
-sudo apt-get install libgtk-3-dev libimobiledevice-dev python3-pip
-sudo pip3 install conan
+sudo apt-get install libgtk-3-dev libimobiledevice-dev libssl-dev
 ```
 
 # NOTES

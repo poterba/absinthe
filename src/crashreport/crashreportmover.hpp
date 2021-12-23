@@ -33,7 +33,7 @@ namespace crashreport {
 class Mover final
 {
   public:
-    Mover(std::shared_ptr<util::Device> device, std::optional<uint16_t> port);
+    Mover(std::shared_ptr<util::Device> device, std::optional<uint16_t> port = {});
     ~Mover();
     int close();
 

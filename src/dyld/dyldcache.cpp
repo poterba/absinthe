@@ -45,11 +45,10 @@ constexpr const char* DYLDARCH_ARMV7{"armv7"};
 
 } // namespace
 
-Cache::Architecture::Architecture(unsigned char* data)
+Cache::Architecture::Architecture(const std::string& data)
 {
-    unsigned char* found = NULL;
-    found = strstr(data, DYLDARCH_ARMV6);
-    if (found) {
+    size_t found = data.find(DYLDARCH_ARMV6);
+    if (found != std::string::npos) {
         name = DYLDARCH_ARMV6;
         cpu_type = kArmType;
         cpu_subtype = kArmv6;
@@ -57,8 +56,8 @@ Cache::Architecture::Architecture(unsigned char* data)
         return;
     }
 
-    found = strstr(data, DYLDARCH_ARMV7);
-    if (found) {
+    found = data.find(DYLDARCH_ARMV7);
+    if (found != std::string::npos) {
         name = DYLDARCH_ARMV7;
         cpu_type = kArmType;
         cpu_subtype = kArmv7;
@@ -68,7 +67,7 @@ Cache::Architecture::Architecture(unsigned char* data)
 
     // TODO: Add other architectures in here. We only need iPhone for now.
 
-    if (!found) {
+    if (found == std::string::npos) {
         throw std::runtime_error("Unknown architechure encountered!");
     }
 }

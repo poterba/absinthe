@@ -4,7 +4,7 @@ add_library(absinthe_crashreport ${SRC_FILES})
 
 target_include_directories(absinthe_crashreport
   PRIVATE
-    ${PList_INCLUDE_DIRS}
+    ${libplist_INCLUDE_DIRS}
     ${libimobiledevice_INCLUDE_DIR}
 )
 

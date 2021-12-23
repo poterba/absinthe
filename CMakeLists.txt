@@ -13,29 +13,57 @@ set(absinthe_GENERATE_DIR ${CMAKE_BINARY_DIR}/gen/)
 
 # Install Dependencies
 
-include(conan)
-conan_cmake_autodetect(settings)
-conan_cmake_run(
-    CONANFILE ${CMAKE_SOURCE_DIR}/conanfile.txt
-    INSTALL_FOLDER ${CMAKE_BINARY_DIR}/conan
-    BASIC_SETUP
-    CMAKE_TARGETS
-    OUTPUT_QUIET
-    BUILD missing
-    SETTINGS ${settings})
-include(${CMAKE_BINARY_DIR}/conan/conan_paths.cmake)
+include(FindOpenSSL)
+include(CPM)
+
+CPMAddPackage(
+  GIT_REPOSITORY https://gitlab.com/bzip2/bzip2.git
+  GIT_TAG bzip2-1.0.8
+)
+CPMAddPackage(
+  GITHUB_REPOSITORY jarro2783/cxxopts
+  VERSION 2.2.0
+  OPTIONS
+    "CXXOPTS_BUILD_EXAMPLES Off"
+    "CXXOPTS_BUILD_TESTS Off"
+)
+
+# include(ExternalProject)
+
+# ExternalProject_Add(libplist
+#     DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}
+#     URL https://github.com/libimobiledevice/libplist
+#     UPDATE_COMMAND ${CMAKE_NOOP}
+#     SOURCE_DIR ${make_lib_SOURCE_DIR}
+#     CONFIGURE_COMMAND "./autogen.sh"
+#     BUILD_COMMAND "make -j8"
+#     INSTALL_COMMAND "${make_lib_install_commands}"
+# )
+
+# ExternalProject_Add(libimobiledevice
+#     DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}
+#     URL https://github.com/libimobiledevice/libimobiledevice
+#     UPDATE_COMMAND ${CMAKE_NOOP}
+#     SOURCE_DIR ${make_lib_SOURCE_DIR}
+#     CONFIGURE_COMMAND ${CMAKE_NOOP}
+#     BUILD_COMMAND "make -j8"
+#     INSTALL_COMMAND "${make_lib_install_commands}"
+# )
+# TODO FIXME
+# target_link_libraries(libimobiledevice INTERFACE libplist)
 
 # Check and Find Dependencies
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-find_package(BZip2 REQUIRED)
-find_package(OpenSSL REQUIRED)
-find_package(Filesystem REQUIRED)
-find_package(tclap REQUIRED)
 
-find_package(libimobiledevice REQUIRED)
+find_package(OpenSSL REQUIRED COMPONENTS SSL Crypto)
+
+find_package(Filesystem REQUIRED)
+# find_package(tclap REQUIRED)
+
 find_package(libplist REQUIRED)
+find_package(libimobiledevice REQUIRED)
 
 if(APPLE)
   find_library(FOUNDATION Foundation)

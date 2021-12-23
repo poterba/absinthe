@@ -12,4 +12,5 @@ target_link_libraries(absinthe_cli
     absinthe_core
     absinthe_dyld
     absinthe_util
-    tclap::tclap)
+    cxxopts
+)

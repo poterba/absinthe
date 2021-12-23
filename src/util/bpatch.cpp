@@ -21,13 +21,18 @@
 #include "common.hpp"
 #include "debug.hpp"
 #include "file.hpp"
+
 #include <bzlib.h>
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define BUFSIZE 512000
+
+namespace absinthe {
+namespace util {
 
 static off_t offtin(uint8_t* buf)
 {
@@ -411,3 +416,6 @@ bpatch_decompress(char* input, unsigned int in_size, char* output, unsigned int*
     *out_size = got;
     return got;
 }
+
+} // namespace util
+} // namespace absinthe

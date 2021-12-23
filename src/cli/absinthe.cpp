@@ -28,19 +28,20 @@
 #include "rop.hpp"
 #include "version.h"
 
+#include <cxxopts.hpp>
+#include <libimobiledevice/sbservices.h>
+#include <plist/plist.h>
+
+#include <cxxopts.hpp>
 #include <dirent.h>
 #include <getopt.h>
 #include <iostream>
-#include <libimobiledevice/sbservices.h>
 #include <memory>
-#include <plist/plist.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <tclap/CmdLine.h>
 #include <unistd.h>
-
 /////////////////////////////////////////////////////////////////////////////////////////
 /// TODO: We need to add an event handler for when devices are connected. This handler needs to wait
 /// for iTunes to autostart and kill it before it can start the syncing process and mess up our
@@ -111,30 +112,18 @@ int main(int argc, char* argv[])
         }
     }
 
-    TCLAP::CmdLine cmd(
-        "(c) 2011-2012, Chronic-Dev LLC"
-        "Jailbreak iOS5.0 using ub3rl33t MobileBackup2 exploit.",
-        // "Discovered by Nikias Bassen, Exploited by Joshua Hill"
-        ' ', ABSINTHE_VERSION_STRING);
-    TCLAP::SwitchArg verbose("v", "verbose", "prints debuging info while running", cmd, false);
-    TCLAP::ValueArg<std::string> udidArg(
-        "u", "udid", "target specific device by its 40-digit device UDID", false, "", "UDID");
-    TCLAP::ValueArg<unsigned long> target(
-        "t", "target", "offset to ROP gadget we want to execute", false, 0, "ADDRESS");
-    TCLAP::ValueArg<unsigned long> pointer(
-        "p", "pointer", "heap address we're hoping contains our target", false, 0, "ADDRESS");
-    TCLAP::ValueArg<unsigned long> aslrslide(
-        "a", "aslr-slide", "value of randomized dyldcache slide", false, 0, "OFFSET");
-    cmd.add(udidArg);
-    cmd.add(target);
-    cmd.add(pointer);
-    cmd.add(aslrslide);
+    cxxopts::Options options("absinthe", "Jailbreak iOS5.0 using ub3rl33t MobileBackup2 exploit.");
+    // clang-format off
+    options.add_options()
+        ("u,udid", "target specific device by its 40-digit device UDID", cxxopts::value<std::string>()->default_value("UDID"))
+        ("t,target", "offset to ROP gadget we want to execute", cxxopts::value<unsigned long>()->default_value(0))
+        ("p,pointer", "heap address we're hoping contains our target", cxxopts::value<unsigned long>()->default_value(0))
+        ("a,aslr-slide", "value of randomized dyldcache slide", cxxopts::value<unsigned long>()->default_value(0))
+        ("v,verbose", "prints debuging info while running", cxxopts::value<bool>()->default_value("false"))
+    ;
+    // clang-format on
 
-    try {
-        cmd.parse(argc, argv);
-    } catch (const TCLAP::ArgException& e) {
-        std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
-    }
+    auto result = options.parse(argc, argv);
 
     // we need to exit cleanly on running backups and restores or we cause havok
     signal(SIGINT, absinthe::signal_handler);
@@ -144,7 +133,7 @@ int main(int argc, char* argv[])
     signal(SIGPIPE, SIG_IGN);
 #endif
 
-    std::string udid = udidArg.getValue();
+    std::string udid = result["udid"].as<std::string>();
     // device detection
     if (udid.empty()) {
         device = std::make_shared<absinthe::util::Device>(std::string{});
@@ -213,8 +202,7 @@ int main(int argc, char* argv[])
         plist_free(pl);
         if (c) {
             std::cerr << "Error: You have a device backup password set. You need to "
-                         "disable the backup "
-                         "password in iTunes."
+                         "disable the backup password in iTunes."
                       << std::endl;
             return -1;
         }
