@@ -52,7 +52,7 @@ Image::Image(unsigned char* data, uint32_t offset)
     _info = std::make_unique<Info>(data, offset);
     _path = data[_offset];
     _name = _path.substr(_path.rfind('/'));
-    _address = _address;
+    // _address = _address;
     _size = 0;
 }
 
@@ -76,7 +76,8 @@ void Image::save(const std::string& path)
 {
     if (_data != NULL && _size > 0) {
         std::cout << "Writing dylib to " << path << std::endl;
-        util::file_write(path, _data, _size);
+        auto file = std::make_shared<util::File>(path);
+        file->write(_data, _size);
     }
 }
 

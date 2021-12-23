@@ -59,10 +59,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 find_package(OpenSSL REQUIRED COMPONENTS SSL Crypto)
-
-find_package(Filesystem REQUIRED)
-# find_package(tclap REQUIRED)
-
+find_package(BZip2 REQUIRED)
 find_package(libplist REQUIRED)
 find_package(libimobiledevice REQUIRED)
 

@@ -19,30 +19,32 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stdio.h>
+// #include <stdint.h>
+// #include <stdio.h>
 #include <string>
+#include <vector>
 
 namespace absinthe {
 namespace util {
 
-typedef struct file_t
+class File
 {
-    FILE* desc;
-    char* path;
-    uint64_t size;
-    uint64_t offset;
-    unsigned char* data;
-} file_t;
+  public:
+    File(const std::string& path);
+    ~File();
 
-file_t* file_create();
-void file_close(file_t* file);
-void file_free(file_t* file);
-file_t* file_open(const std::string& path);
+    void close();
+    int read(std::string& buf, unsigned int* length);
+    int write(unsigned char* buf, unsigned int length);
+    int copy(const std::string& to);
 
-int file_read(const std::string& file, std::string& buf, unsigned int* length);
-int file_write(const std::string& file, unsigned char* buf, unsigned int length);
-int file_copy(const std::string& from, const std::string& to);
+  private:
+    std::string _path;
+    FILE* _desc;
+    uint64_t _size;
+    uint64_t _offset;
+    std::vector<unsigned char> _data;
+};
 
 } // namespace util
 } // namespace absinthe

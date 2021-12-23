@@ -24,99 +24,62 @@
 
 #define BUFSIZE 4096
 
-file_t* file_create()
-{
-    file_t* file = (file_t*) malloc(sizeof(file_t));
-    if (file) {
-        memset(file, '\0', sizeof(file_t));
-    }
-    return file;
-}
+namespace absinthe {
+namespace util {
 
-file_t* file_open(const char* path)
+File::File(const std::string& path)
 {
     uint64_t got = 0;
     uint8_t buffer[4096];
 
-    file_t* file = file_create();
-    if (file) {
-        file->desc = fopen(path, "rb");
-        if (file->desc == NULL) {
-            fprintf(stderr, "Unable to open file %s", path);
-            return NULL;
-        }
-
-        file->path = path;
-        if (file->path == NULL) {
-            fprintf(stderr, "Unable to allocate memory for file path");
-            file_free(file);
-            return NULL;
-        }
-
-        fseek(file->desc, 0, SEEK_END);
-        file->size = ftell(file->desc);
-        fseek(file->desc, 0, SEEK_SET);
-
-        file->offset = 0;
-        file->data = (unsigned char*) malloc(file->size);
-        if (file->data == NULL) {
-            fprintf(stderr, "Unable to allocate memory for file");
-            file_free(file);
-            return NULL;
-        }
-
-        uint64_t offset = 0;
-        while (offset < file->size) {
-            memset(buffer, '\0', BUFSIZE);
-            got = fread(buffer, 1, BUFSIZE, file->desc);
-            if (got > 0) {
-                offset += got;
-                memcpy(&(file->data[offset]), buffer, got);
-            } else {
-                break;
-            }
-        }
-        fprintf(stderr, "Read in %llu of %llu bytes from %s", file->offset, file->size, file->path);
-        // We have the data stored in memory now, so we don't need to keep this open anymore
-        // fseek(file->desc, 0, SEEK_SET);
-        file_close(file);
-        file->offset = 0;
+    _desc = fopen(path.c_str(), "rb");
+    if (_desc == NULL) {
+        throw std::runtime_error("Unable to open file");
     }
-    return file;
+
+    _path = path;
+    if (_path.empty()) {
+        throw std::runtime_error("Unable to allocate memory for file path");
+    }
+
+    fseek(_desc, 0, SEEK_END);
+    _size = ftell(_desc);
+    fseek(_desc, 0, SEEK_SET);
+
+    _offset = 0;
+    if (_data == NULL) {
+        throw std::runtime_error("Unable to allocate memory for file");
+    }
+
+    uint64_t offset = 0;
+    while (offset < _size) {
+        memset(buffer, '\0', BUFSIZE);
+        got = fread(buffer, 1, BUFSIZE, _desc);
+        if (got > 0) {
+            offset += got;
+            memcpy(&(_data[offset]), buffer, got);
+        } else {
+            break;
+        }
+    }
+    fprintf(stderr, "Read in %llu of %llu bytes from %s", _offset, _size, _path);
+    // We have the data stored in memory now, so we don't need to keep this open anymore
+    // fseek(_desc, 0, SEEK_SET);
+    close();
+    _offset = 0;
 }
 
-void file_close(file_t* file)
+File::~File() { close(); }
+
+void File::close()
 {
-    if (file) {
-        if (file->desc) {
-            fclose(file->desc);
-            file->desc = NULL;
-        }
+    if (file && _desc) {
+        fclose(_desc);
+        _desc = NULL;
     }
 }
 
-void file_free(file_t* file)
-{
-    if (file) {
-        if (file->desc) {
-            file_close(file);
-            file->desc = NULL;
-        }
-        if (file->path) {
-            free(file->path);
-            file->path = NULL;
-        }
-        if (file->data) {
-            free(file->data);
-            file->data = NULL;
-        }
-        file->size = 0;
-        file->offset = 0;
-        free(file);
-    }
-}
-
-int file_read(const std::string& file, std::string& buf, unsigned int* length)
+int File::read(const std::string& file, std::string& buf, unsigned int* length)
 {
     FILE* fd = NULL;
     fd = fopen(file, "rb");
@@ -142,7 +105,7 @@ int file_read(const std::string& file, std::string& buf, unsigned int* length)
     return bytes;
 }
 
-int file_write(const std::string& file, unsigned char* buf, unsigned int length)
+int File::write(const std::string& file, unsigned char* buf, unsigned int length)
 {
     FILE* fd = NULL;
     fd = fopen(file, "wb");
@@ -159,7 +122,7 @@ int file_write(const std::string& file, unsigned char* buf, unsigned int length)
     return bytes;
 }
 
-int file_copy(const std::string& from, const std::string& to)
+int File::copy(const std::string& from, const std::string& to)
 {
     FILE* ffr = NULL;
     FILE* fto = NULL;
@@ -194,3 +157,6 @@ int file_copy(const std::string& from, const std::string& to)
 
     return 0;
 }
+
+} // namespace util
+} // namespace absinthe

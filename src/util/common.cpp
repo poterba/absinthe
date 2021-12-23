@@ -59,10 +59,10 @@ int mkdir_with_parents(const std::string& dir, int mode)
 
 std::string build_path(const std::string& elem, ...)
 {
-    if (!elem)
-        return NULL;
+    if (elem.empty())
+        return {};
     va_list args;
-    int len = strlen(elem) + 1;
+    int len = elem.size() + 1;
     va_start(args, elem);
     char* arg = va_arg(args, char*);
     while (arg) {
@@ -72,7 +72,7 @@ std::string build_path(const std::string& elem, ...)
     va_end(args);
 
     char* out = (char*) malloc(len);
-    strcpy(out, elem);
+    strcpy(out, elem.c_str());
 
     va_start(args, elem);
     arg = va_arg(args, char*);

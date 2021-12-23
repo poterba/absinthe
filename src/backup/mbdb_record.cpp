@@ -263,7 +263,7 @@ void MBDBRecord::set_datahash(const std::string& hash)
         _this_size -= _datahash_size;
     }
     if (!hash.empty()) {
-        _datahash_size = _hash_size;
+        _datahash_size = _hash.size();
         _datahash = hash;
         _this_size += _datahash_size;
     } else {

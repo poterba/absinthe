@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdexcept>
+
 namespace absinthe {
 namespace backup {
 
@@ -82,10 +84,10 @@ static void debug_hash(const unsigned char* hash, int len)
 
 void File::update_hash()
 {
-    if (_filepath) {
-        FILE* f = fopen(_filepath, "rb");
+    if (!_filepath.empty()) {
+        FILE* f = fopen(_filepath.c_str(), "rb");
         if (!f) {
-            throw std::runtime_error("%s: ERROR: Could not open file '%s'", __func__, _filepath);
+            throw std::runtime_error("Could not open file");
         }
         unsigned char buf[8192];
         size_t bytes;
@@ -104,23 +106,22 @@ void File::update_hash()
         fclose(f);
         debug("setting datahash to ");
         debug_hash(sha1, 20);
-        _mbdb_record->set_datahash(sha1, 20);
-    } else if (_data) {
+        _mbdb_record->set_datahash(sha1);
+    } else if (!_data.empty()) {
         unsigned char sha1[20] = {
             0,
         };
-        SHA1(_data, _size, sha1);
+        SHA1(_data.data(), _size, sha1);
         debug("setting datahash to ");
         debug_hash(sha1, 20);
-        _mbdb_record->set_datahash(sha1, 20);
+        _mbdb_record->set_datahash(sha1);
     } else {
-        throw std::runtime_error(
-            "%s: ERROR: neither filename nor data given, setting hash to N/A", __func__);
-        _mbdb_record->set_datahash(NULL, 0);
+        throw std::runtime_error("neither filename nor data given, setting hash to N/A");
+        _mbdb_record->set_datahash({});
     }
 }
 
-void File::disable_hash() { mbdb_record->set_datahash(NULL, 0); }
+void File::disable_hash() { _mbdb_record->set_datahash({}); }
 
 void File::set_mode(unsigned short mode) { _mbdb_record->set_mode(mode); }
 
@@ -130,7 +131,7 @@ void File::set_uid(unsigned int uid) { _mbdb_record->set_uid(uid); }
 
 void File::set_gid(unsigned int gid) { _mbdb_record->set_gid(gid); }
 
-void File::set_time1(unsigned int time1) { mbdb_record::set_time1(_mbdb_record, time1); }
+void File::set_time1(unsigned int time1) { _mbdb_record->set_time1(time1); }
 
 void File::set_time2(unsigned int time2) { _mbdb_record->set_time2(time2); }
 
@@ -143,12 +144,15 @@ void File::set_flag(unsigned char flag) { _mbdb_record->set_flag(flag); }
 int File::get_record_data(unsigned char** data, unsigned int* size)
 {
     if (!_mbdb_record) {
-        throw std::runtime_error("%s: ERROR: no mbdb_record present", __func__);
+        throw std::runtime_error("no mbdb_record present");
     }
 
     if (_mbdb_record->build(data, size) < 0) {
-        throw std::runtime_error("%s: ERROR: could not build mbdb_record data", __func__);
+        throw std::runtime_error("could not build mbdb_record data");
     }
 
     return 0;
 }
+
+} // namespace backup
+} // namespace absinthe

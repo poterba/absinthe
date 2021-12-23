@@ -91,11 +91,11 @@ class Cache final
     std::shared_ptr<Architecture> _arch;
     std::vector<std::shared_ptr<Image>> _images;
     std::vector<std::shared_ptr<Map>> _maps;
-    util::file_t* _file;
+    std::shared_ptr<util::File> _file;
     uint32_t _offset;
     uint32_t _count;
     unsigned int _size;
-    unsigned char* _data;
+    std::vector<unsigned char> _data;
 };
 
 } // namespace dyld

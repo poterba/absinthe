@@ -93,7 +93,7 @@ char* Backup::get_file_path(std::shared_ptr<File> bfile)
         throw std::runtime_error("ERROR: no mbdb in given backup");
     }
 
-    std::string bfntmp = bfile->mbdb_record->domain + "-" + bfile->mbdb_record->path;
+    std::string bfntmp = bfile->_mbdb_record->domain + "-" + bfile->_mbdb_record->path;
     char* backupfname = (char*) malloc(strlen(_path) + 1 + 40 + 1);
     unsigned char sha1[20] = {
         0,

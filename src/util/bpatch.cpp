@@ -18,6 +18,7 @@
  **/
 
 #include "bpatch.hpp"
+
 #include "common.hpp"
 #include "debug.hpp"
 #include "file.hpp"
@@ -60,52 +61,20 @@ static off_t offtin(uint8_t* buf)
     return y;
 }
 
-bpatch_t* bpatch_create()
+BinaryPatch::BinaryPatch(const std::string& path) : _path(path)
 {
-    bpatch_t* bpatch = (bpatch_t*) malloc(sizeof(bpatch_t));
-    if (bpatch) {
-        memset(bpatch, '\0', sizeof(bpatch_t));
-    }
-    return bpatch;
-}
-
-bpatch_t* bpatch_open(const char* path)
-{
+    auto file = std::make_shared<File>(path);
     unsigned int size = 0;
     uint8_t* data = NULL;
-    util::file_read(path, &data, &size);
+    file->read(&data, &size);
     if (data == NULL || size == 0) {
         throw std::runtime_error("Unable to open binary patch file");
-        return NULL;
     }
 
-    bpatch_t* bpatch = bpatch_load(data, size);
-    if (bpatch == NULL) {
-        throw std::runtime_error("Unable to load binary patch file");
-        return NULL;
-    }
-
-    bpatch->path = path;
-    if (bpatch->path == NULL) {
-        bpatch_free(bpatch);
-        return NULL;
-    }
-
-    return bpatch;
+    load(data, size);
 }
 
-void bpatch_free(bpatch_t* bpatch)
-{
-    if (bpatch) {
-        if (bpatch->path) {
-            free(bpatch->path);
-            bpatch->path = NULL;
-        }
-        free(bpatch);
-    }
-}
-
-bpatch_t* bpatch_load(uint8_t* data, int64_t size)
+BinaryPatch::BinaryPatch(uint8_t* data, int64_t size)
 {
     int err = 0;
     uint8_t* buf = NULL;
@@ -117,71 +86,59 @@ bpatch_t* bpatch_load(uint8_t* data, int64_t size)
 
     bpatch_t* bpatch = bpatch_create();
     if (bpatch != NULL) {
-        bpatch->header = bpatch_header_load(&data[offset], sizeof(bpatch_header_t));
-        if (bpatch->header == NULL) {
+        _header = bpatch_header_load(&data[offset], sizeof(bpatch_header_t));
+        if (_header == NULL) {
             throw std::runtime_error("Unable to load binary patch header");
-            bpatch_free(bpatch);
-            return NULL;
         }
         offset += sizeof(bpatch_header_t);
 
         buf = malloc(BUFSIZE + 1);
         if (buf == NULL) {
             throw std::runtime_error("Unable to allocate buffer");
-            return NULL;
         }
 
         //////////////////////////
         // Load in control block
         control_size = BUFSIZE;
         memset(buf, '\0', BUFSIZE);
-        err = bpatch_decompress(&data[offset], bpatch->header->ctrllen, buf, &control_size);
+        err = decompress(&data[offset], _header->ctrllen, buf, &control_size);
         if (err < 0 || control_size <= 0) {
             throw std::runtime_error("Unable to decompress control block");
-            bpatch_free(bpatch);
-            return NULL;
         }
 
         // Make sure there's enough data left
-        if (bpatch->header->ctrllen + offset > size) {
+        if (_header->ctrllen + offset > size) {
             throw std::runtime_error("Sanity check failed");
-            bpatch_free(bpatch);
-            return NULL;
         }
 
         // Allocate memory for our decompressed control block
-        bpatch->control_size = control_size;
-        bpatch->control = (uint8_t*) malloc(control_size + 1);
-        if (bpatch->control == NULL) {
+        _control_size = control_size;
+        _control = (uint8_t*) malloc(control_size + 1);
+        if (_control == NULL) {
             throw std::runtime_error("Unable to allocate control block");
-            bpatch_free(bpatch);
-            return NULL;
         }
-        memset(bpatch->control, '\0', control_size);
-        memcpy(bpatch->control, buf, control_size);
-        offset += bpatch->header->ctrllen;
+        memset(_control, '\0', control_size);
+        memcpy(_control, buf, control_size);
+        offset += _header->ctrllen;
 
         //////////////////////////
         // Load in diff block
         data_size = BUFSIZE;
         memset(buf, '\0', BUFSIZE);
-        err = bpatch_decompress(&data[offset], bpatch->header->datalen, buf, &data_size);
+        err = bpatch_decompress(&data[offset], _header->datalen, buf, &data_size);
         if (err < 0 || data_size <= 0) {
             throw std::runtime_error("Unable to decompress diff block");
-            bpatch_free(bpatch);
-            return NULL;
         }
 
         // Allocate memory for our diff block
-        bpatch->data_size = data_size;
-        bpatch->data = malloc(data_size + 1);
-        if (bpatch->data == NULL) {
+        _data_size = data_size;
+        _data = malloc(data_size + 1);
+        if (_data == NULL) {
             throw std::runtime_error("Unable to allocate memory for diff block");
-            return NULL;
         }
-        memset(bpatch->data, '\0', data_size);
-        memcpy(bpatch->data, buf, data_size);
-        offset += bpatch->header->datalen;
+        memset(_data, '\0', data_size);
+        memcpy(_data, buf, data_size);
+        offset += _header->datalen;
 
         ////////////////////////
         // Load in extra block
@@ -190,60 +147,56 @@ bpatch_t* bpatch_load(uint8_t* data, int64_t size)
         err = bpatch_decompress(&data[offset], (size - offset), buf, &extra_size);
         if (err < 0 || extra_size <= 0) {
             throw std::runtime_error("Unable to decompress extra block");
-            bpatch_free(bpatch);
-            return NULL;
         }
 
-        bpatch->extra_size = extra_size;
-        bpatch->extra = malloc(extra_size + 1);
-        if (bpatch->extra == NULL) {
+        _extra_size = extra_size;
+        _extra = malloc(extra_size + 1);
+        if (_extra == NULL) {
             throw std::runtime_error("Unable to allocate memory for extra block");
-            bpatch_free(bpatch);
-            return NULL;
         }
-        memset(bpatch->extra, '\0', extra_size + 1);
-        memcpy(bpatch->extra, buf, extra_size);
+        memset(_extra, '\0', extra_size + 1);
+        memcpy(_extra, buf, extra_size);
         offset += extra_size;
     }
 
     return bpatch;
 }
 
-void bpatch_debug(bpatch_t* bpatch)
+void BinaryPatch::debug()
 {
     if (bpatch) {
         debug("Binary Patch");
-        if (bpatch->header) {
-            bpatch_header_debug(bpatch->header);
+        if (_header) {
+            _header->debug();
         }
-        if (bpatch->path != NULL) {
-            debug("path = %s", bpatch->path);
+        if (_path != NULL) {
+            debug("path = %s", _path);
         }
-        if (bpatch->control_size > 0 && bpatch->control_size < BUFSIZE) {
+        if (_control_size > 0 && _control_size < BUFSIZE) {
             debug("Control:");
-            debug("\tsize = %llu", bpatch->control_size);
-            if (bpatch->control != NULL) {
+            debug("\tsize = %llu", _control_size);
+            if (_control != NULL) {
                 // debug("compressed: ");
-                // hexdump(&bpatch->data[sizeof(bpatch_header_t)],
-                // bpatch->header->ctrllen); debug("decompressed: ");
-                // hexdump(bpatch->control, bpatch->control_size);
+                // hexdump(&_data[sizeof(bpatch_header_t)],
+                // _header->ctrllen); debug("decompressed: ");
+                // hexdump(_control, _control_size);
             }
         }
-        if (bpatch->data_size > 0 && bpatch->data_size < BUFSIZE) {
+        if (_data_size > 0 && _data_size < BUFSIZE) {
             debug("Data:");
-            debug("\tsize = %llu", bpatch->data_size);
-            if (bpatch->data != NULL && bpatch->data_size <= 512) {
+            debug("\tsize = %llu", _data_size);
+            if (_data != NULL && _data_size <= 512) {
                 // debug("compressed: ");
-                // hexdump(&bpatch->data[sizeof(bpatch_header_t)],
-                // bpatch->header->ctrllen); debug("decompressed: ");
-                // hexdump(bpatch->data, bpatch->data_size);
+                // hexdump(&_data[sizeof(bpatch_header_t)],
+                // _header->ctrllen); debug("decompressed: ");
+                // hexdump(_data, _data_size);
             }
         }
-        // hexdump(bpatch->data, bpatch->data_size);
+        // hexdump(_data, _data_size);
     }
 }
 
-int bpatch_apply(bpatch_t* bpatch, const char* path)
+int BinaryPatch::apply(const char* path)
 {
     int i = 0;
     int64_t x = 0;
@@ -266,9 +219,9 @@ int bpatch_apply(bpatch_t* bpatch, const char* path)
     int8_t* ctrl_data = NULL;
     int8_t* cur_data = NULL;
 
-    ctrl_data = bpatch->control;
-    ctrl_size = bpatch->control_size;
-    target_size = bpatch->header->filelen;
+    ctrl_data = _control;
+    ctrl_size = _control_size;
+    target_size = _header->filelen;
 
     if (path != NULL) {
         file_read(path, &source_data, &source_size);
@@ -287,7 +240,7 @@ int bpatch_apply(bpatch_t* bpatch, const char* path)
         while (ctrl_data + ctrl_offset < ctrl_data + ctrl_size) {
             // Loop 3 times to read in X, Y, and Z values from the control vector
             for (i = 0; i <= 2; i++) {
-                ctrl[i] = offtin(&bpatch->control[ctrl_offset]);
+                ctrl[i] = offtin(&_control[ctrl_offset]);
                 ctrl_offset += 8;
             }
             x = ctrl[0];
@@ -302,7 +255,7 @@ int bpatch_apply(bpatch_t* bpatch, const char* path)
 
             for (i = 0; i < x; i++) {
                 uint8_t value1 = source_data[source_offset + i];
-                uint8_t value2 = bpatch->data[data_offset + i];
+                uint8_t value2 = _data[data_offset + i];
                 target_data[target_offset + i] = (value1 + value2) & 0xFF;
             }
 
@@ -312,8 +265,8 @@ int bpatch_apply(bpatch_t* bpatch, const char* path)
 
             // hexdump(&target_data[target_offset], 0x200);
             for (i = 0; i < y; i++) {
-                uint8_t value1 = bpatch->extra[extra_offset + i];
-                uint8_t value2 = bpatch->data[data_offset + i];
+                uint8_t value1 = _extra[extra_offset + i];
+                uint8_t value2 = _data[data_offset + i];
                 target_data[target_offset + i] = value1;
             }
             // hexdump(&target_data[target_offset], 0x200);

@@ -53,8 +53,8 @@ class MBDBRecord final
     void set_domain(const std::string& domain);
     void set_path(const std::string& path);
     void set_target(const std::string& target);
-    void set_datahash(const std::string& hash, unsigned short hash_size);
-    void set_unknown1(const std::string& data, unsigned short size);
+    void set_datahash(const std::string& hash);
+    void set_unknown1(const std::string& data);
     void set_mode(unsigned short mode);
     void set_unknown2(unsigned int unknown2);
     void set_inode(unsigned int inode);

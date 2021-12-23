@@ -69,6 +69,9 @@ static int quit_flag = 0;
         printf(__VA_ARGS__);                                                                       \
     };
 
+namespace absinthe {
+namespace util {
+
 enum cmd_mode
 {
     CMD_BACKUP,
@@ -402,10 +405,9 @@ static int mb2_status_check_snapshot_state(const char* path, const char* udid, c
 {
     int ret = -1;
     plist_t status_plist = NULL;
-    char* file_path = build_path(path, udid, "Status.plist", NULL);
+    auto file_path = build_path(path, udid, "Status.plist", NULL);
 
-    plist_read_from_filename(&status_plist, file_path);
-    free(file_path);
+    plist_read_from_filename(&status_plist, file_path.c_str());
     if (!status_plist) {
         printf("Could not read Status.plist!");
         return ret;
@@ -497,7 +499,7 @@ static void do_post_notification(idevice_t device, const char* notification)
         return;
     }
 
-    lockdownd_start_service(lockdown, NP_SERVICE_NAME, &nport);
+    lockdown->start_service(NP_SERVICE_NAME, &nport);
     if (nport) {
         np_client_new(device, nport, &np);
         if (np) {
@@ -1880,3 +1882,6 @@ int idevicebackup2(int argc, char* argv[])
 
     return (operation_ok) ? 0 : -1;
 }
+
+} // namespace util
+} // namespace absinthe

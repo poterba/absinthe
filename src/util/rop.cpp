@@ -1,4 +1,6 @@
 
+#include "rop.hpp"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,8 +16,6 @@
 #include <sys/mman.h>
 
 #define offsetof(type, member) __builtin_offsetof(type, member)
-
-#include "rop.hpp"
 
 unsigned int p3AddrLo = P3_ADDR_LO;
 unsigned int p2DataLo = 0, p3Data = 0;

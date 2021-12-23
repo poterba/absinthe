@@ -56,7 +56,7 @@ struct mobilebackup_client_private
 
 } // namespace
 
-MB1::connect(std::shared_ptr<Device> device)
+void MB1::connect(std::shared_ptr<Device> device)
 {
     int err = 0;
     uint16_t port = 0;
@@ -65,19 +65,16 @@ MB1::connect(std::shared_ptr<Device> device)
 
     if (device == NULL) {
         throw std::runtime_error("Invalid arguments");
-        return NULL;
     }
 
     lockdown::lockdown = lockdown_open(device);
     if (lockdown == NULL) {
         throw std::runtime_error("Unable to open connection to lockdownd");
-        return NULL;
     }
 
     err = lockdown_start_service(lockdown, "com.apple.mobilebackup", &port);
     if (err < 0) {
         throw std::runtime_error("Unable to start MobileBackup service");
-        return NULL;
     }
     lockdown_close(lockdown);
     lockdown_free(lockdown);
