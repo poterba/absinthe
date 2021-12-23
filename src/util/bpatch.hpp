@@ -20,6 +20,7 @@
 #pragma once
 
 #include <bzlib.h>
+
 #include <stdint.h>
 
 /*

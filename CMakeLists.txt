@@ -14,12 +14,13 @@ set(absinthe_GENERATE_DIR ${CMAKE_BINARY_DIR}/gen/)
 # Install Dependencies
 
 include(FindOpenSSL)
+include(FindBZip2)
 include(CPM)
 
-CPMAddPackage(
-  GIT_REPOSITORY https://gitlab.com/bzip2/bzip2.git
-  GIT_TAG bzip2-1.0.8
-)
+# CPMAddPackage(
+#   GIT_REPOSITORY https://gitlab.com/bzip2/bzip2.git
+#   GIT_TAG bzip2-1.0.8
+# )
 CPMAddPackage(
   GITHUB_REPOSITORY jarro2783/cxxopts
   VERSION 2.2.0

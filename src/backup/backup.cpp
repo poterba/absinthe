@@ -21,11 +21,15 @@
 #include "common.hpp"
 #include "debug.hpp"
 #include "file.hpp"
+
 #include <openssl/sha.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include <stdexcept>
 
 namespace absinthe {
 namespace backup {

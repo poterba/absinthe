@@ -22,6 +22,8 @@
 
 #include "mbdb_record.hpp"
 
+#include <memory>
+
 namespace absinthe {
 namespace backup {
 

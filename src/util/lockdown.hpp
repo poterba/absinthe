@@ -23,6 +23,8 @@
 
 #include <libimobiledevice/lockdown.h>
 
+#include <memory>
+
 namespace absinthe {
 namespace util {
 

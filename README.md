@@ -42,6 +42,7 @@ SUPPORTED FIRMWARE: 5.1.1
 
 - libimobiledevice + libplist
 - openssl
+- bzip2
 
 macOS:
 ```bash
@@ -51,7 +52,7 @@ brew link openssl --force
 
 Debian/Ubuntu:
 ```bash
-sudo apt-get install libgtk-3-dev libimobiledevice-dev libssl-dev
+sudo apt-get install libgtk-3-dev libimobiledevice-dev libssl-dev libbz2-dev
 ```
 
 # NOTES

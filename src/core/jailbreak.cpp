@@ -31,6 +31,13 @@
 
 #include "dyldcache.hpp"
 
+#include "offsets.hpp"
+
+#include <libimobiledevice/afc.h>
+#include <libimobiledevice/file_relay.h>
+#include <libimobiledevice/sbservices.h>
+#include <plist/plist.h>
+
 #include <dirent.h>
 #include <getopt.h>
 #include <stdio.h>
@@ -39,13 +46,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <plist/plist.h>
-
-#include <libimobiledevice/afc.h>
-#include <libimobiledevice/file_relay.h>
-#include <libimobiledevice/sbservices.h>
-
-#include "offsets.hpp"
+#include <stdexcept>
 
 #ifdef WIN32
 #include <windows.h>
@@ -644,7 +645,7 @@ int afc_upload_file2(afc_client_t afc, const char* filename, const char* dstfn)
 
     afc_error_t err = afc_file_open(afc, dstfn, AFC_FOPEN_WR, &handle);
     if (err != AFC_E_SUCCESS) {
-        throw std::runtime_error("Unable to open afc://%s", dstfn);
+        throw std::runtime_error("Unable to open afc");
         return -1;
     }
 
@@ -653,7 +654,7 @@ int afc_upload_file2(afc_client_t afc, const char* filename, const char* dstfn)
         uint32_t bytes_read = fread(data, 1, sizeof(data), infile);
         uint32_t bytes_written = 0;
         if (afc_file_write(afc, handle, data, bytes_read, &bytes_written) != AFC_E_SUCCESS) {
-            throw std::runtime_error("Error writing to file afc://%s", dstfn);
+            throw std::runtime_error("Error writing to file afc");
             res = -1;
             break;
         }

@@ -22,21 +22,25 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-          - windows-latest
+          # TODO: fix win builds
+          # - windows-latest
 
     steps:
       - uses: actions/checkout@v2
 
       - if: matrix.os == 'macos-latest'
-        run: brew install ninja libimobiledevice conan
+        run: |
+          brew install ninja libimobiledevice openssl
+          brew link openssl --force
 
       - if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y gcc g++ ninja-build libimobiledevice-dev && pip3 install conan
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ ninja-build libimobiledevice-dev libssl-dev libbz2-dev
 
       - if: matrix.os == 'windows-latest'
         run: |
-          choco install ninja conan
-          refreshenv
+          choco install ninja
 
       - uses: lukka/get-cmake@latest
 
