@@ -489,7 +489,7 @@ static int mobilebackup_info_is_current_device(lockdownd_client_t lockdown, plis
 
 static void do_post_notification(idevice_t device, const char* notification)
 {
-    uint16_t nport = 0;
+    lockdownd_service_descriptor_t nport = 0;
     np_client_t np;
 
     lockdownd_client_t lockdown = NULL;
@@ -499,7 +499,7 @@ static void do_post_notification(idevice_t device, const char* notification)
         return;
     }
 
-    lockdown->start_service(NP_SERVICE_NAME, &nport);
+    lockdownd_start_service(lockdown, NP_SERVICE_NAME, &nport);
     if (nport) {
         np_client_new(device, nport, &np);
         if (np) {
