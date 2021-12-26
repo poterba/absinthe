@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "cppdbg",
+            "request": "launch",
+            "type": "cppdbg",
+            "program": "${command:cmake.launchTargetPath}",
+            "cwd": "${workspaceFolder}",
+            // "targetArchitecture": "arm64",
+            "setupCommands": [
+                {
+                    "description": "Enable all-exceptions",
+                    "text": "catch throw",
+                    "ignoreFailures": true
+                }
+            ],
+            "externalConsole": false,
+            "internalConsoleOptions": "openOnSessionStart",
+            "osx": {
+                "MIMode": "lldb"
+            }
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+// Generated file-helper
+
+#pragma once
+
+#include <@CXX_FILESYSTEM_HEADER@>
+
+using fs = @CXX_FILESYSTEM_NAMESPACE@;

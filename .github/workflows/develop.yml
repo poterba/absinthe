@@ -1,0 +1,58 @@
+
+name: develop
+
+on: [push]
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+  BUILD_SHARED: OFF
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          # TODO: fix win builds
+          # - windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - if: matrix.os == 'macos-latest'
+        run: |
+          brew install ninja libimobiledevice openssl
+          brew link openssl --force
+
+      - if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ ninja-build libimobiledevice-dev libssl-dev libbz2-dev
+
+      - if: matrix.os == 'windows-latest'
+        run: |
+          choco install ninja
+
+      - uses: lukka/get-cmake@latest
+
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{github.workspace}}/build
+
+      - name: Configure CMake
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_SHARED_LIBS=$BUILD_SHARED
+
+      - name: Build
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: cmake --build . --config $BUILD_TYPE -j
