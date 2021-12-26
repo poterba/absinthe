@@ -53,20 +53,10 @@ Backup::Backup(const std::string& backupdir, const std::string& uuid)
 
 int Backup::get_file_index(const std::string& domain, const std::string& path)
 {
-    if (!_mbdb) {
-        return -1;
+    if (_mbdb) {
+        return _mbdb->find_record(domain, path);
     }
-    int i = 0;
-    int found = 0;
-    MBDBRecord* rec = NULL;
-    for (i = 0; i < _mbdb->num_records; i++) {
-        rec = _mbdb->records[i];
-        if (rec->domain && !strcmp(rec->domain, domain) && rec->path && !strcmp(rec->path, path)) {
-            found = 1;
-            break;
-        }
-    }
-    return (found) ? i : -1;
+    return -1;
 }
 
 std::shared_ptr<File> Backup::get_file(const std::string& domain, const std::string& path)

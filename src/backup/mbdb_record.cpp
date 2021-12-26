@@ -263,7 +263,7 @@ void MBDBRecord::set_datahash(const std::string& hash)
         _this_size -= _datahash_size;
     }
     if (!hash.empty()) {
-        _datahash_size = _hash.size();
+        _datahash_size = hash.size();
         _datahash = hash;
         _this_size += _datahash_size;
     } else {
@@ -278,7 +278,7 @@ void MBDBRecord::set_unknown1(const std::string& data)
     if (_unknown1_size > 0 && _unknown1_size < 0xFFFF) {
         _this_size -= _unknown1_size;
     }
-    if (data && (size > 0)) {
+    if (data && (_size > 0)) {
         _unknown1_size = data.size();
         _unknown1 = data;
         _this_size += _unknown1_size;
@@ -333,7 +333,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     strsize = htobe16(_path_size);
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
-    if (path != NULL) {
+    if (!_path.empty()) {
         memcpy(&data_buf[offset], _path, _path_size);
         offset += _path_size;
     }
@@ -343,26 +343,26 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
     if (!_target.empty()) {
-        memcpy(&data_buf[offset], target, target_size);
-        offset += target_size;
+        memcpy(&data_buf[offset], _target, datahash_size);
+        offset += _target_size;
     }
 
     // append DataHash
-    strsize = htobe16(datahash_size);
+    strsize = htobe16(_datahash_size);
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
-    if (datahash != NULL) {
-        memcpy(&data_buf[offset], datahash, datahash_size);
-        offset += datahash_size;
+    if (!_datahash.empty()) {
+        memcpy(&data_buf[offset], _datahash, _datahash_size);
+        offset += _datahash_size;
     }
 
     // append unknown1
-    strsize = htobe16(unknown1_size);
+    strsize = htobe16(_unknown1_size);
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
-    if (unknown1 != NULL) {
-        memcpy(&data_buf[offset], unknown1, unknown1_size);
-        offset += unknown1_size;
+    if (!_unknown1.empty()) {
+        memcpy(&data_buf[offset], _unknown1, _unknown1_size);
+        offset += _unknown1_size;
     }
 
     unsigned short mode = htobe16(mode);
@@ -405,13 +405,13 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     memcpy(&data_buf[offset], &flag, 1);
     offset++;
 
-    unsigned char prop = property_count;
+    unsigned char prop = _property_count;
     memcpy(&data_buf[offset], &prop, 1);
     offset++;
 
     // add properties
     int i;
-    for (const auto& property : properties) {
+    for (const auto& property : _properties) {
         unsigned short pnsize = htobe16(property.name_size);
         memcpy(&data_buf[offset], &pnsize, 2);
         offset += 2;

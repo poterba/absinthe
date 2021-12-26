@@ -23,6 +23,7 @@
 #include "mbdb_record.hpp"
 
 #include <array>
+#include <memory>
 
 namespace absinthe {
 namespace backup {
@@ -33,14 +34,15 @@ class MBDB final
     MBDB(const std::string& filePath);
     MBDB(std::vector<unsigned char> data, unsigned int size);
 
-    const MBDBRecord& get_record(unsigned int offset);
+    std::shared_ptr<MBDBRecord> get_record(unsigned int offset);
+    // returns -1 if not found
+    int find_record(const std::string& domain, const std::string& path) const;
 
   private:
     std::vector<unsigned char> data;
 
     std::array<unsigned char, 6> _header; // 'mbdb\5\0'
-    int num_records;
-    std::vector<MBDBRecord> records;
+    std::vector<std::shared_ptr<MBDBRecord>> records;
 };
 
 extern MBDB* apparition_mbdb;

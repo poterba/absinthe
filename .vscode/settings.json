@@ -2,7 +2,7 @@
     "C_Cpp.autoAddFileAssociations": false,
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "[cpp]": {
-        "editor.defaultFormatter": "xaver.clang-format"
+        "editor.defaultFormatter": "ms-vscode.cpptools"
     },
     "clang-format.assumeFilename": "${workspaceFolder}/.clang-format"
 }

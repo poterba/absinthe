@@ -13,6 +13,4 @@ struct vn_ioctl {
 #define VNIOCATTACH _IOWR('F', 0, struct vn_ioctl) /* attach file */
 #define VNIOCDETACH _IOWR('F', 1, struct vn_ioctl)
 
-#define PROC_PIDREGIONPATHINFO 8
-
 #endif

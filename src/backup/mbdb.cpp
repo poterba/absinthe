@@ -75,29 +75,42 @@ MBDB::MBDB(std::vector<unsigned char> data)
     }
 }
 
-const MBDBRecord& get_record(mbdb_t* mbdb, unsigned int index) { return NULL; }
-
-void free(mbdb_t* mbdb)
+std::shared_ptr<MBDBRecord> MBDB::get_record(std::shared_ptr<MBDB> mbdb, unsigned int index)
 {
-    if (mbdb) {
-        if (_header) {
-            free(_header);
-            _header = NULL;
-        }
-        if (_records) {
-            int i;
-            for (i = 0; i < _num_records; i++) {
-                mbdb_record::free(_records[i]);
-            }
-            free(_records);
-        }
-        if (_data) {
-            free(_data);
-        }
-        free(mbdb);
-    }
+    return nullptr;
 }
 
-} // namespace mbdb
+int MBDB::find_record(const std::string& domain, const std::string& path) const
+{
+    for (i = 0; i < _records.size(); i++) {
+        const auto rec = _records.at(i);
+        if (rec->domain == domain && rec->path == path) {
+            return -1
+        }
+    }
+    return -1;
+}
+
+// void free(mbdb_t* mbdb)
+// {
+//     if (mbdb) {
+//         if (_header) {
+//             free(_header);
+//             _header = NULL;
+//         }
+//         if (_records) {
+//             int i;
+//             for (i = 0; i < _num_records; i++) {
+//                 mbdb_record::free(_records[i]);
+//             }
+//             free(_records);
+//         }
+//         if (_data) {
+//             free(_data);
+//         }
+//         free(mbdb);
+//     }
+// }
+
 } // namespace backup
 } // namespace absinthe

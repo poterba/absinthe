@@ -244,7 +244,7 @@ int jb_check_consistency(const char* product, const char* build)
     }
 }
 
-crashreport::Report* fetch_crashreport(std::shared_ptr<util::Device> device)
+std::shared_ptr<crashreport::Report> fetch_crashreport(std::shared_ptr<util::Device> device)
 {
     // We open crashreporter so we can download the mobilebackup2 crashreport
     //  and parse the "random" dylib addresses. Thank you ASLR for nothing. ;P
@@ -262,22 +262,22 @@ crashreport::Report* fetch_crashreport(std::shared_ptr<util::Device> device)
     return crash;
 }
 
-crashreport_t* crash_mobilebackup(device_t* device)
+std::shared_ptr<crashreport::Report> crash_mobilebackup(std::shared_ptr<util::Device> device)
 {
-    crashreport_t* crash = NULL;
-    mb1_t* mb1 = mb1_connect(device);
-    if (mb1) {
-        if (mb1_crash(mb1)) {
-            fprintf(
-                stderr, "successfully crashed mb1. waiting some time for the device to write "
-                        "the crash report...");
-            sleep(5);
-            crash = fetch_crashreport(device);
-        } else {
-            fprintf(stderr, "could not crash mb1...");
-        }
+    std::shared_ptr<crashreport::Report> crash = NULL;
+    auto mb1 = std::make_shared<util::MB1>();
+    mb1->connect(device);
+
+    if (mb1->crash()) {
+        fprintf(
+            stderr, "successfully crashed mb1. waiting some time for the device to write "
+                    "the crash report...");
+        sleep(5);
+        crash = fetch_crashreport(device);
+    } else {
+        fprintf(stderr, "could not crash mb1...");
     }
-    mb1_free(mb1);
+
     return crash;
 }
 
@@ -803,22 +803,21 @@ static void get_absinthe_tmpdir(char* pathout)
 static int jailbreak_50(
     const char* udid,
     status_cb_t status_cb,
-    device_t* device,
-    lockdown_t* lockdown,
+    std::shared<util::Device> device,
+    std::shared<util::Lockdown> lockdown,
     const char* product,
     const char* build)
 {
     char backup_directory[1024];
     get_absinthe_tmpdir(backup_directory);
     strcat(backup_directory, "backup");
-    mkdir_with_parents(backup_directory, 0755);
+    util::mkdir_with_parents(backup_directory, 0755);
 
     // get libcopyfile_vmaddr
     uint32_t libcopyfile_vmaddr = get_libcopyfile_vmaddr(product, build);
     if (libcopyfile_vmaddr == 0) {
         debug("Error: device %s build %s is not supported.", product, build);
         status_cb("Sorry, your device is not supported.", 0);
-        device_free(device);
         return -1;
     }
     debug("Found libcopyfile.dylib address in database of 0x%x", libcopyfile_vmaddr);
@@ -829,10 +828,8 @@ static int jailbreak_50(
     /* start AFC and move dirs out of the way */
     /********************************************************/
     lockdownd_pair_record_t port = 0;
-    if (lockdown_start_service(lockdown, "com.apple.afc", &port) != 0) {
+    if (lockdown->start_service("com.apple.afc", &port) != 0) {
         status_cb("ERROR: Failed to start AFC service", 0);
-        lockdown_free(lockdown);
-        device_free(device);
         return -1;
     }
     lockdown_free(lockdown);
@@ -842,8 +839,6 @@ static int jailbreak_50(
     afc_client_new(device->client, port, &afc);
     if (!afc) {
         status_cb("ERROR: Could not connect to AFC service", 0);
-        device_free(device);
-        return -1;
     }
 
     status_cb(NULL, 4);
@@ -875,7 +870,6 @@ static int jailbreak_50(
 
     afc_client_free(afc);
     afc = NULL;
-    device_free(device);
     device = NULL;
 
     status_cb(NULL, 8);
@@ -883,28 +877,27 @@ static int jailbreak_50(
     /********************************************************/
     /* make backup */
     /********************************************************/
-    rmdir_recursive(backup_directory);
-    __mkdir(backup_directory, 0755);
+    util::rmdir_recursive(backup_directory);
+    util::__mkdir(backup_directory, 0755);
 
     status_cb(NULL, 10);
 
     char* bargv[] = {"idevicebackup2", "backup", backup_directory, NULL};
-    idevicebackup2(3, bargv);
+    util::idevicebackup2(3, bargv);
 
-    backup::backup_t* backup = backup::open(backup_directory, udid);
-    if (!backup) {
-        fprintf(stderr, "ERROR: failed to open backup");
-        return -1;
-    }
+    auto backup = std::make_shared<backup::Backup>(backup_directory, udid);
+    // if (!backup) {
+    //     fprintf(stderr, "ERROR: failed to open backup");
+    //     return -1;
+    // }
 
     /********************************************************/
     /* add vpn on-demand connection to preferences.plist */
     /********************************************************/
     status_cb("Preparing jailbreak files...", 20);
 
-    backup_file::backup_file::t* bf = NULL;
-    bf =
-        backup_get_file(backup, "SystemPreferencesDomain", "SystemConfiguration/preferences.plist");
+    auto bf = std::make_shared<backup::Backup>(
+        "SystemPreferencesDomain", "SystemConfiguration/preferences.plist");
     if (bf) {
         char* fn = backup_get_file_path(backup, bf);
         if (!fn) {
@@ -912,7 +905,7 @@ static int jailbreak_50(
             return -1;
         }
 
-        unsigned char* prefs = NULL;
+        char* prefs = NULL;
         uint32_t plen = 0;
 
         if (util::file_read(fn, &prefs, &plen) > 8) {
@@ -936,13 +929,13 @@ static int jailbreak_50(
             bf->assign_file_data(prefs, plen, 1);
             free(prefs);
             prefs = NULL;
-            backup_file::set_length(bf, plen);
-            backup_file::update_hash(bf);
+            bf->set_length(plen);
+            bf->update_hash();
 
-            if (backup_update_file(backup, bf) < 0) {
+            if (backup->update_file(bf) < 0) {
                 fprintf(stderr, "ERROR: could not add file to backup");
             } else {
-                backup_write_mbdb(backup);
+                backup->write_mbdb();
             }
         } else {
             fprintf(stderr, "Could not open '%s'", fn);
@@ -951,53 +944,51 @@ static int jailbreak_50(
     } else {
         fprintf(stderr, "ERROR: could not locate preferences.plist in backup.");
     }
-    backup_file::free(bf);
 
     /********************************************************/
     /* add a webclip to backup */
     /********************************************************/
     status_cb(NULL, 22);
-    if (backup_get_file_index(backup, "HomeDomain", "Library/WebClips") < 0) {
-        bf = backup_file::create(NULL);
-        backup_file::set_domain(bf, "HomeDomain");
-        backup_file::set_path(bf, "Library/WebClips");
-        backup_file::set_mode(bf, 040755);
-        backup_file::set_inode(bf, 54321);
-        backup_file::set_uid(bf, 501);
-        backup_file::set_gid(bf, 501);
+    if (backup->get_file_index("HomeDomain", "Library/WebClips") < 0) {
+        bf = std::make_shared<backup::B jm89nhjmk,mn ackup>();
+        bf->set_domain("HomeDomain");
+        bf->set_path("Library/WebClips");
+        bf->set_mode(040755);
+        bf->set_inode(54321);
+        bf->set_uid(501);
+        bf->set_gid(501);
         unsigned int tm = (unsigned int) (time(NULL));
-        backup_file::set_time1(bf, tm);
-        backup_file::set_time2(bf, tm);
-        backup_file::set_time3(bf, tm);
-        backup_file::set_length(bf, 0);
-        backup_file::set_flag(bf, 4);
-        if (backup_update_file(backup, bf) < 0) {
+        bf->set_time1(tm);
+        bf->set_time2(tm);
+        bf->set_time3(tm);
+        bf->set_length(0);
+        bf->set_flag(4);
+        if (backup->update_file(bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
         }
-        backup_file::free(bf);
     }
     status_cb(NULL, 24);
-    bf = backup_get_file(backup, "HomeDomain", "Library/WebClips/corona.webclip");
+    // TODO: it will not work,
+    bf = std::make_shared<backup::Backup>("HomeDomain", "Library/WebClips/corona.webclip");
     if (!bf) {
-        bf = backup_file::create(NULL);
-        backup_file::set_domain(bf, "HomeDomain");
-        backup_file::set_path(bf, "Library/WebClips/corona.webclip");
+        bf = std::make_shared<backup::Backup>();
+        bf->set_domain("HomeDomain");
+        bf->set_path("Library/WebClips/corona.webclip");
     }
     if (bf) {
-        backup_file::set_mode(bf, 040755);
-        backup_file::set_inode(bf, 54322);
-        backup_file::set_uid(bf, 501);
-        backup_file::set_gid(bf, 501);
+        bf->set_mode(040755);
+        bf->set_inode(54322);
+        bf->set_uid(501);
+        bf->set_gid(501);
         unsigned int tm = (unsigned int) (time(NULL));
-        backup_file::set_time1(bf, tm);
-        backup_file::set_time2(bf, tm);
-        backup_file::set_time3(bf, tm);
-        backup_file::set_length(bf, 0);
-        backup_file::set_flag(bf, 4);
-        if (backup_update_file(backup, bf) < 0) {
+        bf->set_time1(tm);
+        bf->set_time2(tm);
+        bf->set_time3(tm);
+        bf->set_length(0);
+        bf->set_flag(4);
+        if (backup->update_file(bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
         }
-        backup_file::free(bf);
     }
 
     status_cb(NULL, 26);
@@ -1006,24 +997,23 @@ static int jailbreak_50(
     file_read("data/common/webclip_Info.plist", (unsigned char**) &info_plist, &info_size);
     bf = backup_file::create_with_data(info_plist, info_size, 0);
     if (bf) {
-        backup_file::set_domain(bf, "HomeDomain");
-        backup_file::set_path(bf, "Library/WebClips/corona.webclip/Info.plist");
-        backup_file::set_mode(bf, 0100644);
-        backup_file::set_inode(bf, 54323);
-        backup_file::set_uid(bf, 501);
-        backup_file::set_gid(bf, 501);
+        bf->set_domain("HomeDomain");
+        bf->set_path("Library/WebClips/corona.webclip/Info.plist");
+        bf->set_mode(0100644);
+        bf->set_inode(54323);
+        bf->set_uid(501);
+        bf->set_gid(501);
         unsigned int tm = (unsigned int) (time(NULL));
-        backup_file::set_time1(bf, tm);
-        backup_file::set_time2(bf, tm);
-        backup_file::set_time3(bf, tm);
-        backup_file::set_length(bf, info_size);
-        backup_file::set_flag(bf, 4);
-        backup_file::update_hash(bf);
+        bf->set_time1(tm);
+        bf->set_time2(tm);
+        bf->set_time3(tm);
+        bf->set_length(info_size);
+        bf->set_flag(4);
+        bf->update_hash();
 
-        if (backup_update_file(backup, bf) < 0) {
+        if (backup->update_file(bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
         }
-        backup_file::free(bf);
         if (info_plist) {
             free(info_plist);
         }
@@ -1042,32 +1032,30 @@ static int jailbreak_50(
         icon_filename = "data/common/webclip_icon.png";
     }
     file_read(icon_filename, (unsigned char**) &icon_data, &icon_size);
-    bf = backup_file::create_with_data(icon_data, icon_size, 0);
+    bf = std::make_shared<backup::File>(icon_data, icon_size, 0);
     if (bf) {
-        backup_file::set_domain(bf, "HomeDomain");
-        backup_file::set_path(bf, "Library/WebClips/corona.webclip/icon.png");
-        backup_file::set_mode(bf, 0100644);
-        backup_file::set_inode(bf, 54324);
-        backup_file::set_uid(bf, 501);
-        backup_file::set_gid(bf, 501);
+        bf->set_domain("HomeDomain");
+        bf->set_path("Library/WebClips/corona.webclip/icon.png");
+        bf->set_mode(0100644);
+        bf->set_inode(54324);
+        bf->set_uid(501);
+        bf->set_gid(501);
         unsigned int tm = (unsigned int) (time(NULL));
-        backup_file::set_time1(bf, tm);
-        backup_file::set_time2(bf, tm);
-        backup_file::set_time3(bf, tm);
-        backup_file::set_length(bf, icon_size);
-        backup_file::set_flag(bf, 4);
-        backup_file::update_hash(bf);
+        bf->set_time1(tm);
+        bf->set_time2(tm);
+        bf->set_time3(tm);
+        bf->set_length(icon_size);
+        bf->set_flag(4);
+        bf->update_hash();
 
-        if (backup_update_file(backup, bf) < 0) {
+        if (backup->update_file(bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
         }
-        backup_file::free(bf);
     }
     if (icon_data) {
         free(icon_data);
     }
-    backup_write_mbdb(backup);
-    backup_free(backup);
+    backup->write_mbdb();
 
     /********************************************************/
     /* restore backup */
