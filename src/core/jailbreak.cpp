@@ -37,14 +37,9 @@
 #include <libimobiledevice/file_relay.h>
 #include <libimobiledevice/sbservices.h>
 #include <plist/plist.h>
+#include <zlib.h>
 
-#include <dirent.h>
-#include <getopt.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
+#include "common.hpp"
 
 #include <stdexcept>
 
@@ -52,10 +47,6 @@
 #include <windows.h>
 #define sleep(x) Sleep(x * 1000)
 #endif
-
-#include <zlib.h>
-
-#include "common.hpp"
 
 #define AFCTMP "HackStore"
 
@@ -758,21 +749,21 @@ static int backup_add_file(
     if (util::file_read(path, (unsigned char**) &buff, &buffsize) < 0) {
         return -1;
     }
-    backup::backup_file::backup_file::t* bf = backup_file::create_with_data(buff, buffsize, 0);
+    auto bf = std::make_shared<backup::Backup>(buff, buffsize, 0);
     if (bf) {
-        backup::backup_file::set_domain(bf, domain);
-        backup::backup_file::set_path(bf, destpath);
-        backup::backup_file::set_mode(bf, mode | 0100000);
-        backup::backup_file::set_inode(bf, inodenum++);
-        backup::backup_file::set_uid(bf, 0);
-        backup::backup_file::set_gid(bf, 0);
+        bf->set_domain(domain);
+        bf->set_path(destpath);
+        bf->set_mode(mode | 0100000);
+        bf->set_inode(inodenum++);
+        bf->set_uid(0);
+        bf->set_gid(0);
         unsigned int tm = (unsigned int) (time(NULL));
-        backup::backup_file::set_time1(bf, tm);
-        backup::backup_file::set_time2(bf, tm);
-        backup::backup_file::set_time3(bf, tm);
-        backup::backup_file::set_length(bf, buffsize);
-        backup::backup_file::set_flag(bf, 4);
-        backup::backup_file::update_hash(bf);
+        bf->set_time1(tm);
+        bf->set_time2(tm);
+        bf->set_time3(tm);
+        bf->set_length(buffsize);
+        bf->set_flag(4);
+        bf->update_hash();
 
         if (backup::update_file(backup, bf) < 0) {
             fprintf(stderr, "ERROR: could not add file to backup");
@@ -950,7 +941,7 @@ static int jailbreak_50(
     /********************************************************/
     status_cb(NULL, 22);
     if (backup->get_file_index("HomeDomain", "Library/WebClips") < 0) {
-        bf = std::make_shared<backup::B jm89nhjmk,mn ackup>();
+        bf = std::make_shared<backup::B jm89nhjmk, mn ackup>();
         bf->set_domain("HomeDomain");
         bf->set_path("Library/WebClips");
         bf->set_mode(040755);

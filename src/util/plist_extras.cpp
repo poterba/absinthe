@@ -19,7 +19,7 @@
 
 #include "plist_extras.hpp"
 
-#include <string.h>
+#include <cstring>
 
 static void buffer_read_from_filename(const char* filename, char** buffer, uint64_t* length)
 {

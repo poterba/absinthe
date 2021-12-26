@@ -24,10 +24,6 @@
 
 #include <libimobiledevice/libimobiledevice.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 namespace absinthe {
 namespace util {
 

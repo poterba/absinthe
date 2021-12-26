@@ -17,13 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include "debug.hpp"
 #include "dictionary.hpp"
-// #include <stdint.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
+#include "debug.hpp"
 
+#include <cstring>
 #include <stdexcept>
 
 dictionary_t* dictionary_create()

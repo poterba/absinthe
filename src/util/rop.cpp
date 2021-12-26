@@ -1,15 +1,7 @@
 
 #include "rop.hpp"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ptrace.h>
-#include <sys/types.h>
-#include <syslog.h>
-#include <unistd.h>
-
-#include <syslog.h>
+// #include <syslog.h>
 
 #include <dlfcn.h>
 #include <fcntl.h>

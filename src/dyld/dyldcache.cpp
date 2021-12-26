@@ -169,10 +169,9 @@ map::dyldmap_t** Cache::maps_load()
     if (cache) {
         count = _header->mapping_count;
         maps = maps_create(count);
-        if (maps == NULL) {
-            throw std::runtime_error("Unable to allocate memory for dyld maps");
-            return NULL;
-        }
+        // if (maps == NULL) {
+        //     throw std::runtime_error("Unable to allocate memory for dyld maps");
+        // }
 
         for (i = 0; i < count; i++) {
             maps[i] = dyldmap_parse(_data, _header->mapping_offset + i * sizeof(dyldmap_info_t));

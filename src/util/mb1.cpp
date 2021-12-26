@@ -26,17 +26,9 @@
 #include "lockdown.hpp"
 #include "plist_extras.hpp"
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 1
 #endif
-
-#include <dirent.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <time.h>
 
 #include <libimobiledevice/libimobiledevice.h>
 #include <plist/plist.h>

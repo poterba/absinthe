@@ -16,6 +16,12 @@
 
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
+#define LOG_SHIFT (16 + STRLEN_PID + constants->STRLEN_FILENAME)
+#define P3_ADDR_LO (constants->P2_ADDR_LO + ((constants->P3 - constants->P2) * 4))
+
+#define ROP_MODE_MEM 1
+#define ROP_MODE_FILE 2
+
 namespace absinthe {
 namespace core {
 
@@ -26,16 +32,10 @@ int STRLEN_PID;
 struct constants* constants;
 struct offsets* offsets;
 
-#define LOG_SHIFT (16 + STRLEN_PID + constants->STRLEN_FILENAME)
-#define P3_ADDR_LO (constants->P2_ADDR_LO + ((constants->P3 - constants->P2) * 4))
-
 // Do not initialize globals here! Initialize them in generate_rop.
 unsigned int p2DataLo, p3Data;
 int firstP2Write, firstP3Write;
 int lines;
-
-#define ROP_MODE_MEM 1
-#define ROP_MODE_FILE 2
 
 FILE* outFile;
 char dataPath[1024];

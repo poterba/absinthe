@@ -30,7 +30,7 @@
 namespace absinthe {
 namespace backup {
 namespace {
-constexpr unsigned char* MBDB_MAGIC{"\x6d\x62\x64\x62\x05\x00"};
+constexpr unsigned char* const MBDB_MAGIC{"\x6d\x62\x64\x62\x05\x00"};
 }
 
 MBDB::MBDB(const std::string& filePath)

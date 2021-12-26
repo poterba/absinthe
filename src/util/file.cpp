@@ -19,9 +19,6 @@
 
 #include "file.hpp"
 
-#include <stdlib.h>
-#include <string.h>
-
 #define BUFSIZE 4096
 
 namespace absinthe {
@@ -47,9 +44,9 @@ File::File(const std::string& path)
     fseek(_desc, 0, SEEK_SET);
 
     _offset = 0;
-    if (_data == NULL) {
-        throw std::runtime_error("Unable to allocate memory for file");
-    }
+    // if (!_data.empty()) {
+    //     throw std::runtime_error("Unable to allocate memory for file");
+    // }
 
     uint64_t offset = 0;
     while (offset < _size) {
@@ -62,7 +59,7 @@ File::File(const std::string& path)
             break;
         }
     }
-    fprintf(stderr, "Read in %llu of %llu bytes from %s", _offset, _size, _path);
+    // fprintf(stderr, "Read in %llu of %llu bytes from %s", _offset, _size, _path);
     // We have the data stored in memory now, so we don't need to keep this open anymore
     // fseek(_desc, 0, SEEK_SET);
     close();
@@ -73,16 +70,16 @@ File::~File() { close(); }
 
 void File::close()
 {
-    if (file && _desc) {
+    if (_desc) {
         fclose(_desc);
         _desc = NULL;
     }
 }
 
-int File::read(const std::string& file, std::string& buf, unsigned int* length)
+int File::read(std::string& buf, unsigned int* length)
 {
     FILE* fd = NULL;
-    fd = fopen(file, "rb");
+    fd = fopen(_path.c_str(), "rb");
     if (fd == NULL) {
         return -1;
     }
@@ -91,7 +88,7 @@ int File::read(const std::string& file, std::string& buf, unsigned int* length)
     long size = ftell(fd);
     fseek(fd, 0, SEEK_SET);
 
-    unsigned char* data = malloc(size);
+    unsigned char* data = (unsigned char*) malloc(size);
 
     int bytes = fread(data, 1, size, fd);
     if (bytes != size) {
@@ -100,15 +97,15 @@ int File::read(const std::string& file, std::string& buf, unsigned int* length)
     }
     fclose(fd);
 
-    buf = data;
+    buf = {data, data + sizeof data / sizeof data[0]};
     *length = bytes;
     return bytes;
 }
 
-int File::write(const std::string& file, unsigned char* buf, unsigned int length)
+int File::write(unsigned char* buf, unsigned int length)
 {
     FILE* fd = NULL;
-    fd = fopen(file, "wb");
+    fd = fopen(_path.c_str(), "wb");
     if (fd == NULL) {
         return -1;
     }
@@ -122,23 +119,21 @@ int File::write(const std::string& file, unsigned char* buf, unsigned int length
     return bytes;
 }
 
-int File::copy(const std::string& from, const std::string& to)
+int File::copy(const std::string& to)
 {
     FILE* ffr = NULL;
     FILE* fto = NULL;
     char buf[8192];
     size_t size;
 
-    ffr = fopen(from, "rb");
+    ffr = fopen(_path.c_str(), "rb");
     if (ffr == NULL) {
-        fprintf(stderr, "could not open source file '%s' for reading", from);
-        return -1;
+        throw std::runtime_error("could not open source file for reading");
     }
-    fto = fopen(to, "wb");
+    fto = fopen(to.c_str(), "wb");
     if (fto == NULL) {
-        fprintf(stderr, "could not open target file '%s' for writing", to);
         fclose(ffr);
-        return -1;
+        throw std::runtime_error("could not open target file for writing");
     }
 
     while (!feof(ffr)) {

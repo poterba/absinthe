@@ -22,21 +22,12 @@
 
 #include "common.hpp"
 #include "endianness.hpp"
-#include <ctype.h>
-#include <dirent.h>
-#include <errno.h>
-#include <libgen.h>
+
 #include <libimobiledevice/afc.h>
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>
 #include <libimobiledevice/mobilebackup2.h>
 #include <libimobiledevice/notification_proxy.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -583,12 +574,12 @@ static int errno_to_device_error(int errno_value)
 
 static int mb2_handle_send_file(
     mobilebackup2_client_t mobilebackup2,
-    const char* backup_dir,
-    const char* path,
+    const std::string& backup_dir,
+    const std::string& path,
     plist_t* errplist)
 {
     uint32_t nlen = 0;
-    uint32_t pathlen = strlen(path);
+    uint32_t pathlen = path.size();
     uint32_t bytes = 0;
     char* localfile = build_path(backup_dir, path, NULL);
     char buf[32768];

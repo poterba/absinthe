@@ -23,6 +23,7 @@
 #include "endianness.hpp"
 #include "mbdb.hpp"
 
+#include <cstring>
 #include <iostream>
 #include <stdexcept>
 // #include <stdio.h>
@@ -40,7 +41,7 @@ MBDBRecord::MBDBRecord(unsigned char* data)
     unsigned short strsize = be16toh(*((unsigned short*) &data[offset]));
     if (strsize > 0 && strsize < 0xFFFF) {
         offset += 2;
-        _domain = std::string(&data[offset], strsize);
+        _domain = {&data[offset], &data[offset] + strsize};
         _domain[strsize] = 0;
         offset += strsize;
     } else {
@@ -199,7 +200,6 @@ void MBDBRecord::_debug()
     std::cout << "\tflag = 0x" << _flag << std::endl;
     std::cout << "\tproperty_count = " << _property_count << std::endl;
 }
-
 void MBDBRecord::init()
 {
     _target_size = 0xFFFF;
@@ -278,7 +278,7 @@ void MBDBRecord::set_unknown1(const std::string& data)
     if (_unknown1_size > 0 && _unknown1_size < 0xFFFF) {
         _this_size -= _unknown1_size;
     }
-    if (data && (_size > 0)) {
+    if (!data.empty()) {
         _unknown1_size = data.size();
         _unknown1 = data;
         _this_size += _unknown1_size;
@@ -325,7 +325,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
     if (!_domain.empty()) {
-        memcpy(&data_buf[offset], _domain, _domain_size);
+        memcpy(&data_buf[offset], _domain, _domain.size());
         offset += _domain_size;
     }
 
@@ -334,7 +334,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
     if (!_path.empty()) {
-        memcpy(&data_buf[offset], _path, _path_size);
+        memcpy(&data_buf[offset], _path, _path.size());
         offset += _path_size;
     }
 
@@ -343,7 +343,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
     if (!_target.empty()) {
-        memcpy(&data_buf[offset], _target, datahash_size);
+        memcpy(&data_buf[offset], _target, _target.size());
         offset += _target_size;
     }
 
@@ -352,7 +352,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
     if (!_datahash.empty()) {
-        memcpy(&data_buf[offset], _datahash, _datahash_size);
+        memcpy(&data_buf[offset], _datahash, _datahash.size());
         offset += _datahash_size;
     }
 
@@ -361,7 +361,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
     memcpy(&data_buf[offset], &strsize, 2);
     offset += 2;
     if (!_unknown1.empty()) {
-        memcpy(&data_buf[offset], _unknown1, _unknown1_size);
+        memcpy(&data_buf[offset], _unknown1, _unknown1.size());
         offset += _unknown1_size;
     }
 
@@ -425,7 +425,7 @@ int MBDBRecord::build(unsigned char** data, unsigned int* size)
         offset += property.value_size;
     }
 
-    if (this_size != offset) {
+    if (_this_size != offset) {
         *data = NULL;
         *size = 0;
         throw std::runtime_error("ERROR: inconsistent record size");

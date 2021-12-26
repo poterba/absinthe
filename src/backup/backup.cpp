@@ -83,7 +83,7 @@ char* Backup::get_file_path(std::shared_ptr<File> bfile)
         throw std::runtime_error("ERROR: no mbdb in given backup");
     }
 
-    std::string bfntmp = bfile->_mbdb_record->domain + "-" + bfile->_mbdb_record->path;
+    std::string bfntmp = bfile->_mbdb_record->_domain + "-" + bfile->_mbdb_record->path;
     char* backupfname = (char*) malloc(strlen(_path) + 1 + 40 + 1);
     unsigned char sha1[20] = {
         0,
@@ -112,14 +112,14 @@ int Backup::update_file(std::shared_ptr<File> bfile)
         return -1;
     }
     if (!_mbdb) {
-        throw std::runtime_error("%s: ERROR: no mbdb in given backup_t", __func__);
+        throw std::runtime_error("no mbdb in given backup_t");
     }
 
     unsigned char* rec = NULL;
     unsigned int rec_size = 0;
 
     if (bfile->get_record_data(&rec, &rec_size) < 0) {
-        throw std::runtime_error("%s: ERROR: could not build mbdb_record data", __func__);
+        throw std::runtime_error("could not build mbdb_record data");
     }
 
     unsigned int newsize = 0;

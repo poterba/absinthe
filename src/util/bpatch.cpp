@@ -25,10 +25,7 @@
 
 #include <bzlib.h>
 
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstring>
 
 #define BUFSIZE 512000
 

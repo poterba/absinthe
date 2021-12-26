@@ -106,7 +106,7 @@ void File::update_hash()
         fclose(f);
         debug("setting datahash to ");
         debug_hash(sha1, 20);
-        _mbdb_record->set_datahash(sha1);
+        _mbdb_record->set_datahash({sha1, sha1 + sizeof sha1 / sizeof sha1[0]});
     } else if (!_data.empty()) {
         unsigned char sha1[20] = {
             0,
@@ -114,7 +114,7 @@ void File::update_hash()
         SHA1(_data.data(), _size, sha1);
         debug("setting datahash to ");
         debug_hash(sha1, 20);
-        _mbdb_record->set_datahash(sha1);
+        _mbdb_record->set_datahash({sha1, sha1 + sizeof sha1 / sizeof sha1[0]});
     } else {
         throw std::runtime_error("neither filename nor data given, setting hash to N/A");
         _mbdb_record->set_datahash({});

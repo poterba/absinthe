@@ -19,9 +19,7 @@
 
 #include "common.hpp"
 #include "debug.hpp"
-#include "fswrapper.h"
 
-#include <dirent.h>
 #include <string>
 
 int __mkdir(const char* path, int mode)
