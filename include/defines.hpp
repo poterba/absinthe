@@ -198,3 +198,4 @@ struct hfs_mount_args
 #define KERN_PROC_ALL 0 /* everything */
 
 #define PROC_PIDREGIONPATHINFO 8
+#define RTLD_DEFAULT ((__32bit_ptr) -2) /* Use default search algorithm. */

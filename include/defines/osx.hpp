@@ -2,6 +2,7 @@
 #pragma once
 
 #include <sys/ioctl.h>
+#include <sys/ptrace.h>
 
 #define O_RDONLY 0x0000 /* open for reading only */
 #define O_RDWR 0x0002   /* open for reading and writing */

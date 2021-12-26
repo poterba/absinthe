@@ -71,7 +71,7 @@ if(APPLE)
 endif()
 
 include_directories(include)
-configure_file(include/fswrapper.h.in ${absinthe_GENERATE_DIR}/include/fswrapper.h)
+# configure_file(include/fswrapper.h.in ${absinthe_GENERATE_DIR}/include/fswrapper.h)
 configure_file(include/version.h.in ${absinthe_GENERATE_DIR}/include/version.h)
 include_directories(${absinthe_GENERATE_DIR}/include)
 
